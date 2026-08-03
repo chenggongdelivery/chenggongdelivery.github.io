@@ -243,7 +243,7 @@
   <div class="hours-card">
     <div class="clock" aria-hidden="true"></div>
     <div>
-      <div class="time">08:00 – 20:00<span class="provisional">目前暫定</span></div>
+      <div class="time" id="hoursTime">08:00 – 20:00<span class="provisional">目前暫定</span></div>
       <div class="note">時段將依配送人力狀況調整，異動會在社群公告</div>
     </div>
   </div>
@@ -374,13 +374,18 @@
     }
     // 沒填寫就維持頁面上預設的「僅提供現場付款」說明
 
+    const openTime = settings['營業開始時間'] || '08:00';
+    const closeTime = settings['營業結束時間'] || '20:00';
+    const hoursEl = document.getElementById('hoursTime');
+    if(hoursEl) hoursEl.textContent = `${openTime} – ${closeTime}`;
+
     const isOpen = (settings['是否營業'] || 'TRUE').toString().toUpperCase() !== 'FALSE';
     const banner = document.getElementById('statusBanner');
     const sendBtn = document.getElementById('sendLineBtn');
     const copyBtn = document.getElementById('copyBtn');
 
     if(!isOpen){
-      const msg = (settings['暫停服務公告'] || '目前暫停接單，造成不便敬請見諒').trim();
+      const msg = (settings['暫停服務公告'] || `目前非營業時間，服務時段為 ${openTime}–${closeTime}`).trim();
       banner.textContent = `⏸️ ${msg}`;
       banner.style.display = 'flex';
       sendBtn.classList.add('disabled-btn');
