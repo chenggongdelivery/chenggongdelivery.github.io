@@ -74,6 +74,21 @@
   .range-map{margin-top:18px; padding:18px 20px; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);}
   .range-map .label{font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--ocean-dark); margin-bottom:10px;}
 
+  .extra-services{display:grid; gap:12px;}
+  .extra-service{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px 18px; display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;
+  }
+  .extra-service .info h4{margin:0 0 4px; font-size:14.5px;}
+  .extra-service .info p{margin:0; font-size:13px; color:var(--ink); opacity:.75; line-height:1.6;}
+  .extra-service .note{font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--coral-dark); font-size:13.5px; white-space:nowrap; flex-shrink:0;}
+  .extra-services .empty{font-size:13.5px; color:var(--ocean-dark); opacity:.7; padding:6px 2px;}
+
+  .payment-box{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:18px 20px; font-size:13.5px; color:var(--ocean-dark); line-height:1.8; white-space:pre-wrap;
+  }
+
   .hours-card{
     display:flex; align-items:center; gap:20px; background:var(--card); border:2px solid var(--ink);
     border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; flex-wrap:wrap;
@@ -217,6 +232,14 @@
     </div>
   </div>
 
+  <div class="section-title"><span class="eyebrow">加值服務</span><h2>額外服務</h2></div>
+  <div class="extra-services" id="extraServices">
+    <div class="empty">目前尚無額外服務項目，如有特殊需求請於下單備註說明。</div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">付款方式</span><h2>收款資訊</h2></div>
+  <div class="payment-box" id="paymentBox">目前僅提供現場付款（商品費 + 外送費），若日後開放線上轉帳／收款帳號，會公告在這裡。</div>
+
   <div class="section-title"><span class="eyebrow">如何下單</span><h2>三步驟開始</h2></div>
   <div class="steps">
     <div class="step">
@@ -267,7 +290,7 @@
       <a class="copy-btn" id="sendLineBtn" href="#" target="_blank" rel="noopener" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#06C755;">傳送到 LINE →</a>
       <button class="copy-btn" id="copyBtn" style="background:var(--ocean);">改用複製文字</button>
     </div>
-    <div style="font-size:11.5px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;">點「傳送到 LINE」會開啟 LINE App，訊息已自動填好，選擇「成功小蜜丰」後按傳送即可。<br>🔒 為保護客戶隱私，傳到群組的訊息中電話號碼會自動遮蔽（僅顯示後三碼），完整號碼僅記錄於後台管理表，供聯絡使用。</div>
+    <div style="font-size:11.5px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;">點「傳送到 LINE」會開啟 LINE App，訊息已自動填好，選擇「成功小蜜丰」後按傳送即可。<br>🔒 為保護客戶隱私，傳到群組的訊息中電話號碼與門牌號碼會自動遮蔽，完整資訊僅記錄於後台管理表，接單者可私訊客戶核對詳細地址。</div>
   </div>
 </main>
 
@@ -276,7 +299,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwegMtgTC1KjlG6a-3lfBgAu4dtozAs6YAIKAx5G0vzPw4bo7qo9vcsIApGdeexqLQN/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXr-ZhyThieXmk_GXN6LcU-57JDC1O3p-DAZWNa65sM2g0JLqQxJmQqMl-Cr6LoNds/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -284,24 +307,59 @@
     return div.innerHTML;
   }
 
-  function loadRules(){
-    fetch(SCRIPT_URL + '?action=rules')
+  function renderRules(rules){
+    if(!rules || !rules.length) return; // 沒資料就維持頁面上寫死的預設守則
+    const ul = document.getElementById('rulesList');
+    ul.innerHTML = '';
+    rules.forEach(rule => {
+      const li = document.createElement('li');
+      if(rule.mark === '禁止') li.className = 'warn';
+      li.innerHTML = `<span class="mark">${escapeHtml(rule.mark)}</span>${escapeHtml(rule.text)}`;
+      ul.appendChild(li);
+    });
+  }
+
+  function renderServices(services){
+    const box = document.getElementById('extraServices');
+    if(!services || !services.length){
+      box.innerHTML = '<div class="empty">目前尚無額外服務項目，如有特殊需求請於下單備註說明。</div>';
+      return;
+    }
+    box.innerHTML = '';
+    services.forEach(svc => {
+      const card = document.createElement('div');
+      card.className = 'extra-service';
+      card.innerHTML = `
+        <div class="info">
+          <h4>${escapeHtml(svc.name)}</h4>
+          ${svc.desc ? `<p>${escapeHtml(svc.desc)}</p>` : ''}
+        </div>
+        ${svc.note ? `<div class="note">${escapeHtml(svc.note)}</div>` : ''}
+      `;
+      box.appendChild(card);
+    });
+  }
+
+  function renderSettings(settings){
+    if(!settings) return;
+    const note = (settings['收款帳號說明'] || '').trim();
+    if(note){
+      document.getElementById('paymentBox').textContent = note;
+    }
+    // 沒填寫就維持頁面上預設的「僅提供現場付款」說明
+  }
+
+  function loadContent(){
+    fetch(SCRIPT_URL) // 一次取回守則、額外服務、收款資訊，減少來回請求
       .then(r => r.json())
       .then(data => {
-        if(data.rules && data.rules.length){
-          const ul = document.getElementById('rulesList');
-          ul.innerHTML = '';
-          data.rules.forEach(rule => {
-            const li = document.createElement('li');
-            if(rule.mark === '禁止') li.className = 'warn';
-            li.innerHTML = `<span class="mark">${escapeHtml(rule.mark)}</span>${escapeHtml(rule.text)}`;
-            ul.appendChild(li);
-          });
-        }
+        renderRules(data.rules);
+        renderServices(data.services);
+        renderSettings(data.settings);
       })
-      .catch(()=>{ /* 讀取失敗就維持頁面上原本寫死的預設守則 */ });
+      .catch(()=>{ /* 讀取失敗就維持頁面上原本寫死的預設內容 */ });
   }
-  loadRules();
+  loadContent();
 
   const toastEl = document.getElementById('toast');
   function toast(msg){
@@ -326,6 +384,20 @@
     return digits.slice(0, 4) + '-***-' + digits.slice(-3);
   }
 
+  function maskAddress(raw){
+    if(!raw) return '（尚未填寫）';
+    // 嘗試遮蔽門牌號碼，例如「成功路123號」→「成功路***號」
+    const masked = raw.replace(/(\d+)(號)/g, (m, num, suffix) => '*'.repeat(Math.min(num.length, 3)) + suffix);
+    if(masked !== raw){
+      return masked + '（門牌將由接單者私訊核對）';
+    }
+    // 找不到「號」的格式，就只保留前段大致區域，避免完整地址曝光
+    if(raw.length > 8){
+      return raw.slice(0, 8) + '…（詳細地址將由接單者私訊核對）';
+    }
+    return raw + '（詳細地址將由接單者私訊核對）';
+  }
+
   let fee = 30;
   document.querySelectorAll('.zone-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -341,7 +413,7 @@
 
   function updatePreview(){
     const items = document.getElementById('cItems').value.trim() || '（尚未填寫）';
-    const address = document.getElementById('cAddress').value.trim() || '（尚未填寫）';
+    const addressRaw = document.getElementById('cAddress').value.trim();
     const phoneRaw = document.getElementById('cPhone').value.trim();
     const contact = document.getElementById('cContact').value.trim() || '（尚未填寫）';
     const note = document.getElementById('cNote').value.trim();
@@ -349,7 +421,7 @@
     let text =
 `【代購委託】
 品項：${items}
-地址：${address}
+地址：${maskAddress(addressRaw)}
 範圍：${zoneLabel}
 社群暱稱：${contact}
 聯絡電話：${maskPhone(phoneRaw)}（末三碼保留供核對）`;
