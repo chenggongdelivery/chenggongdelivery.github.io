@@ -153,11 +153,14 @@
 
   <div class="rules-box">
     <h2>📌 社群守則</h2>
-    <ul>
+    <ul id="rulesList">
       <li class="warn"><span class="mark">禁止</span>切勿在群內打廣告！！本群只提供代購外送服務，其餘一律禁止。</li>
       <li><span class="mark">01</span>下單時請清楚告知：商家名稱、品項、地址、聯絡方式</li>
       <li><span class="mark">02</span>外送費依鎮內／鎮外分級計算，商品費用另計</li>
-      <li><span class="mark">03</span>服務時間內下單，超時將於隔日營業時間內優先處理</li>
+      <li><span class="mark">03</span>下單恕不接受取消，請確認購買後再下單以免造成雙方困擾及損失</li>
+      <li><span class="mark">04</span>收到商品時請當場核對品項與金額，事後恕不負責</li>
+      <li><span class="mark">05</span>颱風、豪雨等特殊天候將視情況暫停外送，另於群內公告</li>
+      <li><span class="mark">06</span>惡意棄單者將列入黑名單</li>
     </ul>
   </div>
 
@@ -252,8 +255,8 @@
       <input id="cPhone" type="tel" placeholder="例：0912-345-678" required>
     </div>
     <div class="field">
-      <label>LINE ID（選填）</label>
-      <input id="cContact" placeholder="方便聯繫的 LINE ID，沒有可留空">
+      <label>社群暱稱（必填）</label>
+      <input id="cContact" placeholder="在成功小蜜丰群組裡使用的暱稱" required>
     </div>
     <div class="field">
       <label>備註（選填）</label>
@@ -274,6 +277,31 @@
 <script>
 (function(){
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXr-ZhyThieXmk_GXN6LcU-57JDC1O3p-DAZWNa65sM2g0JLqQxJmQqMl-Cr6LoNds/exec';
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function loadRules(){
+    fetch(SCRIPT_URL + '?action=rules')
+      .then(r => r.json())
+      .then(data => {
+        if(data.rules && data.rules.length){
+          const ul = document.getElementById('rulesList');
+          ul.innerHTML = '';
+          data.rules.forEach(rule => {
+            const li = document.createElement('li');
+            if(rule.mark === '禁止') li.className = 'warn';
+            li.innerHTML = `<span class="mark">${escapeHtml(rule.mark)}</span>${escapeHtml(rule.text)}`;
+            ul.appendChild(li);
+          });
+        }
+      })
+      .catch(()=>{ /* 讀取失敗就維持頁面上原本寫死的預設守則 */ });
+  }
+  loadRules();
 
   const toastEl = document.getElementById('toast');
   function toast(msg){
@@ -315,7 +343,7 @@
     const items = document.getElementById('cItems').value.trim() || '（尚未填寫）';
     const address = document.getElementById('cAddress').value.trim() || '（尚未填寫）';
     const phoneRaw = document.getElementById('cPhone').value.trim();
-    const contact = document.getElementById('cContact').value.trim();
+    const contact = document.getElementById('cContact').value.trim() || '（尚未填寫）';
     const note = document.getElementById('cNote').value.trim();
     const zoneLabel = fee === 30 ? '鎮內' : '鎮外（小港天后宮～和平國小）';
     let text =
@@ -323,8 +351,8 @@
 品項：${items}
 地址：${address}
 範圍：${zoneLabel}
+社群暱稱：${contact}
 聯絡電話：${maskPhone(phoneRaw)}（末三碼保留供核對）`;
-    if(contact) text += `\nLINE ID：${contact}`;
     if(note) text += `\n備註：${note}`;
     text += `\n外送費：$${fee}（商品費用另計，現場付款）`;
     document.getElementById('preview').textContent = text;
@@ -346,14 +374,24 @@
     };
   }
 
-  document.getElementById('sendLineBtn').addEventListener('click', (e)=>{
-    e.preventDefault();
-    const data = getFormData();
+  function validateRequired(data){
     if(!data.phone){
       toast('請先填寫客戶聯絡電話');
       document.getElementById('cPhone').focus();
-      return;
+      return false;
     }
+    if(!data.contact){
+      toast('請先填寫社群暱稱');
+      document.getElementById('cContact').focus();
+      return false;
+    }
+    return true;
+  }
+
+  document.getElementById('sendLineBtn').addEventListener('click', (e)=>{
+    e.preventDefault();
+    const data = getFormData();
+    if(!validateRequired(data)) return;
     logOrder(data); // 完整電話只送進你的後台試算表，不會出現在傳給群組的內容裡
 
     window.open(e.currentTarget.href, '_blank');
@@ -362,11 +400,7 @@
 
   document.getElementById('copyBtn').addEventListener('click', async ()=>{
     const data = getFormData();
-    if(!data.phone){
-      toast('請先填寫客戶聯絡電話');
-      document.getElementById('cPhone').focus();
-      return;
-    }
+    if(!validateRequired(data)) return;
     logOrder(data); // 完整電話只送進你的後台試算表，不會出現在複製的文字裡
 
     const text = document.getElementById('preview').textContent;
