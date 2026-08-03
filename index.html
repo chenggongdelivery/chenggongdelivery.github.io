@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>成功小蜜丰</title>
+<meta name="description" content="成功鎮在地代購外送社群，價格透明、範圍清楚，一鍵下單通知群組。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="成功小蜜丰｜成功鎮在地代購外送">
+<meta property="og:description" content="成功鎮還沒有外送平台，所以我們用LINE社群自己來。加入社群，一鍵下單、透明計價。">
+<meta property="og:url" content="https://chenggongdelivery.github.io/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -47,6 +52,15 @@
   .hero .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.18em; border:1.5px solid var(--coral-dark); color:var(--coral-dark); padding:3px 10px; border-radius:999px; display:inline-block; margin-bottom:14px;}
   .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
   .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
+
+  .status-banner{
+    display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:20px 0; font-weight:700; font-size:14px; line-height:1.5;
+  }
+  .disabled-btn{opacity:.4; pointer-events:none; cursor:not-allowed;}
+
+  .honeypot-field{position:absolute; left:-9999px; top:-9999px; width:1px; height:1px; overflow:hidden;}
 
   .rules-box{
     background:var(--ink); color:var(--paper); border-radius:var(--radius); padding:22px 24px;
@@ -166,6 +180,8 @@
     <p>成功鎮還沒有外送平台，所以我們用 LINE 社群自己來 — 這裡只做代購外送，價格透明、範圍清楚，一起把在地的店家和需要的人連起來。</p>
   </div>
 
+  <div class="status-banner" id="statusBanner"></div>
+
   <div class="rules-box">
     <h2>📌 社群守則</h2>
     <ul id="rulesList">
@@ -259,8 +275,12 @@
   <div class="section-title"><span class="eyebrow">工具</span><h2>代購委託小幫手</h2></div>
   <div class="composer">
     <div class="field">
-      <label>要幫忙買什麼？（商家 / 品項）</label>
-      <textarea id="cItems" placeholder="例：新港早餐店 蛋餅一份、紅茶一杯"></textarea>
+      <label>商家名稱</label>
+      <input id="cMerchant" placeholder="例：新港早餐店">
+    </div>
+    <div class="field">
+      <label>購買品項</label>
+      <textarea id="cItems" placeholder="例：蛋餅一份、紅茶一杯（去冰半糖）"></textarea>
     </div>
     <div class="field">
       <label>送達地址</label>
@@ -285,6 +305,10 @@
       <label>備註（選填）</label>
       <input id="cNote" placeholder="例：不加香菜、放在管理室">
     </div>
+    <div class="honeypot-field" aria-hidden="true">
+      <label for="cHoneypot">請勿填寫此欄位</label>
+      <input id="cHoneypot" name="extra_note_field" tabindex="-1" autocomplete="off">
+    </div>
     <div class="preview" id="preview"></div>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <a class="copy-btn" id="sendLineBtn" href="#" target="_blank" rel="noopener" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#06C755;">傳送到 LINE →</a>
@@ -299,7 +323,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0wbL0T88O-qdvkmaxSVI9DABDx8QimnAB5Z877mes3lw6Z0M5GivFxbS8NWBRIaMG/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXr-ZhyThieXmk_GXN6LcU-57JDC1O3p-DAZWNa65sM2g0JLqQxJmQqMl-Cr6LoNds/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -340,6 +364,8 @@
     });
   }
 
+  let orderingDisabled = false;
+
   function renderSettings(settings){
     if(!settings) return;
     const note = (settings['收款帳號說明'] || '').trim();
@@ -347,6 +373,27 @@
       document.getElementById('paymentBox').textContent = note;
     }
     // 沒填寫就維持頁面上預設的「僅提供現場付款」說明
+
+    const isOpen = (settings['是否營業'] || 'TRUE').toString().toUpperCase() !== 'FALSE';
+    const banner = document.getElementById('statusBanner');
+    const sendBtn = document.getElementById('sendLineBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    if(!isOpen){
+      const msg = (settings['暫停服務公告'] || '目前暫停接單，造成不便敬請見諒').trim();
+      banner.textContent = `⏸️ ${msg}`;
+      banner.style.display = 'flex';
+      sendBtn.classList.add('disabled-btn');
+      copyBtn.classList.add('disabled-btn');
+      copyBtn.disabled = true;
+      orderingDisabled = true;
+    } else {
+      banner.style.display = 'none';
+      sendBtn.classList.remove('disabled-btn');
+      copyBtn.classList.remove('disabled-btn');
+      copyBtn.disabled = false;
+      orderingDisabled = false;
+    }
   }
 
   function loadContent(){
@@ -408,10 +455,11 @@
     });
   });
 
-  const ids = ['cItems','cAddress','cPhone','cContact','cNote'];
+  const ids = ['cMerchant','cItems','cAddress','cPhone','cContact','cNote'];
   ids.forEach(id=>document.getElementById(id).addEventListener('input', updatePreview));
 
   function updatePreview(){
+    const merchant = document.getElementById('cMerchant').value.trim() || '（尚未填寫）';
     const items = document.getElementById('cItems').value.trim() || '（尚未填寫）';
     const addressRaw = document.getElementById('cAddress').value.trim();
     const phoneRaw = document.getElementById('cPhone').value.trim();
@@ -420,6 +468,7 @@
     const zoneLabel = fee === 30 ? '鎮內' : '鎮外（小港天后宮～和平國小）';
     let text =
 `【代購委託】
+商家：${merchant}
 品項：${items}
 地址：${maskAddress(addressRaw)}
 範圍：${zoneLabel}
@@ -436,6 +485,7 @@
 
   function getFormData(){
     return {
+      merchant: document.getElementById('cMerchant').value.trim(),
       items: document.getElementById('cItems').value.trim(),
       address: document.getElementById('cAddress').value.trim(),
       phone: document.getElementById('cPhone').value.trim(),
@@ -446,9 +496,39 @@
     };
   }
 
+  function isValidPhone(raw){
+    const digits = raw.replace(/\D/g, '');
+    return /^0\d{7,9}$/.test(digits); // 台灣市話／手機常見長度：0開頭共8~10碼
+  }
+
+  function isBot(){
+    // 蜜罐欄位：正常使用者看不到也不會填，機器人通常會自動填入
+    return document.getElementById('cHoneypot').value.trim() !== '';
+  }
+
+  function resetForm(){
+    ids.forEach(id => { document.getElementById(id).value = ''; });
+    fee = 30;
+    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
+    updatePreview();
+  }
+
+  function flashSuccess(btn, tempLabel){
+    const original = btn.dataset.originalLabel || btn.innerHTML;
+    btn.dataset.originalLabel = original;
+    btn.innerHTML = tempLabel;
+    setTimeout(()=>{ btn.innerHTML = original; }, 1600);
+  }
+
   function validateRequired(data){
     if(!data.phone){
       toast('請先填寫客戶聯絡電話');
+      document.getElementById('cPhone').focus();
+      return false;
+    }
+    if(!isValidPhone(data.phone)){
+      toast('電話格式看起來不正確，請確認');
       document.getElementById('cPhone').focus();
       return false;
     }
@@ -462,15 +542,21 @@
 
   document.getElementById('sendLineBtn').addEventListener('click', (e)=>{
     e.preventDefault();
+    if(orderingDisabled){ toast('目前暫停接單中，請稍後再試'); return; }
+    if(isBot()) return; // 疑似機器人，靜默略過
     const data = getFormData();
     if(!validateRequired(data)) return;
     logOrder(data); // 完整電話只送進你的後台試算表，不會出現在傳給群組的內容裡
 
     window.open(e.currentTarget.href, '_blank');
+    flashSuccess(e.currentTarget, '✓ 已送出');
     toast('已記錄訂單，正在開啟 LINE...');
+    resetForm();
   });
 
-  document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  document.getElementById('copyBtn').addEventListener('click', async (e)=>{
+    if(orderingDisabled){ toast('目前暫停接單中，請稍後再試'); return; }
+    if(isBot()) return; // 疑似機器人，靜默略過
     const data = getFormData();
     if(!validateRequired(data)) return;
     logOrder(data); // 完整電話只送進你的後台試算表，不會出現在複製的文字裡
@@ -478,8 +564,10 @@
     const text = document.getElementById('preview').textContent;
     try{
       await navigator.clipboard.writeText(text);
+      flashSuccess(e.currentTarget, '✓ 已複製');
       toast('已複製！可貼到任何地方使用');
-    }catch(e){
+      resetForm();
+    }catch(err){
       toast('複製失敗，請手動選取文字');
     }
   });
