@@ -323,7 +323,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-c01AVggvT3TnBh-O4vmv18sJ-FP0IwjsCLMyMdK7muPTPJ7mPfZYDCUFejrNYgc/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXr-ZhyThieXmk_GXN6LcU-57JDC1O3p-DAZWNa65sM2g0JLqQxJmQqMl-Cr6LoNds/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -397,7 +397,9 @@
   }
 
   function loadContent(){
-    fetch(SCRIPT_URL) // 一次取回守則、額外服務、收款資訊，減少來回請求
+    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
+    const freshUrl = SCRIPT_URL + '?t=' + Date.now();
+    fetch(freshUrl, { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         renderRules(data.rules);
@@ -554,6 +556,22 @@
     resetForm();
   });
 
+  function legacyCopy(text){
+    // 備援複製方式：適用不支援或封鎖 navigator.clipboard 的瀏覽器（例如部分 App 內建瀏覽器）
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(err){ ok = false; }
+    document.body.removeChild(textarea);
+    return ok;
+  }
+
   document.getElementById('copyBtn').addEventListener('click', async (e)=>{
     if(orderingDisabled){ toast('目前暫停接單中，請稍後再試'); return; }
     if(isBot()) return; // 疑似機器人，靜默略過
@@ -562,13 +580,21 @@
     logOrder(data); // 完整電話只送進你的後台試算表，不會出現在複製的文字裡
 
     const text = document.getElementById('preview').textContent;
+    let copied = false;
+
     try{
       await navigator.clipboard.writeText(text);
+      copied = true;
+    }catch(err){
+      copied = legacyCopy(text); // 新式複製失敗就改用舊式方法再試一次
+    }
+
+    if(copied){
       flashSuccess(e.currentTarget, '✓ 已複製');
       toast('已複製！可貼到任何地方使用');
       resetForm();
-    }catch(err){
-      toast('複製失敗，請手動選取文字');
+    }else{
+      toast('複製失敗，請長按下方文字方塊手動選取複製');
     }
   });
 
