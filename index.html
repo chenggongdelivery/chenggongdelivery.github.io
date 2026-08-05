@@ -413,7 +413,7 @@
       <div class="extra-service-picker" id="extraServicePicker"></div>
     </div>
     <div class="field">
-      <label>客戶聯絡電話（必填，格式：0988-168-168 或 089-888888）</label>
+      <label>客戶聯絡電話（必填，格式：0000-000-000 或 000-000000）</label>
       <input id="cPhone" type="tel" inputmode="numeric" placeholder="例：0912-345-678 或 089-123456" maxlength="12" required>
     </div>
     <div class="field">
@@ -436,6 +436,12 @@
         <button type="button" class="utility-btn" id="photoRemoveBtn" style="padding:5px 12px;">移除照片</button>
       </div>
       <div style="font-size:11px; color:var(--ocean-dark); opacity:.75; margin-top:4px;">照片只會存進後台管理表供接單者確認，不會出現在傳給群組的訊息裡</div>
+    </div>
+    <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px;">
+      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
+        <input type="checkbox" id="cLegalConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
+        <span>本人確認已年滿 18 歲，委託內容合法、如實填寫，不含毒品、槍砲彈藥或其他依法禁止／限制販售之物品；如有不實，願自行承擔相關法律責任。</span>
+      </label>
     </div>
     <div class="honeypot-field" aria-hidden="true">
       <label for="cHoneypot">請勿填寫此欄位</label>
@@ -482,7 +488,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyow7A2oTzDKIJqJdsOGQhxLyEgJGKYczWZwmPxiN1E2ivS_bX-Q9-jH2LjmkOz_QHQ9A/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOHX1Oriv5tTLaJhUcaXu2iXKnXU-7q3NlUNm0J2WkI0HGomMrFu2QAPzXQJE8edq-iw/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -1093,6 +1099,7 @@ ${stopsText}
     data.fee = fee;
     data.extraIdx = Array.from(document.querySelectorAll('#extraServicePicker input:checked')).map(cb => cb.dataset.idx);
     data.stops = collectStops();
+    data.legalConfirm = document.getElementById('cLegalConfirm').checked;
     return data;
   }
 
@@ -1106,6 +1113,7 @@ ${stopsText}
     document.querySelectorAll('#extraServicePicker input').forEach(cb => {
       cb.checked = (snapshot.extraIdx || []).includes(cb.dataset.idx);
     });
+    document.getElementById('cLegalConfirm').checked = !!snapshot.legalConfirm;
     updatePreview();
   }
 
@@ -1117,6 +1125,7 @@ ${stopsText}
     clearPhoto();
     rebuildStops([{ merchant: '', items: '' }]);
     document.querySelectorAll('#extraServicePicker input').forEach(cb => { cb.checked = false; });
+    document.getElementById('cLegalConfirm').checked = false;
     document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
     updatePreview();
@@ -1191,6 +1200,11 @@ ${stopsText}
     if(data.schedule && new Date(data.schedule).getTime() < Date.now()){
       toast('預約時間不能是過去的時間，請重新選擇');
       document.getElementById('cSchedule').focus();
+      return false;
+    }
+    if(!document.getElementById('cLegalConfirm').checked){
+      toast('請先勾選最下方的年齡與合法性確認');
+      document.getElementById('cLegalConfirm').focus();
       return false;
     }
     return true;
