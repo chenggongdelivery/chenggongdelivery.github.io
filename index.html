@@ -598,7 +598,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynHJL8Qrg6sjBeQIQ6ORGNj7ynVYALVBdrSATIWqNwSMQYm0lh3td7FXTIDLwmhkdaWw/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOHX1Oriv5tTLaJhUcaXu2iXKnXU-7q3NlUNm0J2WkI0HGomMrFu2QAPzXQJE8edq-iw/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -843,7 +843,7 @@
 
       const details = document.createElement('details');
       details.className = 'menu-category';
-      details.open = true;
+      details.open = false;
       const summary = document.createElement('summary');
       summary.innerHTML = `<span>${escapeHtml(cat)}</span><span class="mc-count">${g.order.length} 間商家・${totalPhotos} 張<span class="mc-arrow">▸</span></span>`;
       details.appendChild(summary);
