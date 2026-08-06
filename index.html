@@ -549,7 +549,7 @@
     </div>
     <div class="preview" id="preview"></div>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button type="button" class="copy-btn" id="sendLineBtn" style="background:#06C755;">訂單送出 →</button>
+      <button type="button" class="copy-btn" id="sendLineBtn" style="background:#06C755;">送出訂單 →</button>
       <button class="copy-btn" id="orderLookupBtn" type="button" style="background:var(--gold); color:var(--ink);">🔍 訂單查詢</button>
     </div>
     <div class="queue-badge" id="queueBadge">
@@ -598,7 +598,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynHJL8Qrg6sjBeQIQ6ORGNj7ynVYALVBdrSATIWqNwSMQYm0lh3td7FXTIDLwmhkdaWw/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOHX1Oriv5tTLaJhUcaXu2iXKnXU-7q3NlUNm0J2WkI0HGomMrFu2QAPzXQJE8edq-iw/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -973,8 +973,9 @@
       hintEl.style.display = 'block';
       updatePreview();
     } else {
-      // 超出範圍：不自動選範圍，改用醒目提示請客戶私訊確認
-      hintEl.textContent = '⚠️ 此地址可能已超出服務範圍，請私訊「成功小蜜丰」LINE 社群確認是否能配送';
+      // 超出範圍：不自動選範圍，改用醒目提示，並提供可直接點擊的私訊連結
+      const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍，請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
       hintEl.style.color = 'var(--coral-dark)';
       hintEl.style.display = 'block';
     }
@@ -1573,7 +1574,7 @@ ${stopsText}
   }
   function showReservedBadge(n){
     document.getElementById('queueNum').textContent = n ? n : '📅';
-    document.getElementById('queueLabel').innerHTML = '已為您預約<br>時間到前會透過群組與電話確認';
+    document.getElementById('queueLabel').innerHTML = '已為您預約';
     document.getElementById('queueBadge').style.display = 'flex';
     document.getElementById('queueQueryBtn').style.display = 'block';
     popBadge();
