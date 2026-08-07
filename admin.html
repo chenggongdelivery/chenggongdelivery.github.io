@@ -248,21 +248,47 @@
     document.getElementById('notifyBtn').classList.toggle('on', notifyEnabled);
   }
   updateNotifyBtn();
+  if(notifyEnabled){
+    // 每次重新整理頁面，AudioContext 都要重新解鎖一次，提醒使用者點一下確保聲音有效
+    setTimeout(()=>{ toast('🔔 通知已開啟，點一下鈴鐺確保這次重新整理後聲音仍有效'); }, 1200);
+  }
+
+  // 常駐的 AudioContext：一定要在使用者「剛點擊」的當下建立/解鎖，之後才能在背景收到新訂單時正常播放聲音
+  let audioCtx = null;
+  function unlockAudio(){
+    try{
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state === 'suspended'){
+        audioCtx.resume();
+      }
+      // 播放一個幾乎聽不到的短音，確保這個瀏覽器分頁的音效權限被正式解鎖
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.05);
+    }catch(err){ /* 部分瀏覽器不支援，忽略即可，畫面內提示仍會正常顯示 */ }
+  }
 
   document.getElementById('notifyBtn').addEventListener('click', ()=>{
+    unlockAudio(); // 每次點擊都先解鎖音效（一定要在點擊事件裡直接呼叫，才符合瀏覽器對「使用者手勢」的要求）
     if(!notifyEnabled){
       if('Notification' in window && Notification.permission !== 'granted'){
         Notification.requestPermission().then(perm => {
           notifyEnabled = true;
           localStorage.setItem('mifeng_notify_on', '1');
           updateNotifyBtn();
-          toast(perm === 'granted' ? '🔔 通知已開啟（含系統通知）' : '🔔 通知已開啟（此頁面內提醒，系統通知需允許權限）');
+          toast(perm === 'granted' ? '🔔 通知已開啟（含系統通知＋聲音）' : '🔔 通知已開啟（此頁面內提醒＋聲音，系統通知需允許權限）');
         });
       } else {
         notifyEnabled = true;
         localStorage.setItem('mifeng_notify_on', '1');
         updateNotifyBtn();
-        toast('🔔 通知已開啟');
+        toast('🔔 通知已開啟（含聲音）');
       }
     } else {
       notifyEnabled = false;
@@ -273,17 +299,18 @@
   });
 
   function playBeep(){
+    if(!audioCtx) return; // 還沒點過🔔按鈕解鎖過音效，就不強行播放（會被瀏覽器擋掉，且可能報錯）
     try{
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
       [880, 1046].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(audioCtx.destination);
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.18);
-        osc.start(ctx.currentTime + i * 0.18);
-        osc.stop(ctx.currentTime + i * 0.18 + 0.16);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime + i * 0.18);
+        osc.start(audioCtx.currentTime + i * 0.18);
+        osc.stop(audioCtx.currentTime + i * 0.18 + 0.16);
       });
     }catch(err){ /* 部分瀏覽器可能限制自動播放音效，忽略即可 */ }
   }
@@ -487,7 +514,9 @@
       : (order.isReservation ? '📅' : '—');
     const timeLabel = order.isReservation
       ? `預約 ${formatScheduleDisplay(order.schedule)}`
-      : `${order.time || ''} 下單`;
+      : (order.needsAssignment
+        ? `${(order.rowKey || '').slice(5, 10).replace('-', '/')} ${order.time || ''} 下單`
+        : `${order.time || ''} 下單`);
 
     let infoHtml = `
       <div class="row"><span class="label">商家</span><span>${escapeHtml(order.merchant || '—')}</span></div>
@@ -590,10 +619,20 @@
       return;
     }
 
-    const immediate = filtered.filter(o => !o.isReservation);
+    const needsAssignment = filtered.filter(o => o.needsAssignment);
+    const immediate = filtered.filter(o => !o.isReservation && !o.needsAssignment);
     const reservations = filtered.filter(o => o.isReservation);
 
     list.innerHTML = '';
+
+    if(needsAssignment.length){
+      const h = document.createElement('div');
+      h.className = 'section-heading';
+      h.textContent = `⚠️ 待指派外送員・非今日訂單（${needsAssignment.length}）`;
+      h.style.color = 'var(--coral-dark)';
+      list.appendChild(h);
+      needsAssignment.forEach(order => list.appendChild(createOrderCard(order)));
+    }
 
     if(immediate.length){
       const h = document.createElement('div');
