@@ -67,6 +67,13 @@
   }
   .loading-banner.hide{opacity:0; transform:translateY(-6px); pointer-events:none; height:0; margin:0; padding:0; border:none; overflow:hidden;}
 
+  .announcement-banner{
+    display:none; align-items:flex-start; gap:10px; background:var(--gold); color:var(--ink);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:16px 0; font-weight:700; font-size:13.5px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
   .status-banner{
     display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -375,6 +382,7 @@
 
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
+  <div class="announcement-banner" id="announcementBanner"></div>
 
   <div class="hero">
     <span class="eyebrow">歡迎加入</span>
@@ -1046,6 +1054,16 @@
   function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
+
+    const announcement = (settings['公告內容'] || '').trim();
+    const announcementEl = document.getElementById('announcementBanner');
+    if(announcement){
+      announcementEl.textContent = `📢 ${announcement}`;
+      announcementEl.style.display = 'flex';
+    } else {
+      announcementEl.style.display = 'none';
+    }
+
     const note = (settings['收款帳號說明'] || '').trim();
     if(note){
       document.getElementById('paymentBox').textContent = note;
