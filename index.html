@@ -146,7 +146,7 @@
   .rules-box li.warn{background:rgba(226,83,47,.15); border:1px dashed var(--coral); padding:10px 12px; border-radius:8px;}
   .rules-box li.warn .mark{color:var(--coral);}
 
-  .section-title{display:flex; align-items:baseline; gap:10px; margin:36px 0 16px;}
+  .section-title{display:flex; align-items:baseline; gap:10px; margin:36px 0 16px; flex-wrap:wrap;}
   .section-title .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.16em; border:1.5px solid var(--coral-dark); color:var(--coral-dark); padding:2px 8px; border-radius:999px;}
   .section-title h2{font-size:20px; margin:0;}
 
@@ -226,12 +226,16 @@
   .extra-service .info h4{margin:0 0 4px; font-size:14.5px;}
   .extra-service .info p{margin:0; font-size:13px; color:var(--ink); opacity:.75; line-height:1.6;}
   .extra-service .note{font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--coral-dark); font-size:13.5px; white-space:nowrap; flex-shrink:0;}
-  .extra-service .ask-btn{
+  .ask-btn{
     background:#06C755; color:#fff; border:2px solid var(--ink); border-radius:999px; padding:7px 16px;
     font-weight:700; font-size:12.5px; text-decoration:none; white-space:nowrap; flex-shrink:0; display:inline-block;
   }
-  .extra-service .ask-btn:hover{filter:brightness(1.06);}
+  .ask-btn:hover{filter:brightness(1.06);}
   .extra-services .empty{font-size:13.5px; color:var(--ocean-dark); opacity:.7; padding:6px 2px;}
+
+  .menu-update-hint{
+    font-size:12px; color:var(--ocean-dark); opacity:.8; margin:-8px 0 14px; line-height:1.6;
+  }
 
   .payment-box{
     background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -453,11 +457,15 @@
   </div>
 
   <div class="section-title"><span class="eyebrow">先看看賣什麼</span><h2>商家菜單</h2></div>
+  <div class="menu-update-hint">📸 菜單陸續更新中</div>
   <div class="menu-gallery" id="menuGallery">
     <div class="empty">目前尚無菜單相片，想知道賣什麼可以直接在下方備註詢問。</div>
   </div>
 
-  <div class="section-title"><span class="eyebrow">加值服務</span><h2>額外服務</h2></div>
+  <div class="section-title">
+    <span class="eyebrow">加值服務</span><h2>額外服務</h2>
+    <a class="ask-btn" id="askInlineBtn" href="#" target="_blank" rel="noopener" style="margin-left:auto;">💬 私訊小蜜丰</a>
+  </div>
   <div class="extra-services" id="extraServices">
     <div class="empty">目前尚無額外服務項目，如有特殊需求請於下單備註說明。</div>
   </div>
@@ -985,6 +993,7 @@
   function renderServices(services){
     const box = document.getElementById('extraServices');
     const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+    document.getElementById('askInlineBtn').href = askUrl;
     if(!services || !services.length){
       box.innerHTML = '<div class="empty">目前尚無額外服務項目，如有特殊需求請於下單備註說明。</div>';
     } else {
@@ -992,15 +1001,12 @@
       services.forEach(svc => {
         const card = document.createElement('div');
         card.className = 'extra-service';
-        const needsAsk = !(Number(svc.fee) > 0); // 沒設定固定金額的服務，改顯示「請私訊小蜜丰」按鈕
         card.innerHTML = `
           <div class="info">
             <h4>${escapeHtml(svc.name)}</h4>
             ${svc.desc ? `<p>${escapeHtml(svc.desc)}</p>` : ''}
           </div>
-          ${needsAsk
-            ? `<a class="ask-btn" href="${escapeHtml(askUrl)}" target="_blank" rel="noopener">💬 請私訊小蜜丰</a>`
-            : (svc.note ? `<div class="note">${escapeHtml(svc.note)}</div>` : '')}
+          ${svc.note ? `<div class="note">${escapeHtml(svc.note)}</div>` : ''}
         `;
         box.appendChild(card);
       });
