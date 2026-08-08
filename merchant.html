@@ -50,9 +50,9 @@
   }
 
   .hours-announcement-banner{
-    display:flex; align-items:center; gap:8px; background:var(--ocean); color:var(--paper);
+    display:flex; align-items:center; gap:8px; background:var(--coral-dark); color:#fff;
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:12px 16px; margin-bottom:14px; font-size:12.5px; font-weight:700; line-height:1.6;
+    padding:16px 18px; margin-bottom:16px; font-size:13.5px; font-weight:700; line-height:1.7;
   }
 
   .urgent-hint{
@@ -69,10 +69,18 @@
   .inquiry-helper-btn:hover{filter:brightness(1.1);}
 
   /* ---- 表單 ---- */
+  .form-section{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:18px 16px; margin-bottom:16px;
+  }
+  .form-section-title{
+    font-family:'Noto Serif TC', serif; font-weight:900; font-size:15px; color:var(--ocean-dark);
+    margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid var(--seafoam);
+  }
   .field{margin-bottom:16px;}
   .field label{display:block; font-size:13px; font-weight:700; color:var(--ocean-dark); margin-bottom:6px;}
   .field input, .field textarea, .field select{
-    width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--card);
+    width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
     font-family:inherit; font-size:14px; color:var(--ink);
   }
   .field textarea{min-height:60px; resize:vertical;}
@@ -211,9 +219,9 @@
 </header>
 
 <main>
+  <div class="hours-announcement-banner" id="hoursAnnouncementBanner" style="display:none;"></div>
   <div class="loading-banner" id="loadingBanner">⏳ 載入中，請稍後...</div>
   <div class="hours-status-banner" id="hoursStatusBanner" style="display:none;"></div>
-  <div class="hours-announcement-banner" id="hoursAnnouncementBanner" style="display:none;"></div>
   <div class="urgent-hint" id="announcementHint" style="display:none;"></div>
   <a class="inquiry-helper-btn" id="inquiryHelperBtn" href="#" target="_blank" rel="noopener" style="display:none;">💬 歡迎私訊洽詢 →</a>
 
@@ -236,63 +244,74 @@
   </div>
 
   <div id="formBox">
-    <div class="field">
-      <label>客戶（收件人）姓名或暱稱</label>
-      <input id="mCustomerName" placeholder="例：王小姐">
+    <div class="form-section">
+      <div class="form-section-title">👤 客戶資訊</div>
+      <div class="field">
+        <label>客戶（收件人）姓名或暱稱</label>
+        <input id="mCustomerName" placeholder="例：王小姐">
+      </div>
+      <div class="field">
+        <label>客戶聯絡電話（必填，格式：0000-000-000 或 000-000000）</label>
+        <input id="mPhone" type="tel" inputmode="numeric" placeholder="例：0912-345-678" maxlength="12">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>送達地址</label>
+        <input id="mAddress" placeholder="例：成功鎮○○路○號，或明顯地標">
+      </div>
     </div>
-    <div class="field">
-      <label>客戶聯絡電話（必填，格式：0000-000-000 或 000-000000）</label>
-      <input id="mPhone" type="tel" inputmode="numeric" placeholder="例：0912-345-678" maxlength="12">
-    </div>
-    <div class="field">
-      <label>送達地址</label>
-      <input id="mAddress" placeholder="例：成功鎮○○路○號，或明顯地標">
-    </div>
-    <div class="field">
-      <label>拍照確認訂單內容（收據、出單畫面、品項清單皆可）</label>
-      <div class="photo-upload-box">
-        <input type="file" id="mPhoto" accept="image/*" capture="environment">
-        <div class="photo-preview-box" id="photoPreviewBox">
-          <img id="photoPreviewImg" src="" alt="訂單照片預覽">
-          <button type="button" class="photo-remove-btn" id="photoRemoveBtn">移除照片</button>
+
+    <div class="form-section">
+      <div class="form-section-title">🧾 訂單內容</div>
+      <div class="field">
+        <label>拍照確認訂單內容（收據、出單畫面、品項清單皆可）</label>
+        <div class="photo-upload-box">
+          <input type="file" id="mPhoto" accept="image/*" capture="environment">
+          <div class="photo-preview-box" id="photoPreviewBox">
+            <img id="photoPreviewImg" src="" alt="訂單照片預覽">
+            <button type="button" class="photo-remove-btn" id="photoRemoveBtn">移除照片</button>
+          </div>
         </div>
+        <div class="hint">照片只會存進後台管理表供外送員確認，若沒有照片，請至少填寫下方簡短說明</div>
       </div>
-      <div class="hint">照片只會存進後台管理表供外送員確認，若沒有照片，請至少填寫下方簡短說明</div>
-    </div>
-    <div class="field">
-      <label>簡短品項說明（有拍照的話可選填，方便外送員快速辨識）</label>
-      <input id="mItems" placeholder="例：便當2個、飲料1杯">
-    </div>
-    <div class="field">
-      <label>商品金額（必填，方便外送員向客戶收款）</label>
-      <input id="mGoodsAmount" type="number" inputmode="numeric" min="0" placeholder="例：350">
-    </div>
-    <div class="field">
-      <label>範圍</label>
-      <div class="range-hint" id="rangeHintText">北到<strong>三仙台加油站</strong>、南到<strong>全滿加油站</strong>為鎮內；<strong>三仙台加油站</strong>以北到<strong>小港天后宮</strong>、<strong>全滿加油站</strong>以南到<strong>和平國小</strong>為鎮外，超出此範圍請私訊確認</div>
-      <div class="zone-toggle">
-        <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-fee="60">鎮外・小港天后宮～和平國小（$60）</button>
+      <div class="field">
+        <label>簡短品項說明（有拍照的話可選填，方便外送員快速辨識）</label>
+        <input id="mItems" placeholder="例：便當2個、飲料1杯">
       </div>
-      <a class="out-of-range-btn" id="outOfRangeBtn" href="#" target="_blank" rel="noopener">⚠️ 超出範圍請私訊確認</a>
-    </div>
-    <div class="field">
-      <label>送達時間</label>
-      <div class="schedule-toggle">
-        <button type="button" class="sch-btn active" data-mode="now">立即送</button>
-        <button type="button" class="sch-btn" data-mode="later">指定時間</button>
+      <div class="field" style="margin-bottom:0;">
+        <label>商品金額（必填，方便外送員向客戶收款）</label>
+        <input id="mGoodsAmount" type="number" inputmode="numeric" min="0" placeholder="例：350">
       </div>
-      <div id="scheduleFields" class="schedule-fields" style="display:none;">
-        <input id="mScheduleDate" type="date">
-        <select id="mScheduleTime">
-          <option value="">請選擇時段</option>
-        </select>
-      </div>
-      <div class="hint" id="scheduleHint" style="display:none;">預約時段開放範圍依後台設定</div>
     </div>
-    <div class="field">
-      <label>備註（選填）</label>
-      <input id="mNote" placeholder="例：需先電話聯繫、放在管理室">
+
+    <div class="form-section">
+      <div class="form-section-title">🚴 配送設定</div>
+      <div class="field">
+        <label>範圍</label>
+        <div class="range-hint" id="rangeHintText">北到<strong>三仙台加油站</strong>、南到<strong>全滿加油站</strong>為鎮內；<strong>三仙台加油站</strong>以北到<strong>小港天后宮</strong>、<strong>全滿加油站</strong>以南到<strong>和平國小</strong>為鎮外，超出此範圍請私訊確認</div>
+        <div class="zone-toggle">
+          <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
+          <button type="button" class="zone-btn" data-fee="60">鎮外。(北界)小港天后宮<br>(南界)和平國小（$60）</button>
+        </div>
+        <a class="out-of-range-btn" id="outOfRangeBtn" href="#" target="_blank" rel="noopener">⚠️ 超出範圍請私訊確認</a>
+      </div>
+      <div class="field">
+        <label>送達時間</label>
+        <div class="schedule-toggle">
+          <button type="button" class="sch-btn active" data-mode="now">立即送</button>
+          <button type="button" class="sch-btn" data-mode="later">指定時間</button>
+        </div>
+        <div id="scheduleFields" class="schedule-fields" style="display:none;">
+          <input id="mScheduleDate" type="date">
+          <select id="mScheduleTime">
+            <option value="">請選擇時段</option>
+          </select>
+        </div>
+        <div class="hint" id="scheduleHint" style="display:none;">預約時段開放範圍依後台設定</div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>備註（選填）</label>
+        <input id="mNote" placeholder="例：需先電話聯繫、放在管理室">
+      </div>
     </div>
 
     <button type="button" class="submit-btn" id="submitBtn">送出委託 →</button>
