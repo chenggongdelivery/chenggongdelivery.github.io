@@ -1293,7 +1293,13 @@
         if(data.schedule) msg += `\n預約時間：${formatSchedule(data.schedule)}`;
         if(data.extraServices) msg += `\n加購服務：${data.extraServices}`;
         msg += `
-外送費：$${data.fee || '—'}
+外送費：$${data.fee || '—'}`;
+        if(data.goodsAmount){
+          const goodsNum = Number(data.goodsAmount) || 0;
+          const feeNum = Number(data.fee) || 0;
+          msg += `\n商品金額：$${data.goodsAmount}（已由店家/後台確認）\n💰 應付總金額：$${goodsNum + feeNum}`;
+        }
+        msg += `
 備註：${data.note || '—'}
 下單時間：${data.time || '—'}`;
         if(data.paymentMethod === '匯款'){
