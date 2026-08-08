@@ -49,6 +49,12 @@
     padding:12px 16px; margin-bottom:14px; font-size:12.5px; font-weight:700; line-height:1.6;
   }
 
+  .hours-announcement-banner{
+    display:flex; align-items:center; gap:8px; background:var(--ocean); color:var(--paper);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:12px 16px; margin-bottom:14px; font-size:12.5px; font-weight:700; line-height:1.6;
+  }
+
   .urgent-hint{
     display:flex; align-items:center; gap:8px; background:var(--gold); color:var(--ink);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -206,6 +212,7 @@
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入中，請稍後...</div>
   <div class="hours-status-banner" id="hoursStatusBanner" style="display:none;"></div>
+  <div class="hours-announcement-banner" id="hoursAnnouncementBanner" style="display:none;"></div>
   <div class="urgent-hint" id="announcementHint" style="display:none;"></div>
   <a class="inquiry-helper-btn" id="inquiryHelperBtn" href="#" target="_blank" rel="noopener" style="display:none;">💬 歡迎私訊洽詢 →</a>
 
@@ -376,6 +383,16 @@
           statusEl.style.background = 'var(--gold)';
         } else {
           statusEl.style.display = 'none';
+        }
+
+        // 營業時間調整公告：跟主網站共用同一組設定
+        const hoursAnnouncement = ((data.settings && data.settings['營業時間調整公告']) || '').trim();
+        const hoursAnnouncementEl = document.getElementById('hoursAnnouncementBanner');
+        if(hoursAnnouncement){
+          hoursAnnouncementEl.textContent = `🕒 ${hoursAnnouncement}`;
+          hoursAnnouncementEl.style.display = 'flex';
+        } else {
+          hoursAnnouncementEl.style.display = 'none';
         }
 
         // 預約時段設定：跟主網站共用同一組預約開放時間設定
