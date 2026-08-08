@@ -46,8 +46,15 @@
   .urgent-hint{
     display:flex; align-items:center; gap:8px; background:var(--gold); color:var(--ink);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:12px 16px; margin-bottom:18px; font-size:12.5px; font-weight:700; line-height:1.6;
+    padding:12px 16px; margin-bottom:10px; font-size:12.5px; font-weight:700; line-height:1.6;
   }
+
+  .inquiry-helper-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    background:var(--ocean); color:var(--paper); border:2px solid var(--ink); border-radius:999px;
+    padding:11px 16px; margin-bottom:18px; font-size:13px; font-weight:700; text-decoration:none;
+  }
+  .inquiry-helper-btn:hover{filter:brightness(1.1);}
 
   /* ---- 表單 ---- */
   .field{margin-bottom:16px;}
@@ -190,6 +197,7 @@
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入中，請稍後...</div>
   <div class="urgent-hint" id="announcementHint" style="display:none;"></div>
+  <a class="inquiry-helper-btn" id="inquiryHelperBtn" href="#" target="_blank" rel="noopener" style="display:none;">💬 有問題？私訊洽詢 →</a>
 
   <div class="field merchant-select-field">
     <label>商家名稱</label>
@@ -323,6 +331,15 @@
           outOfRangeBtn.href = inquiryUrl;
         } else {
           outOfRangeBtn.style.display = 'none'; // 後台還沒設定連結，就先不顯示這顆按鈕，避免點了沒反應
+        }
+
+        // 公告下方的私訊洽詢按鈕：不管有沒有公告內容，都固定顯示，方便商家隨時詢問
+        const inquiryHelperBtn = document.getElementById('inquiryHelperBtn');
+        if(inquiryUrl){
+          inquiryHelperBtn.href = inquiryUrl;
+          inquiryHelperBtn.style.display = 'flex';
+        } else {
+          inquiryHelperBtn.style.display = 'none';
         }
 
         const sel = document.getElementById('mMerchant');
