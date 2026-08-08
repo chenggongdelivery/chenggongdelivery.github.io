@@ -75,6 +75,13 @@
     animation:fadeSlideIn .3s ease; white-space:pre-wrap;
   }
 
+  .hours-announcement-banner{
+    display:none; align-items:center; gap:10px; background:var(--ocean); color:var(--paper);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:16px 0 0; font-weight:700; font-size:13.5px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
   .status-banner{
     display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -411,6 +418,7 @@
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
   <div class="announcement-banner" id="announcementBanner"></div>
+  <div class="hours-announcement-banner" id="hoursAnnouncementBanner"></div>
 
   <div class="hero">
     <span class="eyebrow">歡迎加入</span>
@@ -633,7 +641,7 @@
     <img id="menuLightboxImg" src="" alt="菜單放大圖">
     <div class="menu-lightbox-body">
       <div class="menu-lightbox-merchant" id="menuLightboxMerchant"></div>
-      <textarea id="menuLightboxItemsInput" placeholder="若無指定大小一律代購大份..."></textarea>
+      <textarea id="menuLightboxItemsInput" placeholder="邊看邊打想買的品項..."></textarea>
       <button type="button" class="menu-lightbox-add-btn" id="menuLightboxAddBtn">✅ 加入訂單</button>
     </div>
   </div>
@@ -788,7 +796,7 @@
       <select class="stop-merchant"><option value="">請選擇商家</option><option value="其他">其他（自行輸入）</option></select>
       <input class="stop-merchant-other" placeholder="請輸入商家名稱" style="display:none;">
       <div class="stop-hours-hint" style="display:none;"></div>
-      <textarea class="stop-items" placeholder="(購買品項若無指定大小、一律代購大份)，例如：便當一個、飲料一杯"></textarea>
+      <textarea class="stop-items" placeholder="購買品項，例如：便當一個、飲料一杯"></textarea>
     `;
     document.getElementById('stopsContainer').appendChild(row);
     populateMerchantSelect(row.querySelector('.stop-merchant'));
@@ -1168,6 +1176,15 @@
       announcementEl.style.display = 'flex';
     } else {
       announcementEl.style.display = 'none';
+    }
+
+    const hoursAnnouncement = (settings['營業時間調整公告'] || '').trim();
+    const hoursAnnouncementEl = document.getElementById('hoursAnnouncementBanner');
+    if(hoursAnnouncement){
+      hoursAnnouncementEl.textContent = `🕒 ${hoursAnnouncement}`;
+      hoursAnnouncementEl.style.display = 'flex';
+    } else {
+      hoursAnnouncementEl.style.display = 'none';
     }
 
     const note = (settings['收款帳號說明'] || '').trim();
