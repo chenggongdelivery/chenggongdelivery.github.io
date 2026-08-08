@@ -151,6 +151,7 @@
     padding:10px 8px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
   }
   .schedule-toggle button.active{background:var(--gold); color:var(--ink); opacity:1;}
+  .schedule-toggle button:disabled{cursor:not-allowed;}
   .schedule-fields{display:flex; gap:8px;}
   .schedule-fields input, .schedule-fields select{flex:1;}
 
@@ -271,7 +272,7 @@
       <div class="range-hint" id="rangeHintText">北到<strong>三仙台加油站</strong>、南到<strong>全滿加油站</strong>為鎮內；<strong>三仙台加油站</strong>以北到<strong>小港天后宮</strong>、<strong>全滿加油站</strong>以南到<strong>和平國小</strong>為鎮外，超出此範圍請私訊確認</div>
       <div class="zone-toggle">
         <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-fee="60">鎮外<br>(北界)小港天后宮<br>(南界)和平國小<br>($60)</button>
+        <button type="button" class="zone-btn" data-fee="60">鎮外・小港天后宮～和平國小（$60）</button>
       </div>
       <a class="out-of-range-btn" id="outOfRangeBtn" href="#" target="_blank" rel="noopener">⚠️ 超出範圍請私訊確認</a>
     </div>
@@ -325,6 +326,7 @@
 
   // ---------- 商家名單：沿用主網站同一份「商家名單設定」資料，後台新增/編輯/刪除都會同步 ----------
   const PIN_MERCHANT_KEY = 'mifeng_pinned_merchant';
+  let orderingMode = 'open'; // 'open' | 'reservationOnly' | 'closed'
 
   function loadMerchants(){
     const loadingEl = document.getElementById('loadingBanner');
@@ -374,16 +376,20 @@
         const forcedClosed = ((data.settings && data.settings['強制公休']) || 'FALSE').toString().toUpperCase() === 'TRUE';
         const statusEl = document.getElementById('hoursStatusBanner');
         if(forcedClosed){
-          statusEl.textContent = '⏸️ 目前暫停服務中，委託單可能無法即時處理，請見諒';
+          orderingMode = 'closed';
+          statusEl.textContent = '⏸️ 目前暫停服務中，暫不接受任何委託單，請見諒';
           statusEl.style.display = 'flex';
           statusEl.style.background = 'var(--coral)';
         } else if(!isOpen){
-          statusEl.textContent = `🌙 目前非服務時間（${openTime}–${closeTime}），委託單會等到服務時間開始才處理`;
+          orderingMode = 'reservationOnly';
+          statusEl.textContent = `🌙 目前非服務時間（${openTime}–${closeTime}），僅能送出「指定時間」的預約委託單`;
           statusEl.style.display = 'flex';
           statusEl.style.background = 'var(--gold)';
         } else {
+          orderingMode = 'open';
           statusEl.style.display = 'none';
         }
+        applyOrderingModeToUI();
 
         // 營業時間調整公告：跟主網站共用同一組設定
         const hoursAnnouncement = ((data.settings && data.settings['營業時間調整公告']) || '').trim();
@@ -616,6 +622,33 @@
     });
   });
 
+  // 根據目前營業狀態，調整「立即送」按鈕跟送出按鈕的可點擊狀態，讓限制在畫面上就看得出來，不用等點了才被擋
+  function applyOrderingModeToUI(){
+    const nowBtn = document.querySelector('.sch-btn[data-mode="now"]');
+    const laterBtn = document.querySelector('.sch-btn[data-mode="later"]');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if(orderingMode === 'closed'){
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏸️ 目前暫停服務中';
+      nowBtn.disabled = true;
+      nowBtn.style.opacity = '.3';
+    } else if(orderingMode === 'reservationOnly'){
+      submitBtn.disabled = false;
+      submitBtn.textContent = '送出委託 →';
+      nowBtn.disabled = true;
+      nowBtn.style.opacity = '.3';
+      if(scheduleMode === 'now'){
+        laterBtn.click(); // 強制切換到「指定時間」，避免畫面卡在不能用的「立即送」
+      }
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '送出委託 →';
+      nowBtn.disabled = false;
+      nowBtn.style.opacity = '';
+    }
+  }
+
   // 預約日期欄位不能選過去的日期
   (function setScheduleDateMin(){
     const el = document.getElementById('mScheduleDate');
@@ -747,6 +780,15 @@
 
   // ---------- 送出委託 ----------
   document.getElementById('submitBtn').addEventListener('click', async ()=>{
+    if(orderingMode === 'closed'){
+      toast('⏸️ 目前暫停服務中，暫不接受任何委託單');
+      return;
+    }
+    if(orderingMode === 'reservationOnly' && scheduleMode === 'now'){
+      toast('🌙 目前非服務時間，請改選「指定時間」送出預約委託');
+      return;
+    }
+
     formatPhoneOnBlur(); // 確保送出前電話已經是排版好的格式
     const merchant = getMerchantValue();
     const customerName = document.getElementById('mCustomerName').value.trim();
