@@ -678,7 +678,7 @@
 <div class="toast" id="toast"></div>
 
 <div class="cart-float-bar" id="cartFloatBar" style="display:none;">
-  <button type="button" id="cartFloatBtn">🛒 已選 <span id="cartCount">0</span> 張・去看看</button>
+  <button type="button" id="cartFloatBtn"></button>
 </div>
 
 <div class="menu-lightbox" id="cartReviewOverlay">
@@ -1030,13 +1030,43 @@
     updateCartFloatBar();
   }
 
-  function updateCartFloatBar(){
-    const bar = document.getElementById('cartFloatBar');
-    document.getElementById('cartCount').textContent = cartSelections.length;
-    bar.style.display = cartSelections.length > 0 ? 'flex' : 'none';
+  function countFilledStops(){
+    return Array.from(document.querySelectorAll('.stop-row')).filter(row => {
+      const sel = row.querySelector('.stop-merchant').value;
+      const other = row.querySelector('.stop-merchant-other').value.trim();
+      return sel === '其他' ? !!other : !!sel;
+    }).length;
   }
 
-  document.getElementById('cartFloatBtn').addEventListener('click', openCartReview);
+  function updateCartFloatBar(){
+    const bar = document.getElementById('cartFloatBar');
+    const btn = document.getElementById('cartFloatBtn');
+
+    if(cartSelections.length > 0){
+      // 菜單裡還有勾選、但還沒按「全部加入訂單」的張數，優先顯示這個，提醒客戶要去確認
+      btn.innerHTML = `🛒 已選 <span id="cartCount">${cartSelections.length}</span> 張・去看看`;
+      btn.dataset.mode = 'review';
+      bar.style.display = 'flex';
+    } else {
+      // 沒有待確認的菜單選擇了，改顯示整張訂單目前實際有幾個站點（不管是菜單加的還是手動新增的）
+      const stopCount = countFilledStops();
+      if(stopCount > 0){
+        btn.innerHTML = `📦 訂單目前共 <strong>${stopCount}</strong> 個站點・前往確認`;
+        btn.dataset.mode = 'scroll';
+        bar.style.display = 'flex';
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+  }
+
+  document.getElementById('cartFloatBtn').addEventListener('click', ()=>{
+    if(document.getElementById('cartFloatBtn').dataset.mode === 'review'){
+      openCartReview();
+    } else {
+      document.getElementById('stopsContainer').scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+  });
 
   function openCartReview(){
     const listEl = document.getElementById('cartReviewList');
@@ -1700,6 +1730,7 @@ ${stopsText}
       text += `\n匯款帳號末五碼：${remitLast5 || '（尚未填寫）'}`;
     }
     document.getElementById('preview').textContent = text;
+    updateCartFloatBar();
   }
   updatePreview();
 
