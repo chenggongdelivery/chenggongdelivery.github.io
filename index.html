@@ -75,6 +75,13 @@
     animation:fadeSlideIn .3s ease; white-space:pre-wrap;
   }
 
+  .hours-announcement-banner{
+    display:none; align-items:center; gap:10px; background:var(--coral-dark); color:#fff;
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:16px 0 0; font-weight:700; font-size:13.5px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
   .status-banner{
     display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -196,6 +203,47 @@
     position:absolute; left:0; right:0; bottom:0; background:rgba(34,48,46,.78); color:var(--paper);
     font-size:9px; line-height:1.35; padding:3px 4px; text-align:center;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .thumb-select-btn{
+    position:absolute; top:5px; right:5px; width:24px; height:24px; border-radius:50%;
+    border:2px solid var(--paper); background:rgba(34,48,46,.55); cursor:pointer; padding:0;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .thumb-select-btn::after{
+    content:''; display:block; width:100%; height:100%;
+  }
+  .thumb.selected{outline:3px solid #06C755; outline-offset:-3px;}
+  .thumb.selected .thumb-select-btn{background:#06C755; border-color:#06C755; transform:scale(1.05);}
+  .thumb.selected .thumb-select-btn::after{
+    content:'✓'; color:#fff; font-size:14px; font-weight:900; line-height:20px; display:block; text-align:center;
+  }
+
+  .cart-float-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:190; display:flex; justify-content:center;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, var(--paper) 60%, transparent);
+  }
+  .cart-float-bar button{
+    width:100%; max-width:460px; padding:14px; border:2px solid var(--ink); border-radius:999px;
+    background:#06C755; color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; font-family:inherit;
+    box-shadow:0 4px 0 var(--ink), 0 8px 20px -6px rgba(34,48,46,.5); animation:popIn .2s ease;
+  }
+  .cart-review-panel{max-width:520px;}
+  .cart-review-item{
+    background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px; margin-bottom:12px;
+  }
+  .cart-review-item .cri-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .cart-review-item .cri-head strong{flex:1; font-size:14px;}
+  .cart-review-item .cri-thumbs{display:flex; gap:6px; margin-bottom:8px;}
+  .cart-review-item .cri-thumbs img{
+    width:44px; height:44px; object-fit:cover; border-radius:6px; border:1.5px solid var(--ink); cursor:pointer;
+  }
+  .cart-review-item textarea{
+    width:100%; min-height:52px; padding:8px 10px; border:2px solid var(--ink); border-radius:8px;
+    background:var(--card); font-family:inherit; font-size:13px; resize:vertical;
+  }
+  .cri-remove-btn{
+    flex-shrink:0; background:none; border:none; color:var(--coral-dark); font-size:12px; font-weight:700; cursor:pointer;
   }
 
   .menu-lightbox{
@@ -411,6 +459,7 @@
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
   <div class="announcement-banner" id="announcementBanner"></div>
+  <div class="hours-announcement-banner" id="hoursAnnouncementBanner"></div>
 
   <div class="hero">
     <span class="eyebrow">歡迎加入</span>
@@ -505,7 +554,7 @@
   </div>
 
   <div class="section-title"><span class="eyebrow">付款方式</span><h2>收款資訊</h2></div>
-  <div class="payment-box" id="paymentBox">目前提供貨到付款及線上轉帳（商品費 + 外送費）。</div>
+  <div class="payment-box" id="paymentBox">目前提供「貨到付款」與「線上轉帳」服務（費用含商品費與外送費），歡迎隨時下單訂購！</div>
   <div class="payment-accounts" id="paymentAccounts"></div>
 
   <div class="section-title"><span class="eyebrow">如何下單</span><h2>三步驟開始</h2></div>
@@ -627,6 +676,23 @@
 
 <footer>成功小蜜丰 · 本頁僅供社群公告與下單參考使用</footer>
 <div class="toast" id="toast"></div>
+
+<div class="cart-float-bar" id="cartFloatBar" style="display:none;">
+  <button type="button" id="cartFloatBtn">🛒 已選 <span id="cartCount">0</span> 張・去看看</button>
+</div>
+
+<div class="menu-lightbox" id="cartReviewOverlay">
+  <div class="menu-lightbox-panel cart-review-panel">
+    <button class="menu-lightbox-close" id="cartReviewClose" aria-label="關閉">✕</button>
+    <div class="menu-lightbox-body">
+      <div class="menu-lightbox-merchant">🛒 確認購物清單</div>
+      <div class="hint" style="font-size:12px; color:var(--ocean-dark); opacity:.75; margin-bottom:14px; line-height:1.6;">已選的菜單依商家分組，各自填寫想買的品項，填好按下方按鈕一次全部加入訂單</div>
+      <div id="cartReviewList"></div>
+      <button type="button" class="menu-lightbox-add-btn" id="cartReviewAddAllBtn">✅ 全部加入訂單</button>
+    </div>
+  </div>
+</div>
+
 <div class="menu-lightbox" id="menuLightbox">
   <div class="menu-lightbox-panel">
     <button class="menu-lightbox-close" id="menuLightboxClose" aria-label="關閉">✕</button>
@@ -932,6 +998,94 @@
     return ok;
   }
 
+  // ---------- 菜單購物車：可多選不同商家的菜單縮圖，統一確認品項後一次加入訂單 ----------
+  let cartIdCounter = 0;
+  let cartSelections = []; // { cartId, merchant, image }
+
+  function toggleCartSelection(cartId, merchant, image, thumbEl){
+    const idx = cartSelections.findIndex(c => c.cartId === cartId);
+    if(idx > -1){
+      cartSelections.splice(idx, 1);
+      thumbEl.classList.remove('selected');
+    } else {
+      cartSelections.push({ cartId, merchant, image });
+      thumbEl.classList.add('selected');
+    }
+    updateCartFloatBar();
+  }
+
+  function updateCartFloatBar(){
+    const bar = document.getElementById('cartFloatBar');
+    document.getElementById('cartCount').textContent = cartSelections.length;
+    bar.style.display = cartSelections.length > 0 ? 'flex' : 'none';
+  }
+
+  document.getElementById('cartFloatBtn').addEventListener('click', openCartReview);
+
+  function openCartReview(){
+    const listEl = document.getElementById('cartReviewList');
+    listEl.innerHTML = '';
+
+    // 依商家分組，同商家選了好幾張菜單，共用同一個品項輸入框
+    const groups = {};
+    const order = [];
+    cartSelections.forEach(sel => {
+      if(!groups[sel.merchant]){ groups[sel.merchant] = []; order.push(sel.merchant); }
+      groups[sel.merchant].push(sel);
+    });
+
+    order.forEach(merchant => {
+      const items = groups[merchant];
+      const item = document.createElement('div');
+      item.className = 'cart-review-item';
+      item.innerHTML = `
+        <div class="cri-head">
+          <strong>${escapeHtml(merchant)}</strong>
+          <span style="font-size:11px; color:var(--ocean-dark); opacity:.7;">${items.length} 張菜單</span>
+        </div>
+        <div class="cri-thumbs">${items.map(i => `<img src="${escapeHtml(i.image)}" alt="${escapeHtml(merchant)}">`).join('')}</div>
+        <textarea placeholder="想買的品項..." data-merchant="${escapeHtml(merchant)}"></textarea>
+      `;
+      item.querySelectorAll('.cri-thumbs img').forEach((img, i) => {
+        img.addEventListener('click', ()=>{ closeCartReview(); openMenuLightbox(merchant, items[i].image); });
+      });
+      listEl.appendChild(item);
+    });
+
+    document.getElementById('cartReviewOverlay').style.display = 'flex';
+  }
+  function closeCartReview(){
+    document.getElementById('cartReviewOverlay').style.display = 'none';
+  }
+  document.getElementById('cartReviewClose').addEventListener('click', closeCartReview);
+  document.getElementById('cartReviewOverlay').addEventListener('click', (e)=>{
+    if(e.target === document.getElementById('cartReviewOverlay')) closeCartReview();
+  });
+
+  document.getElementById('cartReviewAddAllBtn').addEventListener('click', ()=>{
+    const textareas = Array.from(document.querySelectorAll('#cartReviewList textarea'));
+    const empties = textareas.filter(t => !t.value.trim());
+    if(empties.length){
+      toast('請把每個商家的品項都填寫完整');
+      empties[0].focus();
+      return;
+    }
+
+    let lastRow = null;
+    textareas.forEach(t => {
+      lastRow = addItemsToStop(t.dataset.merchant, t.value.trim());
+    });
+    updatePreview();
+    toast(`已將 ${textareas.length} 家商家的品項加入訂單`);
+
+    // 清空購物車跟畫面上的勾選狀態
+    cartSelections = [];
+    document.querySelectorAll('.thumb.selected').forEach(el => el.classList.remove('selected'));
+    updateCartFloatBar();
+    closeCartReview();
+    if(lastRow) lastRow.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+
   function renderMenus(menus){
     const box = document.getElementById('menuGallery');
     if(!menus || !menus.length){
@@ -974,13 +1128,20 @@
       g.order.forEach(merchant => {
         const photos = g.merchants[merchant];
         photos.forEach(m => {
+          const cartId = 'cart' + (cartIdCounter++);
           const thumb = document.createElement('div');
           thumb.className = 'thumb';
+          thumb.dataset.cartId = cartId;
           thumb.innerHTML = `
             <img src="${escapeHtml(m.image)}" alt="${escapeHtml(merchant)}" loading="lazy">
             <div class="thumb-cap">${escapeHtml(merchant)}</div>
+            <button type="button" class="thumb-select-btn" aria-label="加入購物清單"></button>
           `;
-          thumb.addEventListener('click', ()=>{ openMenuLightbox(merchant, m.image); });
+          thumb.querySelector('img').addEventListener('click', ()=>{ openMenuLightbox(merchant, m.image); });
+          thumb.querySelector('.thumb-select-btn').addEventListener('click', (e)=>{
+            e.stopPropagation();
+            toggleCartSelection(cartId, merchant, m.image, thumb);
+          });
           body.appendChild(thumb);
         });
       });
@@ -1007,16 +1168,9 @@
     if(e.target === menuLightboxEl) closeMenuLightbox(); // 點空白背景才關閉，點面板本身不會誤觸關閉
   });
 
-  document.getElementById('menuLightboxAddBtn').addEventListener('click', ()=>{
-    const merchant = document.getElementById('menuLightboxMerchant').textContent;
-    const itemsText = document.getElementById('menuLightboxItemsInput').value.trim();
-    if(!itemsText){
-      toast('請先輸入想買的品項');
-      return;
-    }
-
+  // 共用邏輯：把某個商家的品項加進站點（找同商家的站點優先，沒有就找空白站點，都沒有就新增一個）
+  function addItemsToStop(merchant, itemsText){
     const rows = Array.from(document.querySelectorAll('.stop-row'));
-    // 優先找已經選這個商家的站點；找不到就找還沒選商家的空白站點；都沒有就新增一個
     let targetRow = rows.find(row => row.querySelector('.stop-merchant').value === merchant);
     if(!targetRow) targetRow = rows.find(row => !row.querySelector('.stop-merchant').value);
     if(!targetRow){
@@ -1037,7 +1191,18 @@
 
     const itemsField = targetRow.querySelector('.stop-items');
     itemsField.value = itemsField.value.trim() ? `${itemsField.value.trim()}、${itemsText}` : itemsText;
+    return targetRow;
+  }
 
+  document.getElementById('menuLightboxAddBtn').addEventListener('click', ()=>{
+    const merchant = document.getElementById('menuLightboxMerchant').textContent;
+    const itemsText = document.getElementById('menuLightboxItemsInput').value.trim();
+    if(!itemsText){
+      toast('請先輸入想買的品項');
+      return;
+    }
+
+    const targetRow = addItemsToStop(merchant, itemsText);
     updatePreview();
     toast(`已將「${merchant}」的品項加入訂單`);
     closeMenuLightbox();
@@ -1168,6 +1333,15 @@
       announcementEl.style.display = 'flex';
     } else {
       announcementEl.style.display = 'none';
+    }
+
+    const hoursAnnouncement = (settings['營業時間調整公告'] || '').trim();
+    const hoursAnnouncementEl = document.getElementById('hoursAnnouncementBanner');
+    if(hoursAnnouncement){
+      hoursAnnouncementEl.textContent = `🕒 ${hoursAnnouncement}`;
+      hoursAnnouncementEl.style.display = 'flex';
+    } else {
+      hoursAnnouncementEl.style.display = 'none';
     }
 
     const note = (settings['收款帳號說明'] || '').trim();
@@ -1601,6 +1775,7 @@ ${stopsText}
       paymentMethod: paymentMethod,
       remitName: paymentMethod === '匯款' ? document.getElementById('cRemitName').value.trim() : '',
       remitLast5: paymentMethod === '匯款' ? document.getElementById('cRemitLast5').value.trim() : '',
+      legalConfirm: document.getElementById('cLegalConfirm').checked,
       photoBase64,
       photoMime
     };
