@@ -140,6 +140,11 @@
   .order-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px;}
   .order-queue{font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:900; color:var(--coral-dark); line-height:1;}
   .order-time{font-size:11px; color:var(--ocean-dark); opacity:.7; margin-top:3px;}
+  .order-time.is-reservation{
+    font-size:15px; font-weight:900; color:var(--paper); opacity:1; margin-top:6px;
+    background:var(--ocean); display:inline-block; padding:5px 12px; border-radius:8px;
+    font-family:'JetBrains Mono',monospace;
+  }
   .status-badge{
     font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap;
     border:1.5px solid var(--ink);
@@ -178,11 +183,51 @@
 
   .goods-amount-picker{margin-top:14px;}
   .goods-amount-picker label{display:block; font-size:11px; font-weight:700; color:var(--ocean-dark); opacity:.75; margin-bottom:5px;}
+  .goods-amount-stops{display:grid; gap:6px; margin-bottom:8px;}
+  .goods-amount-stop-row{display:flex; align-items:center; gap:8px;}
+  .goods-amount-stop-row .gas-label{
+    flex:0 0 auto; font-size:11.5px; font-weight:700; color:var(--ocean-dark); white-space:nowrap;
+    max-width:38%; overflow:hidden; text-overflow:ellipsis;
+  }
+  .goods-amount-stop-row input{
+    flex:1; padding:8px 10px; border:2px solid var(--ink); border-radius:8px; background:var(--paper);
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--ink);
+  }
+  .goods-amount-total-row{display:flex; gap:8px;}
   .goods-amount-input{
-    width:100%; padding:9px 11px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+    flex:1; padding:9px 11px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
     font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--ink);
   }
+  .calc-trigger-btn{
+    flex:0 0 auto; width:42px; border:2px solid var(--ink); border-radius:10px; background:var(--gold);
+    font-size:17px; cursor:pointer;
+  }
   .goods-amount-picker .collect-total{display:none;}
+
+  /* ---- 計算機 ---- */
+  .calc-overlay{
+    display:none; position:fixed; inset:0; background:rgba(34,48,46,.85); z-index:400;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .calc-panel{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px; width:100%; max-width:300px;
+  }
+  .calc-display{
+    background:var(--ink); color:#fff; font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:700;
+    text-align:right; padding:16px 14px; border-radius:10px; margin-bottom:12px; word-break:break-all; min-height:36px;
+  }
+  .calc-buttons{display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;}
+  .calc-buttons button{
+    padding:16px 0; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+    font-size:17px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--ink);
+  }
+  .calc-buttons button.op{background:var(--ocean); color:#fff;}
+  .calc-buttons button.eq{grid-column:span 4; background:#06C755; color:#fff; font-size:14px;}
+  .calc-close-btn{
+    width:100%; margin-top:10px; padding:10px; border:2px solid var(--ink); border-radius:10px;
+    background:var(--card); color:var(--ink); font-weight:700; cursor:pointer; font-family:inherit;
+  }
 
   .deliverer-picker{margin-top:14px;}
   .deliverer-picker label{display:block; font-size:11px; font-weight:700; color:var(--ocean-dark); opacity:.75; margin-bottom:5px;}
@@ -311,6 +356,20 @@
 </main>
 
 <div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt="訂單照片"></div>
+
+<div class="calc-overlay" id="calcOverlay">
+  <div class="calc-panel">
+    <div class="calc-display" id="calcDisplay">0</div>
+    <div class="calc-buttons">
+      <button type="button" data-calc="7">7</button><button type="button" data-calc="8">8</button><button type="button" data-calc="9">9</button><button type="button" class="op" data-calc="÷">÷</button>
+      <button type="button" data-calc="4">4</button><button type="button" data-calc="5">5</button><button type="button" data-calc="6">6</button><button type="button" class="op" data-calc="×">×</button>
+      <button type="button" data-calc="1">1</button><button type="button" data-calc="2">2</button><button type="button" data-calc="3">3</button><button type="button" class="op" data-calc="-">−</button>
+      <button type="button" data-calc="0">0</button><button type="button" data-calc=".">.</button><button type="button" class="op" data-calc="AC">AC</button><button type="button" class="op" data-calc="+">+</button>
+      <button type="button" class="eq" data-calc="=">= 帶入金額</button>
+    </div>
+    <button type="button" class="calc-close-btn" id="calcCloseBtn">關閉</button>
+  </div>
+</div>
 
 <div class="detail-overlay" id="orderSearchOverlay">
   <div class="detail-panel">
@@ -780,9 +839,12 @@
     return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
+  let cardIdCounter = 0;
+
   function createOrderCard(order){
     const card = document.createElement('div');
     card.className = `order-card status-${order.status || '待處理'}`;
+    const cardId = 'c' + (cardIdCounter++); // 純粹給卡片內部元素當id用，避免用rowKey(含冒號句點)造成CSS選擇器出錯
 
     const isMerchantOrder = order.orderType === '商家外送委託';
     if(isMerchantOrder) card.classList.add('merchant-order');
@@ -811,6 +873,9 @@
     `;
     if(order.extraServices) infoHtml += `<div class="row"><span class="label">加購</span><span>${escapeHtml(order.extraServices)}</span></div>`;
     if(order.note) infoHtml += `<div class="row"><span class="label">備註</span><span>${escapeHtml(order.note)}</span></div>`;
+    if(!isMerchantOrder){
+      infoHtml += `<div class="row"><span class="label">聲明</span><span>${order.legalConfirm && order.legalConfirm.indexOf('已確認') === 0 ? `✅ ${escapeHtml(order.legalConfirm)}` : '⚠️ 未確認'}</span></div>`;
+    }
 
     const isRemit = order.paymentMethod === '匯款';
     infoHtml += `<div class="row"><span class="label">付款</span><span>${isRemit ? '💳 匯款轉帳' : '💵 現場付款'}</span></div>`;
@@ -829,7 +894,7 @@
       <div class="order-top">
         <div>
           <div class="order-queue">${queueDisplay}</div>
-          <div class="order-time">${escapeHtml(timeLabel)}</div>
+          <div class="order-time${order.isReservation ? ' is-reservation' : ''}">${escapeHtml(timeLabel)}</div>
         </div>
         <div class="status-badge ${order.status || '待處理'}">${escapeHtml(order.status || '待處理')}</div>
       </div>
@@ -838,7 +903,11 @@
       ${paymentActionHtml}
       <div class="goods-amount-picker">
         <label>商品金額（後台填寫，方便核對應收總金額）</label>
-        <input type="number" inputmode="numeric" min="0" class="goods-amount-input" placeholder="例：350" value="${escapeHtml(String(order.goodsAmount || ''))}">
+        <div class="goods-amount-stops" id="stopsBox-${cardId}"></div>
+        <div class="goods-amount-total-row">
+          <input type="number" inputmode="numeric" min="0" class="goods-amount-input" placeholder="例：350" value="${escapeHtml(String(order.goodsAmount || ''))}">
+          <button type="button" class="calc-trigger-btn" title="開啟計算機">🧮</button>
+        </div>
         <div class="collect-total"></div>
       </div>
       <div class="deliverer-picker">
@@ -876,6 +945,42 @@
       if(goodsInput.value.trim() === String(order.goodsAmount || '').trim()) return; // 沒有變更就不用打API
       updateGoodsAmount(order, goodsInput.value.trim());
     });
+
+    // 解析品項文字裡的「【站點N】商家：品項」格式，多站點訂單就分開顯示各站點的金額輸入框，自動加總帶入總金額
+    const stopMatches = Array.from((order.items || '').matchAll(/【站點\d+】([^：\n]*)：/g)).map(m => m[1].trim());
+    const stopsBox = card.querySelector(`#stopsBox-${cardId}`);
+    if(stopMatches.length > 1){
+      stopMatches.forEach((merchantName, idx) => {
+        const row = document.createElement('div');
+        row.className = 'goods-amount-stop-row';
+        row.innerHTML = `
+          <span class="gas-label">${escapeHtml(merchantName || `站點${idx+1}`)}</span>
+          <input type="number" inputmode="numeric" min="0" placeholder="金額" class="stop-amount-input">
+          <button type="button" class="calc-trigger-btn stop-calc-btn" title="開啟計算機">🧮</button>
+        `;
+        stopsBox.appendChild(row);
+      });
+      const stopInputs = Array.from(stopsBox.querySelectorAll('.stop-amount-input'));
+      function sumStopsIntoTotal(){
+        const sum = stopInputs.reduce((total, inp) => total + (Number(inp.value) || 0), 0);
+        goodsInput.value = sum || '';
+        refreshCollectTotal();
+      }
+      stopInputs.forEach(inp => {
+        inp.addEventListener('input', sumStopsIntoTotal);
+        inp.addEventListener('blur', ()=>{
+          if(goodsInput.value.trim() === String(order.goodsAmount || '').trim()) return;
+          updateGoodsAmount(order, goodsInput.value.trim());
+        });
+      });
+      stopsBox.querySelectorAll('.stop-calc-btn').forEach((btn, idx) => {
+        btn.addEventListener('click', ()=> openCalculator(stopInputs[idx], sumStopsIntoTotal));
+      });
+    }
+
+    // 單一站點（或無法辨識站點）：一般計算機按鈕，直接算完帶入商品金額欄位
+    const mainCalcBtn = card.querySelector('.goods-amount-total-row .calc-trigger-btn');
+    mainCalcBtn.addEventListener('click', ()=> openCalculator(goodsInput, refreshCollectTotal));
 
     const delivererSelect = card.querySelector('.deliverer-select');
     currentDeliverers.forEach(d => {
@@ -984,6 +1089,57 @@
       })
       .catch(()=>{ toast('儲存失敗，請檢查網路連線'); });
   }
+
+  // ---------- 計算機：全站共用同一個，透過openCalculator指定要帶入哪個輸入框 ----------
+  const calcOverlay = document.getElementById('calcOverlay');
+  const calcDisplay = document.getElementById('calcDisplay');
+  let calcExpr = '';
+  let calcTargetInput = null;
+  let calcOnApply = null; // 帶入金額後，順便呼叫這個callback更新畫面（例如重新計算應收總金額）
+
+  function openCalculator(inputEl, onApplyCallback){
+    calcTargetInput = inputEl;
+    calcOnApply = onApplyCallback || null;
+    calcExpr = inputEl.value ? String(inputEl.value) : '';
+    calcDisplay.textContent = calcExpr || '0';
+    calcOverlay.style.display = 'flex';
+  }
+  function closeCalculator(){
+    calcOverlay.style.display = 'none';
+  }
+
+  document.getElementById('calcCloseBtn').addEventListener('click', closeCalculator);
+  calcOverlay.addEventListener('click', (e)=>{ if(e.target === calcOverlay) closeCalculator(); });
+
+  document.querySelectorAll('[data-calc]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const val = btn.dataset.calc;
+      if(val === 'AC'){
+        calcExpr = '';
+      } else if(val === '='){
+        try{
+          const sanitized = calcExpr.replace(/×/g, '*').replace(/÷/g, '/').replace(/[^0-9+\-*/.]/g, '');
+          if(!sanitized){ closeCalculator(); return; }
+          const result = Function('"use strict";return (' + sanitized + ')')();
+          if(!isFinite(result)) throw new Error('計算結果無效');
+          const rounded = Math.round(result * 100) / 100;
+          calcTargetInput.value = rounded;
+          calcTargetInput.dispatchEvent(new Event('input', { bubbles:true }));
+          if(calcOnApply) calcOnApply();
+          calcTargetInput.dispatchEvent(new Event('blur', { bubbles:true }));
+          closeCalculator();
+          return;
+        }catch(err){
+          calcExpr = '';
+          calcDisplay.textContent = '計算錯誤';
+          return;
+        }
+      } else {
+        calcExpr += val;
+      }
+      calcDisplay.textContent = calcExpr || '0';
+    });
+  });
 
   function renderOrders(){
     const list = document.getElementById('orderList');
