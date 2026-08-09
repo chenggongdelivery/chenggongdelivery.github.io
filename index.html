@@ -75,13 +75,6 @@
     animation:fadeSlideIn .3s ease; white-space:pre-wrap;
   }
 
-  .hours-announcement-banner{
-    display:none; align-items:center; gap:10px; background:var(--coral-dark); color:#fff;
-    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:14px 18px; margin:16px 0 0; font-weight:700; font-size:13.5px; line-height:1.7;
-    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
-  }
-
   .status-banner{
     display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -418,7 +411,6 @@
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
   <div class="announcement-banner" id="announcementBanner"></div>
-  <div class="hours-announcement-banner" id="hoursAnnouncementBanner"></div>
 
   <div class="hero">
     <span class="eyebrow">歡迎加入</span>
@@ -513,7 +505,7 @@
   </div>
 
   <div class="section-title"><span class="eyebrow">付款方式</span><h2>收款資訊</h2></div>
-  <div class="payment-box" id="paymentBox">目前僅提供現場付款（商品費 + 外送費），若日後開放線上轉帳／收款帳號，會公告在這裡。</div>
+  <div class="payment-box" id="paymentBox">目前提供貨到付款及線上轉帳（商品費 + 外送費）。</div>
   <div class="payment-accounts" id="paymentAccounts"></div>
 
   <div class="section-title"><span class="eyebrow">如何下單</span><h2>三步驟開始</h2></div>
@@ -549,7 +541,7 @@
       <label>範圍</label>
       <div class="zone-toggle">
         <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-fee="60">鎮外。(北界)小港天后宮<br>(南界)和平國小（$60）</button>
+        <button type="button" class="zone-btn" data-fee="60">鎮外・小港天后宮～和平國小（$60）</button>
       </div>
     </div>
     <div class="field" id="extraServiceField" style="display:none;">
@@ -1176,15 +1168,6 @@
       announcementEl.style.display = 'flex';
     } else {
       announcementEl.style.display = 'none';
-    }
-
-    const hoursAnnouncement = (settings['營業時間調整公告'] || '').trim();
-    const hoursAnnouncementEl = document.getElementById('hoursAnnouncementBanner');
-    if(hoursAnnouncement){
-      hoursAnnouncementEl.textContent = `🕒 ${hoursAnnouncement}`;
-      hoursAnnouncementEl.style.display = 'flex';
-    } else {
-      hoursAnnouncementEl.style.display = 'none';
     }
 
     const note = (settings['收款帳號說明'] || '').trim();
