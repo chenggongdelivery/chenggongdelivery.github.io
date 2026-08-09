@@ -439,6 +439,39 @@
   @keyframes popIn{ from{transform:scale(.94); opacity:0;} to{transform:scale(1); opacity:1;} }
 
   .utility-btn{padding:8px 15px;}
+
+  /* ---------- 常用地址／釘選地址 ---------- */
+  .saved-address-box{
+    margin-top:10px; padding:12px; background:rgba(127,173,169,.14);
+    border:1.5px dashed var(--ocean); border-radius:10px;
+  }
+  .saved-address-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    margin-bottom:8px; font-size:12px; font-weight:700; color:var(--ocean-dark);
+  }
+  .saved-address-list{display:grid; gap:7px;}
+  .saved-address-item{
+    display:flex; align-items:center; gap:8px; padding:9px 10px;
+    background:var(--card); border:1.5px solid var(--ink); border-radius:8px;
+  }
+  .saved-address-use{
+    flex:1; min-width:0; border:0; background:transparent; padding:0;
+    text-align:left; cursor:pointer; font-family:inherit; color:var(--ink);
+    font-size:12.5px; line-height:1.45;
+  }
+  .saved-address-use strong{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .saved-address-use span{display:block; color:var(--ocean-dark); opacity:.72; margin-top:2px;}
+  .saved-address-delete{
+    border:0; background:transparent; color:var(--coral-dark); cursor:pointer;
+    font-size:11px; font-weight:700; padding:5px;
+  }
+  .pin-address-btn{
+    width:100%; margin-top:8px; padding:9px 12px; border:2px solid var(--ink);
+    border-radius:999px; background:var(--paper); color:var(--ink);
+    font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .pin-address-btn:hover{background:var(--card);}
+  .saved-address-empty{font-size:11.5px; color:var(--ocean-dark); opacity:.7; line-height:1.5;}
 </style>
 </head>
 <body>
@@ -569,7 +602,7 @@
     </div>
     <div class="step">
       <div class="num">3</div>
-      <div><h4>等待接單與送達</h4><p>有空的成員會接單，完成代購後送達，現場付款（商品費 + 外送費）。有問題可隨時加入 LINE 社群詢問。</p></div>
+      <div><h4>等待接單與送達</h4><p>有空的成員會接單，完成代購後送達，貨到付款（商品費 + 外送費）。有問題可隨時加入 LINE 社群詢問。</p></div>
     </div>
   </div>
 
@@ -583,8 +616,38 @@
     </div>
     <div class="field">
       <label>送達地址</label>
-      <input id="cAddress" placeholder="例：成功鎮○○路○號，或明顯地標">
+      <div style="display:flex; gap:8px;">
+        <select id="cAddrCounty" style="flex:0 0 92px;">
+          <option value="臺東縣">臺東縣</option>
+        </select>
+        <select id="cAddrTownship" style="flex:1;">
+          <option value="">請選擇鄉鎮市</option>
+        </select>
+      </div>
+      <select id="cAddrRoad" style="margin-top:8px;">
+        <option value="">請選擇路名</option>
+        <option value="其他">其他（自行輸入）</option>
+      </select>
+      <input id="cAddrRoadOther" placeholder="請輸入路名" style="display:none; margin-top:8px;">
+      <input id="cAddrDetail" placeholder="巷弄、門牌號" style="margin-top:8px;">
+      <input type="hidden" id="cAddress">
       <div id="addressZoneHint" style="display:none; font-size:12px; margin-top:6px; font-weight:700; line-height:1.6;"></div>
+    </div>
+    <div class="field">
+      <label>地址備註（選填，例如明顯地標）</label>
+      <input id="cAddrNote" placeholder="例：全家便利商店旁、白色鐵皮屋">
+
+      <div class="saved-address-box" id="savedAddressBox">
+        <div class="saved-address-head">
+          <span>📍 常用地址</span>
+          <span id="savedAddressCount"></span>
+        </div>
+        <div id="savedAddressList" class="saved-address-list"></div>
+        <div class="saved-address-empty" id="savedAddressHint">
+          可釘選多個常用地址，例如：家裡、公司、爸媽家；下次點一下即可帶入。
+        </div>
+        <button type="button" class="pin-address-btn" id="pinAddressBtn">📌 將目前地址加入常用地址</button>
+      </div>
     </div>
     <div class="field">
       <label>範圍</label>
@@ -1262,6 +1325,66 @@
     addressZoneRules = zones || [];
   }
 
+  function renderDeliverableTownships(townships){
+    const sel = document.getElementById('cAddrTownship');
+    const currentValue = sel.value;
+    sel.innerHTML = '<option value="">請選擇鄉鎮市</option>';
+    (townships || []).forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      sel.appendChild(opt);
+    });
+    if(currentValue && Array.from(sel.options).some(o => o.value === currentValue)){
+      sel.value = currentValue;
+    }
+  }
+
+  // ---------- 依路名緯度精準判斷鎮內/鎮外/超出範圍（比關鍵字比對更準確） ----------
+  let boundaryLats = { innerNorth: null, innerSouth: null, outerNorth: null, outerSouth: null };
+
+  function getSelectedRoadLat(){
+    const roadName = document.getElementById('cAddrRoad').value;
+    if(!roadName || roadName === '其他') return null;
+    const road = deliverableRoadsList.find(r => r.name === roadName);
+    return (road && road.lat != null) ? road.lat : null;
+  }
+
+  function determineZoneByLat(lat){
+    const { innerNorth, innerSouth, outerNorth, outerSouth } = boundaryLats;
+    if(innerNorth == null || innerSouth == null || outerNorth == null || outerSouth == null) return null;
+    if(lat > outerNorth || lat < outerSouth) return '超出範圍';
+    if(lat <= innerNorth && lat >= innerSouth) return '鎮內';
+    return '鎮外';
+  }
+
+  function applyZoneResult(zone, hintEl, isPrecise){
+    const precisionNote = isPrecise ? '（依路名座標判斷）' : '';
+    if(zone === '鎮內'){
+      fee = 30;
+      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
+      hintEl.textContent = `✓ 已自動判斷為「鎮內」範圍${precisionNote}`;
+      hintEl.style.color = 'var(--ocean-dark)';
+      hintEl.style.display = 'block';
+      updatePreview();
+    } else if(zone === '鎮外'){
+      fee = 60;
+      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.zone-btn[data-fee="60"]').classList.add('active');
+      hintEl.textContent = `✓ 已自動判斷為「鎮外」範圍${precisionNote}`;
+      hintEl.style.color = 'var(--ocean-dark)';
+      hintEl.style.display = 'block';
+      updatePreview();
+    } else {
+      // 超出範圍：不自動選範圍，改用醒目提示，並提供可直接點擊的私訊連結
+      const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
+      hintEl.style.color = 'var(--coral-dark)';
+      hintEl.style.display = 'block';
+    }
+  }
+
   function checkAddressZone(){
     const addr = document.getElementById('cAddress').value.trim();
     const hintEl = document.getElementById('addressZoneHint');
@@ -1270,37 +1393,233 @@
       return;
     }
 
-    const matched = addressZoneRules.find(r => r.keyword && addr.includes(r.keyword));
-    if(!matched){
+    // 優先用選定路名標記過的座標精準判斷
+    const roadLat = getSelectedRoadLat();
+    let zone = roadLat != null ? determineZoneByLat(roadLat) : null;
+    let isPrecise = zone != null;
+
+    if(!zone){
+      // 沒有座標資料（路名還沒標記緯度、或選了「其他」自行輸入），退回關鍵字比對當備援
+      const matched = addressZoneRules.find(r => r.keyword && addr.includes(r.keyword));
+      zone = matched ? matched.zone : null;
+      isPrecise = false;
+    }
+
+    if(!zone){
       hintEl.style.display = 'none';
       return;
     }
 
-    if(matched.zone === '鎮內'){
-      fee = 30;
-      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
-      hintEl.textContent = '✓ 已依地址自動判斷為「鎮內」範圍';
-      hintEl.style.color = 'var(--ocean-dark)';
-      hintEl.style.display = 'block';
-      updatePreview();
-    } else if(matched.zone === '鎮外'){
-      fee = 60;
-      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.zone-btn[data-fee="60"]').classList.add('active');
-      hintEl.textContent = '✓ 已依地址自動判斷為「鎮外」範圍';
-      hintEl.style.color = 'var(--ocean-dark)';
-      hintEl.style.display = 'block';
-      updatePreview();
-    } else {
-      // 超出範圍：不自動選範圍，改用醒目提示，並提供可直接點擊的私訊連結
-      const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍，請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
-      hintEl.style.color = 'var(--coral-dark)';
-      hintEl.style.display = 'block';
-    }
+    applyZoneResult(zone, hintEl, isPrecise);
   }
   document.getElementById('cAddress').addEventListener('input', checkAddressZone);
+
+  // ---------- 地址欄位改為縣市/鄉鎮/路名下拉選單 + 詳細地址 + 備註，組合後同步進隱藏的cAddress欄位供其他既有邏輯使用 ----------
+  let deliverableRoadsList = [];
+
+  // ---------- 常用地址：使用瀏覽器 localStorage 儲存，無需登入 ----------
+  const SAVED_ADDRESS_KEY = 'chenggongDeliverySavedAddressesV1';
+  const MAX_SAVED_ADDRESSES = 50;
+
+  function loadSavedAddresses(){
+    try{
+      const raw = localStorage.getItem(SAVED_ADDRESS_KEY);
+      const data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    }catch(err){
+      return [];
+    }
+  }
+
+  function saveSavedAddresses(list){
+    try{
+      localStorage.setItem(SAVED_ADDRESS_KEY, JSON.stringify(list.slice(0, MAX_SAVED_ADDRESSES)));
+    }catch(err){
+      // 瀏覽器若禁止 localStorage，不影響正常下單
+    }
+  }
+
+  function getCurrentAddressParts(){
+    return {
+      county: document.getElementById('cAddrCounty').value,
+      township: document.getElementById('cAddrTownship').value,
+      road: document.getElementById('cAddrRoad').value,
+      roadOther: document.getElementById('cAddrRoadOther').value.trim(),
+      detail: document.getElementById('cAddrDetail').value.trim(),
+      note: document.getElementById('cAddrNote').value.trim()
+    };
+  }
+
+  function getSavedAddressLabel(item){
+    const road = item.road === '其他' ? item.roadOther : item.road;
+    return `${item.county || ''}${item.township || ''}${road || ''}${item.detail || ''}`;
+  }
+
+  function fillAddressFromSaved(item){
+    const townshipEl = document.getElementById('cAddrTownship');
+    const roadEl = document.getElementById('cAddrRoad');
+    const roadOtherEl = document.getElementById('cAddrRoadOther');
+
+    document.getElementById('cAddrCounty').value = item.county || '臺東縣';
+    townshipEl.value = item.township || '';
+
+    if(item.road && Array.from(roadEl.options).some(o => o.value === item.road)){
+      roadEl.value = item.road;
+      roadOtherEl.style.display = 'none';
+    }else if(item.road === '其他'){
+      roadEl.value = '其他';
+      roadOtherEl.value = item.roadOther || '';
+      roadOtherEl.style.display = 'block';
+    }else{
+      roadEl.value = '';
+      roadOtherEl.value = '';
+      roadOtherEl.style.display = 'none';
+    }
+
+    document.getElementById('cAddrDetail').value = item.detail || '';
+    document.getElementById('cAddrNote').value = item.note || '';
+    syncAddressField();
+    toast('📍 已帶入常用地址');
+  }
+
+  function renderSavedAddresses(){
+    const listEl = document.getElementById('savedAddressList');
+    const hintEl = document.getElementById('savedAddressHint');
+    const countEl = document.getElementById('savedAddressCount');
+    const pinBtn = document.getElementById('pinAddressBtn');
+    if(!listEl) return;
+
+    const list = loadSavedAddresses();
+    listEl.innerHTML = '';
+    countEl.textContent = list.length ? `已釘選 ${list.length} 個地址` : '';
+
+    if(!list.length){
+      hintEl.style.display = 'block';
+    }else{
+      hintEl.style.display = 'none';
+      list.forEach((item, index)=>{
+        const row = document.createElement('div');
+        row.className = 'saved-address-item';
+
+        const useBtn = document.createElement('button');
+        useBtn.type = 'button';
+        useBtn.className = 'saved-address-use';
+        const title = document.createElement('strong');
+        title.textContent = item.name || `常用地址 ${index + 1}`;
+        const sub = document.createElement('span');
+        sub.textContent = getSavedAddressLabel(item);
+        useBtn.appendChild(title);
+        useBtn.appendChild(sub);
+        useBtn.addEventListener('click', ()=> fillAddressFromSaved(item));
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'saved-address-delete';
+        delBtn.textContent = '刪除';
+        delBtn.addEventListener('click', ()=>{
+          const next = loadSavedAddresses();
+          next.splice(index, 1);
+          saveSavedAddresses(next);
+          renderSavedAddresses();
+          toast('已刪除常用地址');
+        });
+
+        row.appendChild(useBtn);
+        row.appendChild(delBtn);
+        listEl.appendChild(row);
+      });
+    }
+
+    const current = getCurrentAddressParts();
+    const hasAddress = !!(current.township && (current.road === '其他' ? current.roadOther : current.road) && current.detail);
+    pinBtn.disabled = !hasAddress;
+    pinBtn.textContent = hasAddress ? '📌 將目前地址加入常用地址' : '📌 請先完成地址';
+  }
+
+  function pinCurrentAddress(){
+    const item = getCurrentAddressParts();
+    const road = item.road === '其他' ? item.roadOther : item.road;
+
+    if(!item.township || !road || !item.detail){
+      toast('請先選擇鄉鎮、路名並填寫門牌號');
+      return;
+    }
+
+    const list = loadSavedAddresses();
+    const normalized = getSavedAddressLabel(item).replace(/\s/g, '');
+
+    // 相同地址直接移到最前面，不重複建立
+    const existingIndex = list.findIndex(x => getSavedAddressLabel(x).replace(/\s/g, '') === normalized);
+    if(existingIndex >= 0) list.splice(existingIndex, 1);
+
+    item.name = item.name || `常用地址`;
+    list.unshift(item);
+    saveSavedAddresses(list);
+    renderSavedAddresses();
+    toast('📌 地址已釘選，下次可直接選擇');
+  }
+
+  function initSavedAddressFeature(){
+    const pinBtn = document.getElementById('pinAddressBtn');
+    if(pinBtn) pinBtn.addEventListener('click', pinCurrentAddress);
+
+    ['cAddrCounty','cAddrTownship','cAddrRoad','cAddrRoadOther','cAddrDetail','cAddrNote']
+      .forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){
+          el.addEventListener('input', renderSavedAddresses);
+          el.addEventListener('change', renderSavedAddresses);
+        }
+      });
+
+    renderSavedAddresses();
+  }
+
+  function getRoadValue(){
+    const sel = document.getElementById('cAddrRoad').value;
+    return sel === '其他' ? document.getElementById('cAddrRoadOther').value.trim() : sel;
+  }
+
+  function syncAddressField(){
+    const county = document.getElementById('cAddrCounty').value;
+    const township = document.getElementById('cAddrTownship').value;
+    const road = getRoadValue();
+    const detail = document.getElementById('cAddrDetail').value.trim();
+    const note = document.getElementById('cAddrNote').value.trim();
+    let combined = township ? `${county}${township}${road}${detail}` : '';
+    if(combined && note) combined += `（${note}）`;
+    const cAddressEl = document.getElementById('cAddress');
+    cAddressEl.value = combined;
+    cAddressEl.dispatchEvent(new Event('input', { bubbles:true })); // 觸發原有的範圍自動判斷、預覽更新等邏輯
+  }
+  document.getElementById('cAddrTownship').addEventListener('change', syncAddressField);
+  document.getElementById('cAddrRoad').addEventListener('change', (e)=>{
+    document.getElementById('cAddrRoadOther').style.display = (e.target.value === '其他') ? 'block' : 'none';
+    syncAddressField();
+  });
+  document.getElementById('cAddrRoadOther').addEventListener('input', syncAddressField);
+  document.getElementById('cAddrDetail').addEventListener('input', syncAddressField);
+  document.getElementById('cAddrNote').addEventListener('input', syncAddressField);
+
+  function renderDeliverableRoads(roads){
+    deliverableRoadsList = roads || [];
+    const sel = document.getElementById('cAddrRoad');
+    const currentValue = sel.value;
+    sel.innerHTML = '<option value="">請選擇路名</option>';
+    deliverableRoadsList.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = r.name;
+      sel.appendChild(opt);
+    });
+    const otherOpt = document.createElement('option');
+    otherOpt.value = '其他';
+    otherOpt.textContent = '其他（自行輸入）';
+    sel.appendChild(otherOpt);
+    if(currentValue && Array.from(sel.options).some(o => o.value === currentValue)){
+      sel.value = currentValue;
+    }
+  }
 
   function renderServices(services){
     const box = document.getElementById('extraServices');
@@ -1371,6 +1690,13 @@
   function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
+
+    // 範圍判斷用的界線緯度：後台有填才啟用精準座標判斷，沒填就自動退回關鍵字比對
+    const parseLat = v => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : null; };
+    boundaryLats.innerNorth = parseLat(settings['鎮內北界緯度']);
+    boundaryLats.innerSouth = parseLat(settings['鎮內南界緯度']);
+    boundaryLats.outerNorth = parseLat(settings['鎮外北界緯度']);
+    boundaryLats.outerSouth = parseLat(settings['鎮外南界緯度']);
 
     const announcement = (settings['公告內容'] || '').trim();
     const announcementEl = document.getElementById('announcementBanner');
@@ -1550,6 +1876,9 @@
         renderMerchants(data.merchants);
         renderMenus(data.menus);
         renderAddressZones(data.addressZones);
+        renderDeliverableTownships(data.deliverableTownships);
+        renderDeliverableRoads(data.deliverableRoads);
+        renderSavedAddresses();
         renderPaymentAccounts(data.paymentAccounts);
         loadingEl.classList.add('hide');
       })
@@ -1560,6 +1889,7 @@
         loadingEl.style.color = 'var(--coral-dark)';
       });
   }
+  initSavedAddressFeature();
   loadContent();
 
   // 預約日期欄位不能選過去的日期
@@ -1862,6 +2192,11 @@ ${stopsText}
   function snapshotForm(){
     const data = {};
     ids.forEach(id => { data[id] = document.getElementById(id).value; });
+    data.cAddrTownship = document.getElementById('cAddrTownship').value;
+    data.cAddrRoad = document.getElementById('cAddrRoad').value;
+    data.cAddrRoadOther = document.getElementById('cAddrRoadOther').value;
+    data.cAddrDetail = document.getElementById('cAddrDetail').value;
+    data.cAddrNote = document.getElementById('cAddrNote').value;
     data.fee = fee;
     data.extraIdx = Array.from(document.querySelectorAll('#extraServicePicker input:checked')).map(cb => cb.dataset.idx);
     data.stops = collectStops();
@@ -1874,6 +2209,13 @@ ${stopsText}
   function restoreForm(snapshot){
     if(!snapshot) return;
     ids.forEach(id => { document.getElementById(id).value = snapshot[id] || ''; });
+    document.getElementById('cAddrTownship').value = snapshot.cAddrTownship || '';
+    document.getElementById('cAddrRoad').value = snapshot.cAddrRoad || '';
+    document.getElementById('cAddrRoadOther').value = snapshot.cAddrRoadOther || '';
+    document.getElementById('cAddrRoadOther').style.display = (snapshot.cAddrRoad === '其他') ? 'block' : 'none';
+    document.getElementById('cAddrDetail').value = snapshot.cAddrDetail || '';
+    document.getElementById('cAddrNote').value = snapshot.cAddrNote || '';
+    syncAddressField();
     fee = snapshot.fee || 30;
     rebuildStops(snapshot.stops);
     document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
@@ -1893,6 +2235,13 @@ ${stopsText}
     undoSnapshot = snapshotForm(); // 清空前先存一份快照，供「返回上一步」使用
     undoBtn.disabled = false;
     ids.forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('cAddrTownship').value = '';
+    document.getElementById('cAddrRoad').value = '';
+    document.getElementById('cAddrRoadOther').value = '';
+    document.getElementById('cAddrRoadOther').style.display = 'none';
+    document.getElementById('cAddrDetail').value = '';
+    document.getElementById('cAddrNote').value = '';
+    syncAddressField();
     fee = 30;
     clearPhoto();
     rebuildStops([{ merchant: '', items: '' }]);
