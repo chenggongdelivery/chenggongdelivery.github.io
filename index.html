@@ -554,7 +554,7 @@
   </div>
 
   <div class="section-title"><span class="eyebrow">付款方式</span><h2>收款資訊</h2></div>
-  <div class="payment-box" id="paymentBox">目前提供「貨到付款」與「線上轉帳」服務（費用含商品費與外送費），歡迎隨時下單訂購！</div>
+  <div class="payment-box" id="paymentBox">為提升您的購物便利性，我們提供「貨到付款」及「線上轉帳」服務（總金額包含商品費用與外送費用）。期待為您服務，歡迎下單訂購。</div>
   <div class="payment-accounts" id="paymentAccounts"></div>
 
   <div class="section-title"><span class="eyebrow">如何下單</span><h2>三步驟開始</h2></div>
@@ -906,6 +906,22 @@
 
   function hasFreeDeliveryMerchant(stops){
     return stops.some(s => merchantFreeMap[s.merchant]);
+  }
+
+  // 修正過的外送費計算：只有「全部站點都是免運商家」才整筆免收，
+  // 混合免運跟非免運商家時，依非免運的站點數量計算基本費＋轉點費，不會整筆被免運商家拖累歸零
+  function calculateDeliveryBase(stops, zoneFee, transferPerStop){
+    const chargeableStops = stops.filter(s => !(s.merchant && merchantFreeMap[s.merchant]));
+    const hasFreeStop = stops.some(s => s.merchant && merchantFreeMap[s.merchant]);
+    if(chargeableStops.length === 0){
+      return { baseFee: 0, transferTotal: 0, allFree: true, hasFreeStop: hasFreeStop };
+    }
+    return {
+      baseFee: zoneFee,
+      transferTotal: (chargeableStops.length - 1) * transferPerStop,
+      allFree: false,
+      hasFreeStop: hasFreeStop
+    };
   }
 
   function rebuildStops(stopsData){
@@ -1647,9 +1663,10 @@
     const zoneLabel = fee === 30 ? '鎮內' : '鎮外（小港天后宮～和平國小）';
     const selectedExtras = getSelectedExtraServices();
     const extraServiceTotal = selectedExtras.reduce((sum, s) => sum + Number(s.fee || 0), 0);
-    const transferTotal = stops.length > 1 ? (stops.length - 1) * transferFeePerStop : 0;
-    const freeDelivery = hasFreeDeliveryMerchant(stops);
-    const baseFee = freeDelivery ? 0 : fee;
+    const deliveryBase = calculateDeliveryBase(stops, fee, transferFeePerStop);
+    const baseFee = deliveryBase.baseFee;
+    const transferTotal = deliveryBase.transferTotal;
+    const freeDelivery = deliveryBase.allFree;
     const totalFee = baseFee + extraServiceTotal + transferTotal;
     const remitName = document.getElementById('cRemitName').value.trim();
     const remitLast5 = document.getElementById('cRemitLast5').value.trim();
@@ -1672,8 +1689,9 @@ ${stopsText}
       text += `\n加購服務：${extraNames}`;
     }
     if(note) text += `\n備註：${note}`;
-    const feeBreakdown = (extraServiceTotal || transferTotal || freeDelivery)
-      ? `$${totalFee}（基本 $${baseFee}${freeDelivery ? '，本店家免運費' : ''}${transferTotal ? ` + 轉點 $${transferTotal}` : ''}${extraServiceTotal ? ` + 加購 $${extraServiceTotal}` : ''}）`
+    const freeNote = deliveryBase.allFree ? '，全部商家免運費' : (deliveryBase.hasFreeStop ? '，含免運商家已扣除該站費用' : '');
+    const feeBreakdown = (extraServiceTotal || transferTotal || freeDelivery || deliveryBase.hasFreeStop)
+      ? `$${totalFee}（基本 $${baseFee}${freeNote}${transferTotal ? ` + 轉點 $${transferTotal}` : ''}${extraServiceTotal ? ` + 加購 $${extraServiceTotal}` : ''}）`
       : `$${fee}`;
     text += `\n外送費：${feeBreakdown}（商品費用另計）`;
     text += `\n💳 付款方式：${paymentMethod}`;
@@ -1748,17 +1766,21 @@ ${stopsText}
 
     const selectedExtras = getSelectedExtraServices();
     const extraServiceTotal = selectedExtras.reduce((sum, s) => sum + Number(s.fee || 0), 0);
-    const transferTotal = stops.length > 1 ? (stops.length - 1) * transferFeePerStop : 0;
-    const freeDelivery = hasFreeDeliveryMerchant(stops);
-    const baseFee = freeDelivery ? 0 : fee;
+    const deliveryBase = calculateDeliveryBase(stops, fee, transferFeePerStop);
+    const baseFee = deliveryBase.baseFee;
+    const transferTotal = deliveryBase.transferTotal;
+    const freeDelivery = deliveryBase.allFree;
+    const chargeableStopCount = stops.filter(s => !(s.merchant && merchantFreeMap[s.merchant])).length;
 
     let extraNames = selectedExtras.map(s => `${s.name}(+$${s.fee})`).join('、');
     if(transferTotal){
-      const transferLabel = `中途轉點x${stops.length - 1}(+$${transferTotal})`;
+      const transferLabel = `中途轉點x${chargeableStopCount - 1}(+$${transferTotal})`;
       extraNames = extraNames ? `${extraNames}、${transferLabel}` : transferLabel;
     }
     if(freeDelivery){
-      extraNames = extraNames ? `${extraNames}、本店家免運費` : '本店家免運費';
+      extraNames = extraNames ? `${extraNames}、全部商家免運費` : '全部商家免運費';
+    } else if(deliveryBase.hasFreeStop){
+      extraNames = extraNames ? `${extraNames}、含免運商家已扣除該站費用` : '含免運商家已扣除該站費用';
     }
 
     return {
