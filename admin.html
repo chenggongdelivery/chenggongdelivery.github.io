@@ -403,6 +403,9 @@
   document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
 
   let currentOrders = [];
+  let pendingStatusUpdates = {}; // rowKey -> status，記錄還在等後端回覆的本地狀態變更，避免被背景刷新的舊資料蓋掉
+  let pendingDelivererUpdates = {}; // rowKey -> deliverer，同樣道理保護指派外送員的變更
+  let pendingGoodsAmountUpdates = {}; // rowKey -> goodsAmount，同樣道理保護商品金額的變更
   let currentFilter = '全部';
   let currentDeliverers = [];
   // 優先順序：網址帶的 ?key= 參數 > 瀏覽器記住的密碼
@@ -541,7 +544,7 @@
           currentPin = pin;
           localStorage.setItem(PIN_STORAGE_KEY, pin);
           loginErr.style.display = 'none';
-          currentOrders = data.orders || [];
+          currentOrders = applyPendingUpdates(data.orders || []);
           currentDeliverers = data.deliverers || [];
           checkForNewOrders(currentOrders);
           showDashboard();
@@ -568,6 +571,22 @@
   // ---------- 讀取訂單 ----------
   let pollTimer = null;
 
+  function applyPendingUpdates(orders){
+    // 重新套用還在等後端回覆結果的本地變更，避免剛好同時抵達的（背景輪詢／登入）資料把它蓋掉
+    orders.forEach(o => {
+      if(pendingStatusUpdates[o.rowKey] !== undefined){
+        o.status = pendingStatusUpdates[o.rowKey];
+      }
+      if(pendingDelivererUpdates[o.rowKey] !== undefined){
+        o.deliverer = pendingDelivererUpdates[o.rowKey];
+      }
+      if(pendingGoodsAmountUpdates[o.rowKey] !== undefined){
+        o.goodsAmount = pendingGoodsAmountUpdates[o.rowKey];
+      }
+    });
+    return orders;
+  }
+
   function loadOrders(){
     fetch(`${SCRIPT_URL}?action=admin&pin=${encodeURIComponent(currentPin)}&t=${Date.now()}`, { cache:'no-store' })
       .then(r => r.json())
@@ -581,7 +600,7 @@
           if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
           return;
         }
-        currentOrders = data.orders || [];
+        currentOrders = applyPendingUpdates(data.orders || []);
         currentDeliverers = data.deliverers || [];
         checkForNewOrders(currentOrders);
         renderOrders();
@@ -1019,6 +1038,7 @@
 
   function assignDeliverer(order, deliverer){
     order.deliverer = deliverer;
+    pendingDelivererUpdates[order.rowKey] = deliverer;
     toast(deliverer ? `已指派給「${deliverer}」` : '已取消指派');
 
     fetch(SCRIPT_URL, {
@@ -1034,11 +1054,15 @@
     })
       .then(r => r.json())
       .then(data => {
+        delete pendingDelivererUpdates[order.rowKey];
         if(data.result !== 'success'){
           toast(data.message || '指派失敗，請重新整理後再試');
         }
       })
-      .catch(()=>{ toast('指派失敗，請檢查網路連線'); });
+      .catch(()=>{
+        delete pendingDelivererUpdates[order.rowKey];
+        toast('指派失敗，請檢查網路連線');
+      });
   }
 
   function confirmPayment(order, cardEl){
@@ -1068,6 +1092,7 @@
 
   function updateGoodsAmount(order, amount){
     order.goodsAmount = amount;
+    pendingGoodsAmountUpdates[order.rowKey] = amount;
     fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -1081,13 +1106,17 @@
     })
       .then(r => r.json())
       .then(data => {
+        delete pendingGoodsAmountUpdates[order.rowKey];
         if(data.result === 'success'){
           toast('💰 商品金額已儲存');
         } else {
           toast(data.message || '儲存失敗，請重新整理後再試');
         }
       })
-      .catch(()=>{ toast('儲存失敗，請檢查網路連線'); });
+      .catch(()=>{
+        delete pendingGoodsAmountUpdates[order.rowKey];
+        toast('儲存失敗，請檢查網路連線');
+      });
   }
 
   // ---------- 計算機：全站共用同一個，透過openCalculator指定要帶入哪個輸入框 ----------
@@ -1191,6 +1220,7 @@
   function updateStatus(order, newStatus, cardEl){
     const oldStatus = order.status;
     order.status = newStatus; // 先在畫面上樂觀更新，體感更快
+    pendingStatusUpdates[order.rowKey] = newStatus; // 標記這筆「還在等後端回覆」，背景刷新抓到舊資料時不會蓋掉
     renderOrders();
     toast(`已更新為「${newStatus}」`);
 
@@ -1207,6 +1237,7 @@
     })
       .then(r => r.json())
       .then(data => {
+        delete pendingStatusUpdates[order.rowKey]; // 不管成功失敗，這筆請求已經有結果了，就不用再保護
         if(data.result !== 'success'){
           order.status = oldStatus; // 失敗就還原
           renderOrders();
@@ -1214,6 +1245,7 @@
         }
       })
       .catch(()=>{
+        delete pendingStatusUpdates[order.rowKey];
         order.status = oldStatus;
         renderOrders();
         toast('更新失敗，請檢查網路連線');
