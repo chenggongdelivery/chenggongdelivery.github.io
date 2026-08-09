@@ -206,6 +206,37 @@
     max-width:min(90vw,360px); text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .cart-float-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:190; display:flex; justify-content:center;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, var(--paper) 60%, transparent);
+  }
+  .cart-float-bar button{
+    width:100%; max-width:460px; padding:14px; border:2px solid var(--ink); border-radius:999px;
+    background:#06C755; color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; font-family:inherit;
+    box-shadow:0 4px 0 var(--ink), 0 8px 20px -6px rgba(34,48,46,.5);
+  }
+
+  .cart-review-overlay{
+    display:none; position:fixed; inset:0; background:rgba(34,48,46,.85); z-index:250;
+    align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto;
+  }
+  .cart-review-panel{
+    background:var(--paper); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:24px 20px; margin:30px auto; max-width:480px; width:100%; position:relative;
+  }
+  .cart-review-panel h3{margin:0 0 4px; font-size:18px;}
+  .cart-review-item{
+    background:var(--card); border:2px solid var(--ink); border-radius:10px; padding:12px 14px; margin-bottom:12px;
+  }
+  .cart-review-item .cri-top{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .cart-review-item .cri-top strong{flex:1; font-size:14px;}
+  .cart-review-item .cri-remove{
+    flex-shrink:0; background:none; border:none; color:var(--coral-dark); font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .cart-review-item .cri-row{font-size:12.5px; line-height:1.7; color:var(--ink);}
+  .cart-review-item .cri-row b{color:var(--ocean-dark); margin-right:4px;}
 </style>
 </head>
 <body>
@@ -290,7 +321,7 @@
         <div class="range-hint" id="rangeHintText">北到<strong>三仙台加油站</strong>、南到<strong>全滿加油站</strong>為鎮內；<strong>三仙台加油站</strong>以北到<strong>小港天后宮</strong>、<strong>全滿加油站</strong>以南到<strong>和平國小</strong>為鎮外，超出此範圍請私訊確認</div>
         <div class="zone-toggle">
           <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-          <button type="button" class="zone-btn" data-fee="60">鎮外<br>(北界)小港天后宮<br>(南界)和平國小<br>($60)</button>
+          <button type="button" class="zone-btn" data-fee="60">鎮外・(北界)小港天后宮<br>(南界)和平國小（$60）</button>
         </div>
         <a class="out-of-range-btn" id="outOfRangeBtn" href="#" target="_blank" rel="noopener">⚠️ 超出範圍請私訊確認</a>
       </div>
@@ -314,7 +345,7 @@
       </div>
     </div>
 
-    <button type="button" class="submit-btn" id="submitBtn">送出委託 →</button>
+    <button type="button" class="submit-btn" id="submitBtn">➕ 加入清單</button>
 
     <div class="result-badge" id="resultBadge">
       <div class="num" id="resultNum">#0</div>
@@ -329,6 +360,21 @@
 </main>
 
 <div class="toast" id="toast"></div>
+
+<div class="cart-float-bar" id="cartFloatBar" style="display:none;">
+  <button type="button" id="cartFloatBtn">🛒 已有 <span id="cartCount">0</span> 筆委託・查看並送出</button>
+</div>
+
+<div class="cart-review-overlay" id="cartReviewOverlay">
+  <div class="cart-review-panel">
+    <button class="detail-close" id="cartReviewClose" aria-label="關閉">✕</button>
+    <h3>🛒 確認委託清單</h3>
+    <div class="hint" style="margin-bottom:14px;">確認每一筆委託內容無誤後，點下方按鈕一次全部送出</div>
+    <div id="cartReviewList"></div>
+    <button type="button" class="submit-btn" id="cartSubmitAllBtn">🚀 全部送出（<span id="cartSubmitCount">0</span> 筆）</button>
+    <div id="cartSubmitProgress" class="hint" style="display:none; margin-top:10px;"></div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -798,14 +844,23 @@
   }
 
   // ---------- 送出委託 ----------
-  document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : str;
+    return div.innerHTML;
+  }
+
+  // ---------- 委託清單購物車：填一筆加入清單，全部填好一次送出 ----------
+  let deliveryCart = [];
+
+  function buildPayloadFromForm(){
     if(orderingMode === 'closed'){
       toast('⏸️ 目前暫停服務中，暫不接受任何委託單');
-      return;
+      return null;
     }
     if(orderingMode === 'reservationOnly' && scheduleMode === 'now'){
       toast('🌙 目前非服務時間，請改選「指定時間」送出預約委託');
-      return;
+      return null;
     }
 
     formatPhoneOnBlur(); // 確保送出前電話已經是排版好的格式
@@ -817,85 +872,164 @@
     const goodsAmount = document.getElementById('mGoodsAmount').value.trim();
     const note = document.getElementById('mNote').value.trim();
 
-    if(!merchant){ toast('請選擇或填寫商家名稱'); return; }
-    if(!phone || !isValidPhone(phone)){ toast('請填寫正確的客戶電話'); return; }
-    if(!address){ toast('請填寫送達地址'); return; }
-    if(!photoBase64 && !itemsNote){ toast('請拍照確認訂單內容，或至少填寫簡短品項說明'); return; }
-    if(!goodsAmount || Number(goodsAmount) <= 0){ toast('請填寫商品金額'); return; }
+    if(!merchant){ toast('請選擇或填寫商家名稱'); return null; }
+    if(!phone || !isValidPhone(phone)){ toast('請填寫正確的客戶電話'); return null; }
+    if(!address){ toast('請填寫送達地址'); return null; }
+    if(!photoBase64 && !itemsNote){ toast('請拍照確認訂單內容，或至少填寫簡短品項說明'); return null; }
+    if(!goodsAmount || Number(goodsAmount) <= 0){ toast('請填寫商品金額'); return null; }
 
     let schedule = '';
     if(scheduleMode === 'later'){
       schedule = getScheduleValue();
-      if(!schedule){ toast('請選擇預約日期與時段'); return; }
-      if(new Date(schedule).getTime() < Date.now()){ toast('送達時間不能是過去的時間'); return; }
+      if(!schedule){ toast('請選擇預約日期與時段'); return null; }
+      if(new Date(schedule).getTime() < Date.now()){ toast('送達時間不能是過去的時間'); return null; }
     }
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = '送出中...';
 
     const itemsSummary = `【收件人】${customerName || '（未填寫姓名）'}${itemsNote ? `：${itemsNote}` : '（詳見附件照片）'}`;
 
-    const payload = {
-      orderType: '商家外送委託',
-      merchant: merchant,
-      items: itemsSummary,
-      address: address,
-      phone: phone,
-      contact: customerName || merchant,
-      note: note,
-      schedule: schedule,
-      zone: fee === 30 ? '鎮內' : '鎮外',
-      fee: fee,
-      goodsAmount: goodsAmount,
-      paymentMethod: '現場付款',
-      photoBase64: photoBase64,
-      photoMime: photoMime
+    return {
+      payload: {
+        orderType: '商家外送委託',
+        merchant: merchant,
+        items: itemsSummary,
+        address: address,
+        phone: phone,
+        contact: customerName || merchant,
+        note: note,
+        schedule: schedule,
+        zone: fee === 30 ? '鎮內' : '鎮外',
+        fee: fee,
+        goodsAmount: goodsAmount,
+        paymentMethod: '現場付款',
+        photoBase64: photoBase64,
+        photoMime: photoMime
+      },
+      summary: { merchant, customerName, phone, address, itemsNote, goodsAmount, hasPhoto: !!photoBase64, schedule }
     };
+  }
 
-    try{
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-      const result = await res.json();
+  function resetFormFieldsOnly(){
+    // 保留商家選擇（方便連續填同一家的多筆委託），只清空客戶相關欄位
+    document.getElementById('mCustomerName').value = '';
+    document.getElementById('mPhone').value = '';
+    document.getElementById('mAddress').value = '';
+    document.getElementById('mItems').value = '';
+    document.getElementById('mGoodsAmount').value = '';
+    document.getElementById('mNote').value = '';
+    clearPhoto();
+    document.getElementById('mScheduleDate').value = '';
+    populateScheduleTimeOptions();
+    document.querySelectorAll('.sch-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.sch-btn[data-mode="now"]').classList.add('active');
+    scheduleMode = 'now';
+    scheduleFields.style.display = 'none';
+    scheduleHint.style.display = 'none';
+  }
 
-      const badge = document.getElementById('resultBadge');
-      if(result && result.result === 'error'){
-        badge.className = 'result-badge error';
-        document.getElementById('resultNum').textContent = '❌';
-        document.getElementById('resultLabel').textContent = result.message || '送出失敗，請稍後再試';
-        badge.style.display = 'block';
-      } else {
-        badge.className = 'result-badge';
-        document.getElementById('resultNum').textContent = result && result.queueNumber ? `#${result.queueNumber}` : '✓';
-        document.getElementById('resultLabel').textContent = '委託已送出，外送員會盡快處理';
-        badge.style.display = 'block';
-        document.getElementById('mMerchant').value = '';
-        document.getElementById('mMerchantOther').value = '';
-        document.getElementById('mMerchantOther').style.display = 'none';
-        document.getElementById('mCustomerName').value = '';
-        document.getElementById('mPhone').value = '';
-        document.getElementById('mAddress').value = '';
-        document.getElementById('mItems').value = '';
-        document.getElementById('mGoodsAmount').value = '';
-        document.getElementById('mNote').value = '';
-        clearPhoto();
-        document.getElementById('mScheduleDate').value = '';
-        populateScheduleTimeOptions();
-        document.querySelectorAll('.sch-btn').forEach(b=>b.classList.remove('active'));
-        document.querySelector('.sch-btn[data-mode="now"]').classList.add('active');
-        scheduleMode = 'now';
-        scheduleFields.style.display = 'none';
-        scheduleHint.style.display = 'none';
+  function updateCartFloatBar(){
+    document.getElementById('cartCount').textContent = deliveryCart.length;
+    document.getElementById('cartFloatBar').style.display = deliveryCart.length > 0 ? 'flex' : 'none';
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', ()=>{
+    const built = buildPayloadFromForm();
+    if(!built) return;
+    deliveryCart.push(built);
+    resetFormFieldsOnly();
+    updateCartFloatBar();
+    toast(`✅ 已加入清單，目前共 ${deliveryCart.length} 筆`);
+  });
+
+  function renderCartReviewList(){
+    const listEl = document.getElementById('cartReviewList');
+    listEl.innerHTML = '';
+    deliveryCart.forEach((item, idx) => {
+      const s = item.summary;
+      const div = document.createElement('div');
+      div.className = 'cart-review-item';
+      div.innerHTML = `
+        <div class="cri-top">
+          <strong>${escapeHtml(s.merchant)}</strong>
+          <button type="button" class="cri-remove" data-idx="${idx}">移除</button>
+        </div>
+        <div class="cri-row"><b>收件人</b>${escapeHtml(s.customerName || '未填寫')}</div>
+        <div class="cri-row"><b>電話</b>${escapeHtml(s.phone)}</div>
+        <div class="cri-row"><b>地址</b>${escapeHtml(s.address)}</div>
+        <div class="cri-row"><b>內容</b>${s.itemsNote ? escapeHtml(s.itemsNote) : (s.hasPhoto ? '（詳見照片）' : '—')}</div>
+        <div class="cri-row"><b>金額</b>$${escapeHtml(String(s.goodsAmount))}</div>
+        ${s.schedule ? `<div class="cri-row"><b>時間</b>預約 ${escapeHtml(s.schedule.replace('T',' '))}</div>` : ''}
+      `;
+      listEl.appendChild(div);
+    });
+    document.getElementById('cartSubmitCount').textContent = deliveryCart.length;
+  }
+
+  function openCartReview(){
+    renderCartReviewList();
+    document.getElementById('cartReviewOverlay').style.display = 'flex';
+  }
+  function closeCartReview(){
+    document.getElementById('cartReviewOverlay').style.display = 'none';
+  }
+  document.getElementById('cartFloatBtn').addEventListener('click', openCartReview);
+  document.getElementById('cartReviewClose').addEventListener('click', closeCartReview);
+  document.getElementById('cartReviewOverlay').addEventListener('click', (e)=>{
+    if(e.target === document.getElementById('cartReviewOverlay')) closeCartReview();
+  });
+  document.getElementById('cartReviewList').addEventListener('click', (e)=>{
+    if(e.target.classList.contains('cri-remove')){
+      const idx = Number(e.target.dataset.idx);
+      deliveryCart.splice(idx, 1);
+      updateCartFloatBar();
+      if(deliveryCart.length === 0){ closeCartReview(); } else { renderCartReviewList(); }
+    }
+  });
+
+  document.getElementById('cartSubmitAllBtn').addEventListener('click', async ()=>{
+    if(!deliveryCart.length) return;
+    const btn = document.getElementById('cartSubmitAllBtn');
+    btn.disabled = true;
+    const progressEl = document.getElementById('cartSubmitProgress');
+    progressEl.style.display = 'block';
+
+    let successCount = 0;
+    const failedItems = [];
+
+    for(let i = 0; i < deliveryCart.length; i++){
+      progressEl.textContent = `送出中... (${i + 1}/${deliveryCart.length})`;
+      try{
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(deliveryCart[i].payload)
+        });
+        const result = await res.json();
+        if(result && result.result === 'error'){
+          failedItems.push(deliveryCart[i]);
+        } else {
+          successCount++;
+        }
+      }catch(err){
+        failedItems.push(deliveryCart[i]);
       }
-    }catch(err){
-      toast('送出失敗，請檢查網路連線');
     }
 
+    deliveryCart = failedItems;
+    updateCartFloatBar();
     btn.disabled = false;
-    btn.textContent = '送出委託 →';
+
+    if(failedItems.length === 0){
+      progressEl.style.display = 'none';
+      closeCartReview();
+      const badge = document.getElementById('resultBadge');
+      badge.className = 'result-badge';
+      document.getElementById('resultNum').textContent = '✓';
+      document.getElementById('resultLabel').textContent = `已成功送出 ${successCount} 筆委託，外送員會盡快處理`;
+      badge.style.display = 'block';
+    } else {
+      progressEl.textContent = `完成：成功 ${successCount} 筆，失敗 ${failedItems.length} 筆（失敗的仍保留在清單裡，可以再試一次送出）`;
+      renderCartReviewList();
+    }
   });
 
 })();
