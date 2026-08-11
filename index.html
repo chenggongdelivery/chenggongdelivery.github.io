@@ -50,10 +50,8 @@
   .brand .stamp img{width:100%; height:100%; object-fit:cover; transform:rotate(6deg) scale(1.15);}
   .brand-text .name{font-size:18px; line-height:1.1;}
   .brand-text .sub{font-size:10.5px; letter-spacing:.14em; color:var(--ocean-dark); font-family:'JetBrains Mono',monospace;}
-  .join-btn,.top-lookup-btn{border:2px solid var(--ink); color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap; cursor:pointer; font-family:inherit;}
-  .join-btn{background:#06C755;}
-  .top-lookup-btn{background:var(--gold); color:var(--ink);}
-  .join-btn:active,.top-lookup-btn:active{transform:translateY(2px); box-shadow:none;}
+  .join-btn{border:2px solid var(--ink); background:#06C755; color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .join-btn:active{transform:translateY(2px); box-shadow:none;}
 
   main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
 
@@ -468,14 +466,14 @@
   .composer input:focus, .composer textarea:focus, .composer select:focus{
     outline:none; border-color:var(--ocean); box-shadow:0 0 0 3px rgba(30,91,103,.18);
   }
-  .copy-btn:focus-visible, .join-btn:focus-visible, .top-lookup-btn:focus-visible, .zone-toggle button:focus-visible,
+  .copy-btn:focus-visible, .join-btn:focus-visible, .zone-toggle button:focus-visible,
   .utility-btn:focus-visible, .queue-badge .close-x:focus-visible{
     outline:2.5px solid var(--ocean); outline-offset:2px;
   }
 
   @media (hover:hover){
     .copy-btn:hover{ filter:brightness(1.06); }
-    .join-btn:hover, .top-lookup-btn:hover{ filter:brightness(1.06); }
+    .join-btn:hover{ filter:brightness(1.06); }
     .zone-toggle button:not(.active):hover{ opacity:.85; background:var(--card); }
     .fee-card, .step, .extra-service{ transition:transform .15s ease, box-shadow .15s ease; }
     .fee-card:hover, .step:hover, .extra-service:hover{ transform:translateY(-2px); }
@@ -510,9 +508,9 @@
         <div class="sub">CHENGGONG · MIFENG DELIVERY</div>
       </div>
     </div>
-    <div class="top-actions" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+      <button type="button" class="join-btn" id="orderLookupBtn">🔍 訂單查詢</button>
       <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
-      <button class="top-lookup-btn" id="orderLookupTopBtn" type="button">🔍 訂單查詢</button>
     </div>
   </div>
 </header>
@@ -1826,7 +1824,6 @@
   }
   document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
   document.getElementById('orderLookupBtn').addEventListener('click', ()=> openLookup());
-  document.getElementById('orderLookupTopBtn').addEventListener('click', ()=> openLookup());
   document.getElementById('lookupClose').addEventListener('click', closeLookup);
   lookupOverlay.addEventListener('click', (e)=>{ if(e.target === lookupOverlay) closeLookup(); });
 
