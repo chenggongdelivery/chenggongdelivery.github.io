@@ -82,6 +82,13 @@
     animation:fadeSlideIn .3s ease; white-space:pre-wrap;
   }
 
+  .delay-warning-banner{
+    display:none; align-items:flex-start; gap:10px; background:var(--gold); color:var(--ink);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:16px 0 0; font-weight:600; font-size:12.5px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
   .status-banner{
     display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -482,6 +489,7 @@
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
   <div class="announcement-banner" id="announcementBanner"></div>
   <div class="hours-announcement-banner" id="hoursAnnouncementBanner"></div>
+  <div class="delay-warning-banner" id="delayWarningBanner"></div>
 
   <div class="hero">
     <span class="eyebrow">歡迎加入</span>
@@ -562,7 +570,7 @@
   </div>
 
   <div class="section-title"><span class="eyebrow">先看看賣什麼</span><h2>商家菜單</h2></div>
-  <div class="menu-update-hint">📸 菜單陸續更新中<br>未在菜單列表中？歡迎在下方「工具」手動輸入商家資訊，我們一樣幫您跑腿買到家！</div>
+  <div class="menu-update-hint">📸 菜單陸續更新中</div>
   <div class="menu-gallery" id="menuGallery">
     <div class="empty">目前尚無菜單相片，想知道賣什麼可以直接在下方備註詢問。</div>
   </div>
@@ -630,7 +638,7 @@
       <label>範圍</label>
       <div class="zone-toggle">
         <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-fee="60">鎮外（$60）<br>(北界)小港天后宮<br>(南界)和平國小</button>
+        <button type="button" class="zone-btn" data-fee="60">（$60）鎮外<br>(北界)小港天后宮<br>(南界)和平國小</button>
       </div>
     </div>
     <div class="field" id="extraServiceField" style="display:none;">
@@ -663,8 +671,8 @@
     <div class="field">
       <label>付款方式</label>
       <div class="zone-toggle">
-        <button type="button" class="pay-btn active" data-pay="貨到付款">貨到付款</button>
-        <button type="button" class="pay-btn" data-pay="匯款">線上轉帳</button>
+        <button type="button" class="pay-btn active" data-pay="現場付款">現場付款</button>
+        <button type="button" class="pay-btn" data-pay="匯款">匯款轉帳</button>
       </div>
       <div class="field" id="remitFields" style="display:none; margin-top:12px; padding:0;">
         <label>匯款帳戶大名</label>
@@ -1585,6 +1593,15 @@
       hoursAnnouncementEl.style.display = 'flex';
     } else {
       hoursAnnouncementEl.style.display = 'none';
+    }
+
+    const delayWarning = (settings['配送延遲提醒'] || '').trim();
+    const delayWarningEl = document.getElementById('delayWarningBanner');
+    if(delayWarning){
+      delayWarningEl.textContent = `⚠️ ${delayWarning}`;
+      delayWarningEl.style.display = 'flex';
+    } else {
+      delayWarningEl.style.display = 'none';
     }
 
     const note = (settings['收款帳號說明'] || '').trim();
