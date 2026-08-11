@@ -107,12 +107,39 @@
 
   .lookup-overlay{
     display:none; position:fixed; inset:0; background:rgba(34,48,46,.75); z-index:300;
-    align-items:center; justify-content:center; padding:20px;
+    padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
   }
   .lookup-box{
     background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
-    padding:24px; max-width:380px; width:100%; position:relative; animation:popIn .25s ease;
+    padding:20px 18px 28px; width:calc(100% - 24px); max-width:380px; position:relative; animation:popIn .25s ease;
+    margin:max(12px, env(safe-area-inset-top, 0px)) auto max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px));
   }
+  #lookupMapBox{margin-top:12px; padding-bottom:4px;}
+  #lookupMapBox .map-frame{
+    border-radius:10px; overflow:hidden; border:2px solid var(--ink); background:#eee; height:180px;
+  }
+  #lookupMapBox iframe{width:100%; height:180px; border:0; display:block;}
+  #lookupMapBox .map-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--ocean);}
+  .pinned-addr-bar{margin-top:10px;}
+  .pinned-addr-bar .pa-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .pinned-addr-bar .pa-title{font-size:12px; font-weight:700; color:var(--ocean-dark);}
+  .pinned-addr-bar .pa-save{
+    border:2px solid var(--ink); background:var(--gold); color:var(--ink);
+    font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer; font-family:inherit;
+  }
+  .pinned-addr-list{display:flex; flex-direction:column; gap:6px;}
+  .pinned-addr-item{
+    display:flex; align-items:stretch; border:2px solid var(--ink); border-radius:10px; background:var(--paper); overflow:hidden;
+  }
+  .pinned-addr-item .pa-use{
+    flex:1; text-align:left; border:none; background:transparent; padding:10px 12px; cursor:pointer;
+    font-family:inherit; font-size:12.5px; line-height:1.45; color:var(--ink); font-weight:600;
+  }
+  .pinned-addr-item .pa-del{
+    flex:0 0 40px; border:none; border-left:2px solid var(--ink); background:var(--card);
+    color:var(--coral-dark); font-size:16px; cursor:pointer; font-family:inherit;
+  }
+  .pinned-addr-empty{font-size:11.5px; color:var(--ocean-dark); opacity:.75; line-height:1.5;}
   .lookup-box h3{margin:0 0 6px; font-size:17px;}
   .lookup-box .hint{font-size:12px; color:var(--ocean-dark); opacity:.8; margin-bottom:16px; line-height:1.6;}
   .lookup-box .field{margin-bottom:12px;}
@@ -634,6 +661,14 @@
       <label>地址備註（選填，例如明顯地標）</label>
       <input id="cAddrNote" placeholder="例：全家便利商店旁、白色鐵皮屋">
     </div>
+    <div class="pinned-addr-bar" id="pinnedAddrBar">
+      <div class="pa-head">
+        <span class="pa-title">📌 我的常用地址</span>
+        <button type="button" class="pa-save" id="pinAddressBtn">釘選目前地址</button>
+      </div>
+      <div class="pinned-addr-list" id="pinnedAddrList"></div>
+      <div class="pinned-addr-empty" id="pinnedAddrEmpty">尚未釘選地址。填好上方地址後按「釘選目前地址」，下次可一鍵帶入（最多 8 筆，存在此手機瀏覽器）。</div>
+    </div>
     <div class="field">
       <label>範圍</label>
       <div class="zone-toggle">
@@ -769,6 +804,7 @@
     </div>
     <button class="copy-btn" id="lookupSubmit" style="width:100%; background:var(--ocean); display:block;">查詢</button>
     <div class="lookup-result" id="lookupResult"></div>
+    <div id="lookupMapBox" style="display:none;"></div>
   </div>
 </div>
 
@@ -1480,6 +1516,94 @@
   document.getElementById('cAddrDetail').addEventListener('input', syncAddressField);
   document.getElementById('cAddrNote').addEventListener('input', syncAddressField);
 
+  // ---------- 釘選常用地址（localStorage） ----------
+  const PINNED_ADDR_KEY = 'cgmf_pinned_addresses_v1';
+  const PINNED_ADDR_MAX = 8;
+  function loadPinnedAddresses(){
+    try{ const raw = localStorage.getItem(PINNED_ADDR_KEY); const list = raw ? JSON.parse(raw) : []; return Array.isArray(list) ? list : []; }
+    catch(e){ return []; }
+  }
+  function savePinnedAddresses(list){ localStorage.setItem(PINNED_ADDR_KEY, JSON.stringify(list.slice(0, PINNED_ADDR_MAX))); }
+  function formatPinnedLabel(item){
+    const road = item.road === '其他' ? (item.roadOther || '其他路名') : (item.road || '');
+    let s = `${item.township || ''}${road}${item.detail || ''}`;
+    if(item.note) s += `（${item.note}）`;
+    return s || '（未命名地址）';
+  }
+  function renderPinnedAddresses(){
+    const list = loadPinnedAddresses();
+    const box = document.getElementById('pinnedAddrList');
+    const empty = document.getElementById('pinnedAddrEmpty');
+    if(!box) return;
+    box.innerHTML = '';
+    if(!list.length){ if(empty) empty.style.display = 'block'; return; }
+    if(empty) empty.style.display = 'none';
+    list.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'pinned-addr-item';
+      row.innerHTML = `<button type="button" class="pa-use" data-idx="${idx}">${escapeHtml(formatPinnedLabel(item))}</button>
+        <button type="button" class="pa-del" data-idx="${idx}" title="取消釘選">✕</button>`;
+      box.appendChild(row);
+    });
+    box.querySelectorAll('.pa-use').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = loadPinnedAddresses()[Number(btn.dataset.idx)];
+        if(item) applyPinnedAddress(item);
+      });
+    });
+    box.querySelectorAll('.pa-del').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const list = loadPinnedAddresses();
+        list.splice(Number(btn.dataset.idx), 1);
+        savePinnedAddresses(list);
+        renderPinnedAddresses();
+        toast('已取消釘選');
+      });
+    });
+  }
+  function applyPinnedAddress(item){
+    const townshipEl = document.getElementById('cAddrTownship');
+    if(item.township && ![...townshipEl.options].some(o => o.value === item.township)){
+      const opt = document.createElement('option'); opt.value = item.township; opt.textContent = item.township; townshipEl.appendChild(opt);
+    }
+    if(item.township) townshipEl.value = item.township;
+    const roadEl = document.getElementById('cAddrRoad');
+    if(item.road && item.road !== '其他' && ![...roadEl.options].some(o => o.value === item.road)){
+      const opt = document.createElement('option'); opt.value = item.road; opt.textContent = item.road;
+      const otherOpt = [...roadEl.options].find(o => o.value === '其他');
+      if(otherOpt) roadEl.insertBefore(opt, otherOpt); else roadEl.appendChild(opt);
+    }
+    roadEl.value = item.road || '';
+    document.getElementById('cAddrRoadOther').value = item.roadOther || '';
+    document.getElementById('cAddrRoadOther').style.display = (item.road === '其他') ? 'block' : 'none';
+    document.getElementById('cAddrDetail').value = item.detail || '';
+    document.getElementById('cAddrNote').value = item.note || '';
+    syncAddressField();
+    updatePreview();
+    toast('已帶入常用地址');
+  }
+  document.getElementById('pinAddressBtn').addEventListener('click', ()=>{
+    const item = {
+      township: document.getElementById('cAddrTownship').value || '',
+      road: document.getElementById('cAddrRoad').value || '',
+      roadOther: document.getElementById('cAddrRoadOther').value.trim(),
+      detail: document.getElementById('cAddrDetail').value.trim(),
+      note: document.getElementById('cAddrNote').value.trim(),
+      savedAt: Date.now()
+    };
+    if(!item.township || !item.detail){ toast('請至少選擇鄉鎮並填寫門牌，再釘選'); return; }
+    let list = loadPinnedAddresses();
+    const label = formatPinnedLabel(item);
+    if(list.some(x => formatPinnedLabel(x) === label)){ toast('這個地址已經釘選過了'); return; }
+    if(list.length >= PINNED_ADDR_MAX){ toast(`最多釘選 ${PINNED_ADDR_MAX} 個地址`); return; }
+    list.unshift(item);
+    savePinnedAddresses(list);
+    renderPinnedAddresses();
+    toast('已釘選常用地址');
+  });
+  renderPinnedAddresses();
+
+
   function renderDeliverableRoads(roads){
     deliverableRoadsList = roads || [];
     const sel = document.getElementById('cAddrRoad');
@@ -1680,13 +1804,20 @@
     const resultEl = document.getElementById('lookupResult');
     resultEl.style.display = 'none';
     resultEl.textContent = '';
-    lookupOverlay.style.display = 'flex';
+    const mapBox = document.getElementById('lookupMapBox');
+    if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
+    lookupOverlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    lookupOverlay.scrollTop = 0;
     if(!prefillPhone){
       document.getElementById('lookupPhone').focus();
     }
   }
   function closeLookup(){
     lookupOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+    const mapBox = document.getElementById('lookupMapBox');
+    if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
   }
   document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
   document.getElementById('orderLookupBtn').addEventListener('click', ()=> openLookup());
@@ -1696,6 +1827,8 @@
   document.getElementById('lookupSubmit').addEventListener('click', async ()=>{
     const phone = document.getElementById('lookupPhone').value.trim();
     const resultEl = document.getElementById('lookupResult');
+    const mapBox = document.getElementById('lookupMapBox');
+    if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
 
     if(!phone){
       toast('請填寫聯絡電話');
@@ -1742,7 +1875,29 @@
         msg += `
 
 目前狀態：${data.status || '待處理'}`;
+        if(data.deliverer) msg += `\n外送員：${data.deliverer}`;
         resultEl.textContent = msg;
+
+        const canShowMap =
+          data.lat != null && data.lng != null &&
+          String(data.status || '') === '運送中';
+
+        if(canShowMap && mapBox){
+          const q = encodeURIComponent(data.lat + ',' + data.lng);
+          const updated = data.locationUpdatedAt
+            ? `<div style="font-size:11px;opacity:.8;margin-bottom:6px;font-weight:600;">📍 位置更新：${data.locationUpdatedAt}</div>`
+            : '';
+          mapBox.innerHTML = `
+            ${updated}
+            <div class="map-frame">
+              <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                src="https://maps.google.com/maps?q=${q}&z=16&output=embed"></iframe>
+            </div>
+            <a class="map-link" href="https://maps.google.com/?q=${q}" target="_blank" rel="noopener">在 Google 地圖開啟 →</a>
+          `;
+          mapBox.style.display = 'block';
+          setTimeout(()=>{ mapBox.scrollIntoView({ behavior:'smooth', block:'end' }); }, 150);
+        }
       } else {
         resultEl.textContent = '❌ 查無資料，請確認電話號碼是否正確，或稍後再試。';
       }
