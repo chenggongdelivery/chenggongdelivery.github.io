@@ -495,6 +495,8 @@
   @keyframes popIn{ from{transform:scale(.94); opacity:0;} to{transform:scale(1); opacity:1;} }
 
   .utility-btn{padding:8px 15px;}
+
+#orderLookupTopBtn { border: 0; cursor: pointer; font-family: inherit; }
 </style>
 </head>
 <body>
@@ -508,10 +510,10 @@
         <div class="sub">CHENGGONG · MIFENG DELIVERY</div>
       </div>
     </div>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-      <button type="button" class="join-btn" id="orderLookupBtn">🔍 訂單查詢</button>
-      <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
-    </div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+  <button type="button" class="join-btn" id="orderLookupTopBtn" onclick="openLookup()">🔍 訂單查詢</button>
+  <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
+</div>
   </div>
 </header>
 
