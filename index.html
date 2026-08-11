@@ -630,7 +630,7 @@
       <label>範圍</label>
       <div class="zone-toggle">
         <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-fee="60">鎮外<br>(北界)小港天后宮<br>(南界)和平國小（$60）</button>
+        <button type="button" class="zone-btn" data-fee="60">鎮外（$60）<br>(北界)小港天后宮<br>(南界)和平國小</button>
       </div>
     </div>
     <div class="field" id="extraServiceField" style="display:none;">
@@ -2021,7 +2021,7 @@ ${stopsText}
       contact: document.getElementById('cContact').value.trim(),
       schedule: document.getElementById('cSchedule').value,
       note: document.getElementById('cNote').value.trim(),
-      zone: fee === 30 ? '鎮內' : '鎮外（小港天后宮～和平國小）',
+      zone: fee === 30 ? '鎮內' : '鎮外',
       fee: baseFee + extraServiceTotal + transferTotal,
       extraServices: extraNames,
       paymentMethod: paymentMethod,
