@@ -151,6 +151,7 @@
   }
   .status-badge.待處理{background:var(--gold); color:var(--ink);}
   .status-badge.處理中{background:var(--coral); color:var(--paper);}
+  .status-badge.取餐中{background:#c47a12; color:var(--paper);}
   .status-badge.運送中{background:var(--ocean); color:var(--paper);}
   .status-badge.已送達{background:var(--seafoam); color:var(--ink);}
 
@@ -236,7 +237,8 @@
     font-family:inherit; font-size:13px; font-weight:700; color:var(--ink);
   }
 
-  .status-actions{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;}
+  .status-actions{display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:14px;}
+  .status-actions button:last-child{grid-column: auto;}
   .status-actions button{
     padding:10px 4px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
     font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--ink);
@@ -351,6 +353,7 @@
         <button class="active" data-filter="全部">全部</button>
         <button data-filter="待處理">待處理</button>
         <button data-filter="處理中">處理中</button>
+        <button data-filter="取餐中">取餐中</button>
         <button data-filter="運送中">運送中</button>
         <button data-filter="已送達">已送達</button>
       </div>
@@ -1042,12 +1045,13 @@
       <div class="status-actions">
         <button data-status="待處理" class="${order.status === '待處理' || !order.status ? 'current' : ''}">待處理</button>
         <button data-status="處理中" class="${order.status === '處理中' ? 'current' : ''}">處理中</button>
+        <button data-status="取餐中" class="${order.status === '取餐中' ? 'current' : ''}">取餐中</button>
         <button data-status="運送中" class="${order.status === '運送中' ? 'current' : ''}">運送中</button>
         <button data-status="已送達" class="${order.status === '已送達' ? 'current' : ''}">已送達</button>
       </div>
-      ${order.status === '運送中' ? `
+      ${(order.status === '取餐中' || order.status === '運送中') ? `
       <div class="location-panel${trackingRowKey === order.rowKey ? ' tracking' : ''}" data-rowkey="${escapeHtml(order.rowKey)}">
-        <div class="lp-title">🛵 客戶地圖位置回報（運送中）</div>
+        <div class="lp-title">🛵 客戶地圖位置回報（取餐中／運送中）</div>
         <div class="lp-coords">${order.lat != null && order.lng != null
           ? `目前：${Number(order.lat).toFixed(5)}, ${Number(order.lng).toFixed(5)}${order.locationUpdatedAt ? '　更新 ' + escapeHtml(String(order.locationUpdatedAt)) : ''}`
           : '尚未回報座標（按下方開始後，客戶查詢即可看到地圖）'}</div>
@@ -1344,7 +1348,9 @@
     const oldStatus = order.status;
     order.status = newStatus; // 先在畫面上樂觀更新，體感更快
     pendingStatusUpdates[order.rowKey] = newStatus; // 標記這筆「還在等後端回覆」，背景刷新抓到舊資料時不會蓋掉
-    if(oldStatus === '運送中' && newStatus !== '運送中' && trackingRowKey === order.rowKey){
+    const wasSharing = (oldStatus === '取餐中' || oldStatus === '運送中');
+    const stillSharing = (newStatus === '取餐中' || newStatus === '運送中');
+    if(wasSharing && !stillSharing && trackingRowKey === order.rowKey){
       stopLocationTracking(true);
     }
     renderOrders();
