@@ -1889,7 +1889,7 @@
     const contact = document.getElementById('cContact').value.trim() || '（尚未填寫）';
     const schedule = document.getElementById('cSchedule').value;
     const note = document.getElementById('cNote').value.trim();
-    const zoneLabel = fee === 30 ? '鎮內' : '鎮外（小港天后宮～和平國小）';
+    const zoneLabel = fee === 30 ? '鎮內' : '鎮外';
     const selectedExtras = getSelectedExtraServices();
     const extraServiceTotal = selectedExtras.reduce((sum, s) => sum + Number(s.fee || 0), 0);
     const deliveryBase = calculateDeliveryBase(stops, fee, transferFeePerStop);
