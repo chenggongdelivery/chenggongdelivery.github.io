@@ -50,7 +50,9 @@
   .brand .stamp img{width:100%; height:100%; object-fit:cover; transform:rotate(6deg) scale(1.15);}
   .brand-text .name{font-size:18px; line-height:1.1;}
   .brand-text .sub{font-size:10.5px; letter-spacing:.14em; color:var(--ocean-dark); font-family:'JetBrains Mono',monospace;}
-  .join-btn{border:2px solid var(--ink); background:#06C755; color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  #orderLookupTopBtn{border:0;cursor:pointer;font-family:inherit;}
+
+.join-btn{border:2px solid var(--ink); background:#06C755; color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap;}
   .join-btn:active{transform:translateY(2px); box-shadow:none;}
 
   main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
@@ -116,15 +118,10 @@
   }
   #lookupMapBox{margin-top:12px; padding-bottom:4px;}
   #lookupMapBox .map-frame{
-    border-radius:10px; overflow:hidden; border:2px solid var(--ink); background:#eee; height:200px;
+    border-radius:10px; overflow:hidden; border:2px solid var(--ink); background:#eee; height:180px;
   }
-  #lookupMapBox #driverMap{width:100%; height:200px; z-index:1;}
+  #lookupMapBox iframe{width:100%; height:180px; border:0; display:block;}
   #lookupMapBox .map-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--ocean);}
-  .driver-moto-marker{
-    background:transparent; border:none;
-    font-size:28px; line-height:1;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,.35));
-  }
   .pinned-addr-bar{margin-top:10px;}
   .pinned-addr-bar .pa-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
   .pinned-addr-bar .pa-title{font-size:12px; font-weight:700; color:var(--ocean-dark);}
@@ -501,8 +498,6 @@
 
   .utility-btn{padding:8px 15px;}
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
 
@@ -515,7 +510,10 @@
         <div class="sub">CHENGGONG · MIFENG DELIVERY</div>
       </div>
     </div>
-    <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <button type="button" class="join-btn" id="orderLookupTopBtn" onclick="openLookup()">🔍 訂單查詢</button>
+      <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
+    </div>
   </div>
 </header>
 
@@ -1811,7 +1809,6 @@
     const resultEl = document.getElementById('lookupResult');
     resultEl.style.display = 'none';
     resultEl.textContent = '';
-    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
     const mapBox = document.getElementById('lookupMapBox');
     if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
     lookupOverlay.style.display = 'block';
@@ -1824,7 +1821,6 @@
   function closeLookup(){
     lookupOverlay.style.display = 'none';
     document.body.style.overflow = '';
-    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
     const mapBox = document.getElementById('lookupMapBox');
     if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
   }
@@ -1893,97 +1889,20 @@
           (st === '取餐中' || st === '運送中');
 
         if(canShowMap && mapBox){
-          const lat = Number(data.lat);
-          const lng = Number(data.lng);
-          const q = encodeURIComponent(lat + ',' + lng);
-          const destAddr = (data.address || '').trim();
+          const q = encodeURIComponent(data.lat + ',' + data.lng);
           const updated = data.locationUpdatedAt
-            ? `<div style="font-size:11px;opacity:.8;margin-bottom:6px;font-weight:600;">🛵 位置更新：${data.locationUpdatedAt}</div>`
+            ? `<div style="font-size:11px;opacity:.8;margin-bottom:6px;font-weight:600;">📍 位置更新：${data.locationUpdatedAt}</div>`
             : '';
           mapBox.innerHTML = `
             ${updated}
-            <div class="map-frame"><div id="driverMap"></div></div>
-            <div id="routeHint" style="font-size:11px;opacity:.75;margin-top:6px;line-height:1.5;"></div>
-            <a class="map-link" href="https://maps.google.com/?q=${q}" target="_blank" rel="noopener">在 Google 地圖開啟外送員位置 →</a>
+            <div class="map-frame">
+              <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                src="https://maps.google.com/maps?q=${q}&z=16&output=embed"></iframe>
+            </div>
+            <a class="map-link" href="https://maps.google.com/?q=${q}" target="_blank" rel="noopener">在 Google 地圖開啟 →</a>
           `;
           mapBox.style.display = 'block';
-          setTimeout(async ()=>{
-            try{
-              if(window._driverMap){ window._driverMap.remove(); window._driverMap = null; }
-              const map = L.map('driverMap', { zoomControl:true, attributionControl:true }).setView([lat, lng], 16);
-              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap'
-              }).addTo(map);
-              const motoIcon = L.divIcon({
-                className: 'driver-moto-marker',
-                html: '🛵',
-                iconSize: [36, 36],
-                iconAnchor: [18, 30]
-              });
-              const driverMarker = L.marker([lat, lng], { icon: motoIcon }).addTo(map).bindPopup('外送員位置');
-              window._driverMap = map;
-              setTimeout(()=> map.invalidateSize(), 100);
-
-              const hintEl = document.getElementById('routeHint');
-              if(destAddr){
-                if(hintEl) hintEl.textContent = '路線規劃中…';
-                // 1) 地址轉座標（Nominatim，僅供輕量使用）
-                let destLat = null, destLng = null;
-                try{
-                  const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(destAddr);
-                  const geoRes = await fetch(geoUrl, { headers: { 'Accept': 'application/json' } });
-                  const geoData = await geoRes.json();
-                  if(geoData && geoData[0]){
-                    destLat = Number(geoData[0].lat);
-                    destLng = Number(geoData[0].lon);
-                  }
-                }catch(e){ console.warn(e); }
-
-                if(destLat != null && destLng != null){
-                  const homeIcon = L.divIcon({
-                    className: 'driver-moto-marker',
-                    html: '🏠',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 28]
-                  });
-                  L.marker([destLat, destLng], { icon: homeIcon }).addTo(map).bindPopup('送達地址');
-
-                  // 2) OSRM 路線（免費公共伺服器，適合小量）
-                  try{
-                    const routeUrl = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
-                    const routeRes = await fetch(routeUrl);
-                    const routeData = await routeRes.json();
-                    if(routeData && routeData.code === 'Ok' && routeData.routes && routeData.routes[0]){
-                      const route = routeData.routes[0];
-                      const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
-                      const line = L.polyline(coords, { color: '#1E5B67', weight: 5, opacity: 0.85 }).addTo(map);
-                      map.fitBounds(line.getBounds().pad(0.2));
-                      const km = (route.distance / 1000).toFixed(1);
-                      const mins = Math.max(1, Math.round(route.duration / 60));
-                      if(hintEl) hintEl.textContent = `預估路程約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況）`;
-                      const gdir = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${destLat},${destLng}&travelmode=driving`;
-                      const link = mapBox.querySelector('.map-link');
-                      if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟導航 →'; }
-                    } else if(hintEl){
-                      hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
-                      map.fitBounds(L.latLngBounds([[lat,lng],[destLat,destLng]]).pad(0.25));
-                    }
-                  }catch(e){
-                    if(hintEl) hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
-                    map.fitBounds(L.latLngBounds([[lat,lng],[destLat,destLng]]).pad(0.25));
-                  }
-                } else if(hintEl){
-                  hintEl.textContent = '無法定位送達地址，僅顯示外送員位置';
-                }
-              } else if(hintEl){
-                hintEl.textContent = '（後端未回傳地址時無法畫路線）';
-              }
-            }catch(err){
-              console.warn(err);
-            }
-            mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
-          }, 150);
+          setTimeout(()=>{ mapBox.scrollIntoView({ behavior:'smooth', block:'end' }); }, 150);
         }
       } else {
         resultEl.textContent = '❌ 查無資料，請確認電話號碼是否正確，或稍後再試。';
