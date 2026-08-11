@@ -51,7 +51,7 @@
   .brand-text .name{font-size:18px; line-height:1.1;}
   .brand-text .sub{font-size:10.5px; letter-spacing:.14em; color:var(--ocean-dark); font-family:'JetBrains Mono',monospace;}
   .join-btn{border:2px solid var(--ink); background:#06C755; color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap;}
-  .join-btn:active{transform:translateY(2px); box-shadow:none;}
+  .join-btn:active{transform:translateY(2px); box-shadow:none;}\n  .top-order-lookup-btn{appearance:none; -webkit-appearance:none; cursor:pointer; font-family:inherit;}
 
   main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
 
@@ -515,8 +515,8 @@
         <div class="sub">CHENGGONG · MIFENG DELIVERY</div>
       </div>
     </div>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-      <button type="button" class="join-btn" id="orderLookupTopBtn" onclick="openLookup()" style="background:var(--gold); color:var(--ink); border:2px solid var(--ink); cursor:pointer; font-family:inherit;">🔍 訂單查詢</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="join-btn top-order-lookup-btn" id="topOrderLookupBtn" onclick="openLookup(); return false;">🔍 訂單查詢</button>
       <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
     </div>
   </div>
@@ -1813,8 +1813,8 @@
     document.getElementById('lookupPhone').value = prefillPhone || '';
     const resultEl = document.getElementById('lookupResult');
     resultEl.style.display = 'none';
-    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
     resultEl.textContent = '';
+    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
     const mapBox = document.getElementById('lookupMapBox');
     if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
     lookupOverlay.style.display = 'block';
@@ -1924,13 +1924,14 @@
                 iconSize: [36, 36],
                 iconAnchor: [18, 30]
               });
-              L.marker([lat, lng], { icon: motoIcon }).addTo(map).bindPopup('外送員位置');
+              const driverMarker = L.marker([lat, lng], { icon: motoIcon }).addTo(map).bindPopup('外送員位置');
               window._driverMap = map;
               setTimeout(()=> map.invalidateSize(), 100);
 
               const hintEl = document.getElementById('routeHint');
               if(destAddr){
                 if(hintEl) hintEl.textContent = '路線規劃中…';
+                // 1) 地址轉座標（Nominatim，僅供輕量使用）
                 let destLat = null, destLng = null;
                 try{
                   const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(destAddr);
@@ -1951,6 +1952,7 @@
                   });
                   L.marker([destLat, destLng], { icon: homeIcon }).addTo(map).bindPopup('送達地址');
 
+                  // 2) OSRM 路線（免費公共伺服器，適合小量）
                   try{
                     const routeUrl = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
                     const routeRes = await fetch(routeUrl);
