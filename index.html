@@ -516,7 +516,7 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <button type="button" class="join-btn top-order-lookup-btn" id="topOrderLookupBtn" onclick="openLookup(); return false;">🔍 訂單查詢</button>
+      <button type="button" class="join-btn top-order-lookup-btn" id="topOrderLookupBtn">🔍 訂單查詢</button>
       <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
     </div>
   </div>
@@ -1833,6 +1833,13 @@
   }
   document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
   document.getElementById('orderLookupBtn').addEventListener('click', ()=> openLookup());
+  const topOrderLookupBtn = document.getElementById('topOrderLookupBtn');
+  if(topOrderLookupBtn){
+    topOrderLookupBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      openLookup();
+    });
+  }
   document.getElementById('lookupClose').addEventListener('click', closeLookup);
   lookupOverlay.addEventListener('click', (e)=>{ if(e.target === lookupOverlay) closeLookup(); });
 
