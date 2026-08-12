@@ -1876,17 +1876,19 @@
   // 鄉下地址常常查得到路名、查不到門牌號，所以降級查詢能大幅提高成功率；
   // 不降級到只剩鄉鎮市，避免定位誤差太大（整個城鎮範圍可能有好幾公里）
   async function geocodeAddressWithFallback_(rawAddr){
-    // 地圖資料庫（OpenStreetMap）地名幾乎都用「台」而非傳統字「臺」（台東縣／台北市／台中市／台南市…），
-    // 兩者是不同的字，會讓查詢完全找不到結果，先正規化避免整批地址都查不到
+    // 後備方案：前端 OpenStreetMap（後端 Google 地理編碼失敗時才會用到）
+    // 地名幾乎都用「台」而非「臺」，先正規化；台東地區再自動補上縣名提高命中
     const normalize = (s) => s.replace(/臺/g, '台');
     const rawAddrN = normalize(rawAddr);
 
     const noNote = rawAddrN.replace(/（[^）]*）\s*$/, '').replace(/\([^)]*\)\s*$/, '').trim();
     const noHouseNumber = noNote.replace(/\d+(-\d+)?號.*$/, '').trim();
+    const withCounty = /縣|市/.test(noNote) ? noNote : ('台東縣' + noNote);
 
     const candidates = [
       { q: rawAddrN, precise: true },
       { q: noNote, precise: true },
+      { q: withCounty, precise: true },
       { q: noHouseNumber, precise: false }
     ];
     const tried = new Set();
@@ -1933,17 +1935,24 @@
 
     if(hintEl) hintEl.textContent = '路線規劃中…';
 
-    // 地理編碼各站點（有快取就跳過）
+    // 優先用後端已算好的座標；沒有才前端地理編碼（有快取就跳過）
     const resolved = [];
     for(const w of pts){
-      const addr = w.address.trim();
-      if(!lookupWaypointCoords[addr]){
+      const addr = (w.address || '').trim();
+      const cacheKey = addr || `${w.lat},${w.lng}`;
+      if(w.lat != null && w.lng != null && !isNaN(Number(w.lat)) && !isNaN(Number(w.lng))){
+        lookupWaypointCoords[cacheKey] = {
+          lat: Number(w.lat),
+          lng: Number(w.lng),
+          precise: w.precise !== false
+        };
+      } else if(addr && !lookupWaypointCoords[cacheKey]){
         const coord = await geocodeAddressWithFallback_(addr);
-        if(coord) lookupWaypointCoords[addr] = coord;
+        if(coord) lookupWaypointCoords[cacheKey] = coord;
       }
-      const c = lookupWaypointCoords[addr];
+      const c = lookupWaypointCoords[cacheKey];
       if(c){
-        resolved.push({ ...w, address: addr, lat: c.lat, lng: c.lng, precise: c.precise });
+        resolved.push({ ...w, address: addr, lat: c.lat, lng: c.lng, precise: c.precise !== false });
       }
     }
 
@@ -2078,17 +2087,22 @@
           const lng = Number(data.lng);
           const q = encodeURIComponent(lat + ',' + lng);
           const isPickupPhase = st === '取餐中';
-          // 組出整段途經點：商家站點1 → 站點2 → … → 客戶地址（取餐中／運送中都顯示完整路徑）
+          // 組出整段途經點：商家站點1 → 站點2 → … → 客戶地址
+          // 優先使用後端 Google 地理編碼回傳的 lat/lng（門牌級精準），沒有才前端再查
           const stopsFromApi = Array.isArray(data.merchantStops) ? data.merchantStops : [];
           const routeWaypoints = [];
           if(stopsFromApi.length){
             stopsFromApi.forEach((s, i) => {
               const addr = (s && s.address || '').trim();
-              if(!addr) return;
+              const hasCoord = s && s.lat != null && s.lng != null && !isNaN(Number(s.lat)) && !isNaN(Number(s.lng));
+              if(!addr && !hasCoord) return;
               routeWaypoints.push({
                 label: `站點${i+1} ${(s.name || '').trim()}`.trim() || `商家站點${i+1}`,
-                address: addr,
-                icon: '🏪'
+                address: addr || (s.formatted || ''),
+                icon: '🏪',
+                lat: hasCoord ? Number(s.lat) : null,
+                lng: hasCoord ? Number(s.lng) : null,
+                precise: s.precise !== false
               });
             });
           } else if((data.merchantAddress || '').trim()){
@@ -2098,11 +2112,16 @@
               icon: '🏪'
             });
           }
-          if((data.address || '').trim()){
+          if((data.address || '').trim() || (data.addressLat != null && data.addressLng != null)){
+            const hasCust = data.addressLat != null && data.addressLng != null
+              && !isNaN(Number(data.addressLat)) && !isNaN(Number(data.addressLng));
             routeWaypoints.push({
               label: '送達地址',
               address: (data.address || '').trim(),
-              icon: '🏠'
+              icon: '🏠',
+              lat: hasCust ? Number(data.addressLat) : null,
+              lng: hasCust ? Number(data.addressLng) : null,
+              precise: data.addressPrecise !== false
             });
           }
           const phaseText = isPickupPhase ? '🍱 前往商家取餐中' : '🚚 運送中，前往送達地址';
