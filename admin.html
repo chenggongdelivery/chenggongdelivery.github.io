@@ -1059,7 +1059,7 @@
           <button type="button" class="lp-start" ${trackingRowKey === order.rowKey ? 'disabled' : ''}>${trackingRowKey === order.rowKey ? '📍 回報中…' : '📍 開始回報位置'}</button>
           <button type="button" class="lp-stop" ${trackingRowKey === order.rowKey ? '' : 'disabled'}>停止回報</button>
         </div>
-        <div class="lp-hint">請用外送員手機開啟此後台並允許定位。同時只能回報一張單。</div>
+        <div class="lp-hint">點選上方「取餐中」或「運送中」會自動開始回報，不用手動按這裡；如果剛剛沒允許定位權限，可以再按一次「開始回報位置」重試。同時只能回報一張單。</div>
       </div>` : ''}
     `;
 
@@ -1355,6 +1355,12 @@
     }
     renderOrders();
     toast(`已更新為「${newStatus}」`);
+
+    // 點選「取餐中」或「運送中」時自動開始回報位置，不用再手動按「開始回報位置」；
+    // 一路回報到按下「已送達」（上面 wasSharing && !stillSharing 那段）才會自動停止
+    if(!wasSharing && stillSharing){
+      startLocationTracking(order);
+    }
 
     fetch(SCRIPT_URL, {
       method: 'POST',
