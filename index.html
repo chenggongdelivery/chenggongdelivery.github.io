@@ -1813,22 +1813,29 @@
 
   // ---------- 訂單查詢：輸入完整電話號碼即可查詢最近一筆訂單 ----------
   const lookupOverlay = document.getElementById('lookupOverlay');
-  // ---------- 外送員即時位置：查詢視窗開啟期間每 15 秒自動更新一次 ----------
+  // ---------- 外送員即時位置：查詢視窗開啟期間持續自動更新，直到訂單「已送達」或視窗關閉 ----------
   let lookupPollTimer = null;
-  let lookupDestCoord = null;   // 快取送達地址轉換出的座標，避免每次都重打地理編碼
+  let lookupDestCoord = null;   // 快取「目前追蹤目標地址」轉換出的座標，避免每次都重打地理編碼
+  let lookupDestAddrKey = null; // 目前快取座標對應的地址字串／取餐或送達階段，地址或階段一變就要重新定位
   let lookupDriverMarker = null;
   let lookupDestMarker = null;
   let lookupRouteLine = null;
   function stopLookupPolling(){
     if(lookupPollTimer){ clearInterval(lookupPollTimer); lookupPollTimer = null; }
   }
-  function resetLookupMapState(){
-    stopLookupPolling();
+  // 只收起地圖本身（例如訂單還沒到取餐中／運送中、或訂單已送達），輪詢是否要繼續由呼叫端決定
+  function teardownDriverMap_(){
     if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
     lookupDestCoord = null;
+    lookupDestAddrKey = null;
     lookupDriverMarker = null;
     lookupDestMarker = null;
     lookupRouteLine = null;
+  }
+  // 開啟／關閉查詢視窗時使用：地圖收起、輪詢也一併停止
+  function resetLookupMapState(){
+    stopLookupPolling();
+    teardownDriverMap_();
   }
   function openLookup(prefillPhone){
     document.getElementById('lookupPhone').value = prefillPhone || '';
@@ -1892,14 +1899,23 @@
     return null;
   }
 
-  // 依外送員目前位置 + 送達地址，畫出／更新路線（會重複呼叫，所以會快取地址座標、重複使用同一個 marker/路線物件）
-  async function drawDriverRoute(lat, lng, destAddr, mapBox){
+  // 依外送員目前位置 + 目的地地址，畫出／更新路線（會重複呼叫，所以會快取地址座標、重複使用同一個 marker/路線物件）
+  // destLabel/destIcon：取餐中階段顯示「商家」，運送中階段顯示「客戶送達地址」
+  async function drawDriverRoute(lat, lng, destAddr, destLabel, destIcon, missingAddrHint, mapBox){
     const map = window._driverMap;
     const hintEl = document.getElementById('routeHint');
     if(!map) return;
 
+    // 目的地地址或階段（取餐中／運送中）跟上次不一樣：舊的座標快取、目的地圖示、路線都要重新來
+    if(lookupDestAddrKey !== destAddr){
+      lookupDestCoord = null;
+      if(lookupDestMarker){ try{ lookupDestMarker.remove(); }catch(e){} lookupDestMarker = null; }
+      if(lookupRouteLine){ try{ lookupRouteLine.remove(); }catch(e){} lookupRouteLine = null; }
+      lookupDestAddrKey = destAddr;
+    }
+
     if(!destAddr){
-      if(hintEl) hintEl.textContent = '（後端未回傳地址時無法畫路線）';
+      if(hintEl) hintEl.textContent = missingAddrHint || '（無法取得目的地地址，暫時無法畫路線）';
       return;
     }
 
@@ -1909,19 +1925,19 @@
     }
 
     if(!lookupDestCoord){
-      if(hintEl) hintEl.textContent = '無法定位送達地址，僅顯示外送員位置';
+      if(hintEl) hintEl.textContent = `無法定位${destLabel}，僅顯示外送員位置`;
       return;
     }
 
     const destLat = lookupDestCoord.lat, destLng = lookupDestCoord.lng;
     if(!lookupDestMarker){
-      const homeIcon = L.divIcon({
+      const destMarkerIcon = L.divIcon({
         className: 'driver-moto-marker',
-        html: '🏠',
+        html: destIcon,
         iconSize: [30, 30],
         iconAnchor: [15, 28]
       });
-      lookupDestMarker = L.marker([destLat, destLng], { icon: homeIcon }).addTo(map).bindPopup('送達地址');
+      lookupDestMarker = L.marker([destLat, destLng], { icon: destMarkerIcon }).addTo(map).bindPopup(destLabel);
     }
 
     try{
@@ -1939,20 +1955,22 @@
         }
         const km = (route.distance / 1000).toFixed(1);
         const mins = Math.max(1, Math.round(route.duration / 60));
-        const preciseNote = lookupDestCoord.precise === false ? '・門牌號未定位到，送達點為路名概略位置' : '';
-        if(hintEl) hintEl.textContent = `預估路程約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新${preciseNote}）`;
+        const preciseNote = lookupDestCoord.precise === false ? `・門牌號未定位到，${destLabel}為路名概略位置` : '';
+        if(hintEl) hintEl.textContent = `前往${destLabel}・約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新${preciseNote}）`;
         const gdir = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${destLat},${destLng}&travelmode=driving`;
         const link = mapBox.querySelector('.map-link');
         if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟導航 →'; }
       } else if(hintEl){
-        hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
+        hintEl.textContent = `已標示${destLabel}位置（路線暫時無法取得）`;
       }
     }catch(e){
-      if(hintEl) hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
+      if(hintEl) hintEl.textContent = `已標示${destLabel}位置（路線暫時無法取得）`;
     }
   }
 
-  // 查詢訂單狀態；isFirst=true 是使用者按查詢按鈕的那一次，之後每 15 秒會自動用 isFirst=false 重打一次來更新外送員位置
+  // 查詢訂單狀態；isFirst=true 是使用者按查詢按鈕的那一次，之後每 15 秒會自動用 isFirst=false 重打一次，
+  // 不管目前訂單是不是「取餐中／運送中」都會持續輪詢，這樣狀態一變（例如從待處理變成取餐中）畫面就會自動反映，
+  // 直到訂單變成「已送達」或查無資料才停止
   async function performLookup(digits, isFirst){
     const resultEl = document.getElementById('lookupResult');
     const mapBox = document.getElementById('lookupMapBox');
@@ -2007,8 +2025,17 @@
           const lat = Number(data.lat);
           const lng = Number(data.lng);
           const q = encodeURIComponent(lat + ',' + lng);
-          const destAddr = (data.address || '').trim();
-          const updatedText = data.locationUpdatedAt ? `🛵 位置更新：${data.locationUpdatedAt}（每 15 秒自動更新）` : '🛵 追蹤中（每 15 秒自動更新）';
+          const isPickupPhase = st === '取餐中';
+          const destAddr = isPickupPhase ? (data.merchantAddress || '').trim() : (data.address || '').trim();
+          const destLabel = isPickupPhase ? '商家（取餐地點）' : '送達地址';
+          const destIcon = isPickupPhase ? '🏪' : '🏠';
+          const missingAddrHint = isPickupPhase
+            ? '商家尚未設定地址，暫時只顯示外送員位置（可到後台「商家名單設定」補上該商家地址）'
+            : '（後端未回傳地址時無法畫路線）';
+          const phaseText = isPickupPhase ? '🍱 前往商家取餐中' : '🚚 運送中，前往送達地址';
+          const updatedText = data.locationUpdatedAt
+            ? `${phaseText}・位置更新：${data.locationUpdatedAt}（每 15 秒自動更新）`
+            : `${phaseText}（每 15 秒自動更新）`;
 
           if(!window._driverMap){
             // 第一次顯示：建立地圖
@@ -2037,15 +2064,10 @@
               window._driverMap = map;
               setTimeout(()=> map.invalidateSize(), 100);
 
-              await drawDriverRoute(lat, lng, destAddr, mapBox);
+              await drawDriverRoute(lat, lng, destAddr, destLabel, destIcon, missingAddrHint, mapBox);
               mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
             }catch(err){
               console.warn(err);
-            }
-
-            // 開始每 15 秒自動更新一次外送員位置（就像 Foodpanda 一樣持續追蹤，不用手動重查）
-            if(!lookupPollTimer){
-              lookupPollTimer = setInterval(()=> performLookup(digits, false), 15000);
             }
           } else {
             // 之後每次輪詢：只移動外送員圖示、更新時間文字、重畫路線，不重建整個地圖（避免畫面閃爍）
@@ -2054,12 +2076,21 @@
             if(lookupDriverMarker) lookupDriverMarker.setLatLng([lat, lng]);
             const link = mapBox.querySelector('.map-link');
             if(link) link.href = `https://maps.google.com/?q=${q}`;
-            await drawDriverRoute(lat, lng, destAddr, mapBox);
+            await drawDriverRoute(lat, lng, destAddr, destLabel, destIcon, missingAddrHint, mapBox);
           }
         } else {
-          // 狀態已不是「取餐中／運送中」（例如已送達）：停止自動更新、收起地圖
-          resetLookupMapState();
+          // 狀態還不是「取餐中／運送中」（例如待處理、處理中）：先收起地圖，但輪詢繼續，狀態一變就會自動長出地圖
+          teardownDriverMap_();
           if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
+        }
+
+        // 訂單還沒送達就持續每 15 秒自動查詢一次；已送達就沒有再更新的必要，自動停止
+        if(st !== '已送達'){
+          if(!lookupPollTimer){
+            lookupPollTimer = setInterval(()=> performLookup(digits, false), 15000);
+          }
+        } else {
+          stopLookupPolling();
         }
       } else {
         if(isFirst) resultEl.textContent = '❌ 查無資料，請確認電話號碼是否正確，或稍後再試。';
