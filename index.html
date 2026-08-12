@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -1858,6 +1858,35 @@
   document.getElementById('lookupClose').addEventListener('click', closeLookup);
   lookupOverlay.addEventListener('click', (e)=>{ if(e.target === lookupOverlay) closeLookup(); });
 
+  // 把地址轉座標：先試完整地址，找不到就降級（去掉備註括號→去掉門牌號只留路名），
+  // 鄉下地址常常查得到路名、查不到門牌號，所以降級查詢能大幅提高成功率；
+  // 不降級到只剩鄉鎮市，避免定位誤差太大（整個城鎮範圍可能有好幾公里）
+  async function geocodeAddressWithFallback_(rawAddr){
+    const noNote = rawAddr.replace(/（[^）]*）\s*$/, '').replace(/\([^)]*\)\s*$/, '').trim();
+    const noHouseNumber = noNote.replace(/\d+(-\d+)?號.*$/, '').trim();
+
+    const candidates = [
+      { q: rawAddr, precise: true },
+      { q: noNote, precise: true },
+      { q: noHouseNumber, precise: false }
+    ];
+    const tried = new Set();
+
+    for(const c of candidates){
+      if(!c.q || tried.has(c.q)) continue;
+      tried.add(c.q);
+      try{
+        const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(c.q);
+        const geoRes = await fetch(geoUrl, { headers: { 'Accept': 'application/json' } });
+        const geoData = await geoRes.json();
+        if(geoData && geoData[0]){
+          return { lat: Number(geoData[0].lat), lng: Number(geoData[0].lon), precise: c.precise };
+        }
+      }catch(e){ console.warn(e); }
+    }
+    return null;
+  }
+
   // 依外送員目前位置 + 送達地址，畫出／更新路線（會重複呼叫，所以會快取地址座標、重複使用同一個 marker/路線物件）
   async function drawDriverRoute(lat, lng, destAddr, mapBox){
     const map = window._driverMap;
@@ -1871,14 +1900,7 @@
 
     if(!lookupDestCoord){
       if(hintEl) hintEl.textContent = '路線規劃中…';
-      try{
-        const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(destAddr);
-        const geoRes = await fetch(geoUrl, { headers: { 'Accept': 'application/json' } });
-        const geoData = await geoRes.json();
-        if(geoData && geoData[0]){
-          lookupDestCoord = { lat: Number(geoData[0].lat), lng: Number(geoData[0].lon) };
-        }
-      }catch(e){ console.warn(e); }
+      lookupDestCoord = await geocodeAddressWithFallback_(destAddr);
     }
 
     if(!lookupDestCoord){
@@ -1912,7 +1934,8 @@
         }
         const km = (route.distance / 1000).toFixed(1);
         const mins = Math.max(1, Math.round(route.duration / 60));
-        if(hintEl) hintEl.textContent = `預估路程約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新）`;
+        const preciseNote = lookupDestCoord.precise === false ? '・門牌號未定位到，送達點為路名概略位置' : '';
+        if(hintEl) hintEl.textContent = `預估路程約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新${preciseNote}）`;
         const gdir = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${destLat},${destLng}&travelmode=driving`;
         const link = mapBox.querySelector('.map-link');
         if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟導航 →'; }
