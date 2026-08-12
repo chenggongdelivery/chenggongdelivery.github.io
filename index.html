@@ -1815,11 +1815,15 @@
   const lookupOverlay = document.getElementById('lookupOverlay');
   // ---------- 外送員即時位置：查詢視窗開啟期間持續自動更新，直到訂單「已送達」或視窗關閉 ----------
   let lookupPollTimer = null;
-  let lookupDestCoord = null;   // 快取「目前追蹤目標地址」轉換出的座標，避免每次都重打地理編碼
+  let lookupDestCoord = null;   // 快取「目前追蹤目標地址」轉換出的座標，避免每次都重打地理編碼（單一目的地相容）
   let lookupDestAddrKey = null; // 目前快取座標對應的地址字串／取餐或送達階段，地址或階段一變就要重新定位
   let lookupDriverMarker = null;
   let lookupDestMarker = null;
   let lookupRouteLine = null;
+  // 多站路線：快取各站點座標、圖示與路線鍵（站點變更時重算）
+  let lookupWaypointCoords = {}; // addr -> {lat,lng,precise}
+  let lookupWaypointMarkers = [];
+  let lookupRouteKey = null;
   function stopLookupPolling(){
     if(lookupPollTimer){ clearInterval(lookupPollTimer); lookupPollTimer = null; }
   }
@@ -1831,6 +1835,9 @@
     lookupDriverMarker = null;
     lookupDestMarker = null;
     lookupRouteLine = null;
+    lookupWaypointCoords = {};
+    lookupWaypointMarkers = [];
+    lookupRouteKey = null;
   }
   // 開啟／關閉查詢視窗時使用：地圖收起、輪詢也一併停止
   function resetLookupMapState(){
@@ -1899,49 +1906,74 @@
     return null;
   }
 
-  // 依外送員目前位置 + 目的地地址，畫出／更新路線（會重複呼叫，所以會快取地址座標、重複使用同一個 marker/路線物件）
-  // destLabel/destIcon：取餐中階段顯示「商家」，運送中階段顯示「客戶送達地址」
-  async function drawDriverRoute(lat, lng, destAddr, destLabel, destIcon, missingAddrHint, mapBox){
+  // 依外送員目前位置 + 多站商家 + 客戶地址，畫出／更新整段路線
+  // waypoints: [{label, address, icon}] 依序站點1→站點2→…→客戶
+  // 取餐中／運送中都會盡量畫「外送員 → 各商家站點 → 客戶」完整路徑
+  async function drawDriverRoute(lat, lng, waypoints, mapBox){
     const map = window._driverMap;
     const hintEl = document.getElementById('routeHint');
     if(!map) return;
 
-    // 目的地地址或階段（取餐中／運送中）跟上次不一樣：舊的座標快取、目的地圖示、路線都要重新來
-    if(lookupDestAddrKey !== destAddr){
-      lookupDestCoord = null;
+    const pts = (waypoints || []).filter(w => w && (w.address || '').trim());
+    const routeKey = pts.map(w => (w.label || '') + '|' + (w.address || '').trim()).join('||');
+
+    if(lookupRouteKey !== routeKey){
+      lookupRouteKey = routeKey;
+      lookupWaypointMarkers.forEach(m => { try{ m.remove(); }catch(e){} });
+      lookupWaypointMarkers = [];
       if(lookupDestMarker){ try{ lookupDestMarker.remove(); }catch(e){} lookupDestMarker = null; }
       if(lookupRouteLine){ try{ lookupRouteLine.remove(); }catch(e){} lookupRouteLine = null; }
-      lookupDestAddrKey = destAddr;
+      // 保留已成功地理編碼的座標快取，避免站點順序微調時整批重查
     }
 
-    if(!destAddr){
-      if(hintEl) hintEl.textContent = missingAddrHint || '（無法取得目的地地址，暫時無法畫路線）';
+    if(!pts.length){
+      if(hintEl) hintEl.textContent = '（無法取得站點／送達地址，暫時無法畫完整路線）';
       return;
     }
 
-    if(!lookupDestCoord){
-      if(hintEl) hintEl.textContent = '路線規劃中…';
-      lookupDestCoord = await geocodeAddressWithFallback_(destAddr);
+    if(hintEl) hintEl.textContent = '路線規劃中…';
+
+    // 地理編碼各站點（有快取就跳過）
+    const resolved = [];
+    for(const w of pts){
+      const addr = w.address.trim();
+      if(!lookupWaypointCoords[addr]){
+        const coord = await geocodeAddressWithFallback_(addr);
+        if(coord) lookupWaypointCoords[addr] = coord;
+      }
+      const c = lookupWaypointCoords[addr];
+      if(c){
+        resolved.push({ ...w, address: addr, lat: c.lat, lng: c.lng, precise: c.precise });
+      }
     }
 
-    if(!lookupDestCoord){
-      if(hintEl) hintEl.textContent = `無法定位${destLabel}，僅顯示外送員位置`;
+    if(!resolved.length){
+      if(hintEl) hintEl.textContent = '無法定位站點地址，僅顯示外送員位置';
       return;
     }
 
-    const destLat = lookupDestCoord.lat, destLng = lookupDestCoord.lng;
-    if(!lookupDestMarker){
-      const destMarkerIcon = L.divIcon({
-        className: 'driver-moto-marker',
-        html: destIcon,
-        iconSize: [30, 30],
-        iconAnchor: [15, 28]
+    // 為每個已定位站點放圖示（重用既有 marker 集合）
+    if(!lookupWaypointMarkers.length){
+      resolved.forEach((w, i) => {
+        const iconHtml = w.icon || (i === resolved.length - 1 ? '🏠' : '🏪');
+        const markerIcon = L.divIcon({
+          className: 'driver-moto-marker',
+          html: iconHtml,
+          iconSize: [30, 30],
+          iconAnchor: [15, 28]
+        });
+        const label = w.label || `站點${i+1}`;
+        const m = L.marker([w.lat, w.lng], { icon: markerIcon }).addTo(map).bindPopup(label);
+        lookupWaypointMarkers.push(m);
       });
-      lookupDestMarker = L.marker([destLat, destLng], { icon: destMarkerIcon }).addTo(map).bindPopup(destLabel);
+      // 相容舊變數：最後一個當 dest
+      lookupDestMarker = lookupWaypointMarkers[lookupWaypointMarkers.length - 1] || null;
     }
 
+    // OSRM 多點路線：外送員目前位置 → 站點1 → 站點2 → … → 客戶
     try{
-      const routeUrl = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
+      const coordParts = [`${lng},${lat}`].concat(resolved.map(w => `${w.lng},${w.lat}`));
+      const routeUrl = `https://router.project-osrm.org/route/v1/driving/${coordParts.join(';')}?overview=full&geometries=geojson`;
       const routeRes = await fetch(routeUrl);
       const routeData = await routeRes.json();
       if(routeData && routeData.code === 'Ok' && routeData.routes && routeData.routes[0]){
@@ -1950,21 +1982,41 @@
         if(lookupRouteLine){
           lookupRouteLine.setLatLngs(coords);
         } else {
-          lookupRouteLine = L.polyline(coords, { color: '#1E5B67', weight: 5, opacity: 0.85 }).addTo(map);
-          map.fitBounds(lookupRouteLine.getBounds().pad(0.2));
+          lookupRouteLine = L.polyline(coords, {
+            color: '#E2532F',
+            weight: 5,
+            opacity: 0.85,
+            lineJoin: 'round'
+          }).addTo(map);
         }
+        const bounds = L.latLngBounds([[lat, lng]].concat(resolved.map(w => [w.lat, w.lng])));
+        try{ map.fitBounds(bounds.pad(0.18)); }catch(e){}
         const km = (route.distance / 1000).toFixed(1);
         const mins = Math.max(1, Math.round(route.duration / 60));
-        const preciseNote = lookupDestCoord.precise === false ? `・門牌號未定位到，${destLabel}為路名概略位置` : '';
-        if(hintEl) hintEl.textContent = `前往${destLabel}・約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新${preciseNote}）`;
-        const gdir = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${destLat},${destLng}&travelmode=driving`;
+        const imprecise = resolved.some(w => w.precise === false);
+        const pathLabel = resolved.map(w => w.label || '站點').join(' → ');
+        const preciseNote = imprecise ? '・部分門牌未精準定位，為路名概略位置' : '';
+        if(hintEl) hintEl.textContent = `整段路線：外送員 → ${pathLabel}・約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新${preciseNote}）`;
+        // Google 導航：多點途經
+        const origin = `${lat},${lng}`;
+        const dest = `${resolved[resolved.length-1].lat},${resolved[resolved.length-1].lng}`;
+        const via = resolved.slice(0, -1).map(w => `${w.lat},${w.lng}`).join('|');
+        const gdir = via
+          ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&waypoints=${encodeURIComponent(via)}&travelmode=driving`
+          : `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving`;
         const link = mapBox.querySelector('.map-link');
-        if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟導航 →'; }
+        if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟整段導航 →'; }
       } else if(hintEl){
-        hintEl.textContent = `已標示${destLabel}位置（路線暫時無法取得）`;
+        if(hintEl) hintEl.textContent = '已標示各站點位置（路線暫時無法取得）';
+        const bounds = L.latLngBounds([[lat, lng]].concat(resolved.map(w => [w.lat, w.lng])));
+        try{ map.fitBounds(bounds.pad(0.18)); }catch(e){}
       }
     }catch(e){
-      if(hintEl) hintEl.textContent = `已標示${destLabel}位置（路線暫時無法取得）`;
+      if(hintEl) hintEl.textContent = '已標示各站點位置（路線暫時無法取得）';
+      try{
+        const bounds = L.latLngBounds([[lat, lng]].concat(resolved.map(w => [w.lat, w.lng])));
+        map.fitBounds(bounds.pad(0.18));
+      }catch(err){}
     }
   }
 
@@ -2026,12 +2078,33 @@
           const lng = Number(data.lng);
           const q = encodeURIComponent(lat + ',' + lng);
           const isPickupPhase = st === '取餐中';
-          const destAddr = isPickupPhase ? (data.merchantAddress || '').trim() : (data.address || '').trim();
-          const destLabel = isPickupPhase ? '商家（取餐地點）' : '送達地址';
-          const destIcon = isPickupPhase ? '🏪' : '🏠';
-          const missingAddrHint = isPickupPhase
-            ? '商家尚未設定地址，暫時只顯示外送員位置（可到後台「商家名單設定」補上該商家地址）'
-            : '（後端未回傳地址時無法畫路線）';
+          // 組出整段途經點：商家站點1 → 站點2 → … → 客戶地址（取餐中／運送中都顯示完整路徑）
+          const stopsFromApi = Array.isArray(data.merchantStops) ? data.merchantStops : [];
+          const routeWaypoints = [];
+          if(stopsFromApi.length){
+            stopsFromApi.forEach((s, i) => {
+              const addr = (s && s.address || '').trim();
+              if(!addr) return;
+              routeWaypoints.push({
+                label: `站點${i+1} ${(s.name || '').trim()}`.trim() || `商家站點${i+1}`,
+                address: addr,
+                icon: '🏪'
+              });
+            });
+          } else if((data.merchantAddress || '').trim()){
+            routeWaypoints.push({
+              label: '商家（取餐地點）',
+              address: (data.merchantAddress || '').trim(),
+              icon: '🏪'
+            });
+          }
+          if((data.address || '').trim()){
+            routeWaypoints.push({
+              label: '送達地址',
+              address: (data.address || '').trim(),
+              icon: '🏠'
+            });
+          }
           const phaseText = isPickupPhase ? '🍱 前往商家取餐中' : '🚚 運送中，前往送達地址';
           const updatedText = data.locationUpdatedAt
             ? `${phaseText}・位置更新：${data.locationUpdatedAt}（每 15 秒自動更新）`
@@ -2064,7 +2137,7 @@
               window._driverMap = map;
               setTimeout(()=> map.invalidateSize(), 100);
 
-              await drawDriverRoute(lat, lng, destAddr, destLabel, destIcon, missingAddrHint, mapBox);
+              await drawDriverRoute(lat, lng, routeWaypoints, mapBox);
               mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
             }catch(err){
               console.warn(err);
@@ -2076,7 +2149,7 @@
             if(lookupDriverMarker) lookupDriverMarker.setLatLng([lat, lng]);
             const link = mapBox.querySelector('.map-link');
             if(link) link.href = `https://maps.google.com/?q=${q}`;
-            await drawDriverRoute(lat, lng, destAddr, destLabel, destIcon, missingAddrHint, mapBox);
+            await drawDriverRoute(lat, lng, routeWaypoints, mapBox);
           }
         } else {
           // 狀態還不是「取餐中／運送中」（例如待處理、處理中）：先收起地圖，但輪詢繼續，狀態一變就會自動長出地圖
