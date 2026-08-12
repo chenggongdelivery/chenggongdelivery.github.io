@@ -119,15 +119,27 @@
   }
   #lookupMapBox{margin-top:12px; padding-bottom:4px;}
   #lookupMapBox .map-frame{
-    border-radius:10px; overflow:hidden; border:2px solid var(--ink); background:#eee; height:200px;
+    border-radius:10px; overflow:hidden; border:2px solid var(--ink); background:#eee; height:260px;
   }
-  #lookupMapBox #driverMap{width:100%; height:200px; z-index:1;}
+  #lookupMapBox #driverMap{width:100%; height:260px; z-index:1;}
   #lookupMapBox .map-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--ocean);}
   .driver-moto-marker{
     background:transparent; border:none;
     font-size:28px; line-height:1;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,.35));
   }
+  .waypoint-num-marker{
+    background:transparent; border:none;
+  }
+  .waypoint-num-marker .wn-badge{
+    display:flex; align-items:center; justify-content:center;
+    min-width:28px; height:28px; padding:0 6px; border-radius:999px;
+    background:var(--coral); color:#fff; font-weight:900; font-size:12px;
+    border:2px solid var(--ink); box-shadow:0 2px 0 var(--ink);
+    font-family:'JetBrains Mono',monospace; white-space:nowrap;
+  }
+  .waypoint-num-marker .wn-badge.home{background:var(--ocean);}
+  .waypoint-num-marker .wn-badge.shop{background:var(--gold); color:var(--ink);}
   .pinned-addr-bar{margin-top:10px;}
   .pinned-addr-bar .pa-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
   .pinned-addr-bar .pa-title{font-size:12px; font-weight:700; color:var(--ocean-dark);}
@@ -1824,6 +1836,8 @@
   let lookupWaypointCoords = {}; // addr -> {lat,lng,precise}
   let lookupWaypointMarkers = [];
   let lookupRouteKey = null;
+  let lookupLastRouteDriver = null; // 上次畫線時的外送員座標，位移很小就不重打 OSRM
+  let lookupLastRouteAt = 0;
   function stopLookupPolling(){
     if(lookupPollTimer){ clearInterval(lookupPollTimer); lookupPollTimer = null; }
   }
@@ -1838,6 +1852,8 @@
     lookupWaypointCoords = {};
     lookupWaypointMarkers = [];
     lookupRouteKey = null;
+    lookupLastRouteDriver = null;
+    lookupLastRouteAt = 0;
   }
   // 開啟／關閉查詢視窗時使用：地圖收起、輪詢也一併停止
   function resetLookupMapState(){
@@ -1925,6 +1941,8 @@
       lookupWaypointMarkers = [];
       if(lookupDestMarker){ try{ lookupDestMarker.remove(); }catch(e){} lookupDestMarker = null; }
       if(lookupRouteLine){ try{ lookupRouteLine.remove(); }catch(e){} lookupRouteLine = null; }
+      lookupLastRouteDriver = null;
+      lookupLastRouteAt = 0;
       // 保留已成功地理編碼的座標快取，避免站點順序微調時整批重查
     }
 
@@ -1961,22 +1979,38 @@
       return;
     }
 
-    // 為每個已定位站點放圖示（重用既有 marker 集合）
+    // 為每個已定位站點放編號圖示（重用既有 marker 集合）
     if(!lookupWaypointMarkers.length){
       resolved.forEach((w, i) => {
-        const iconHtml = w.icon || (i === resolved.length - 1 ? '🏠' : '🏪');
+        const isLast = i === resolved.length - 1;
+        const isHome = isLast && /送達|客戶|home/i.test(w.label || '') || (isLast && (w.icon === '🏠'));
+        const num = isHome ? '🏠' : String(i + 1);
+        const badgeClass = isHome ? 'home' : 'shop';
         const markerIcon = L.divIcon({
-          className: 'driver-moto-marker',
-          html: iconHtml,
-          iconSize: [30, 30],
-          iconAnchor: [15, 28]
+          className: 'waypoint-num-marker',
+          html: `<div class="wn-badge ${badgeClass}">${num}</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
         });
         const label = w.label || `站點${i+1}`;
-        const m = L.marker([w.lat, w.lng], { icon: markerIcon }).addTo(map).bindPopup(label);
+        const popup = label + (w.address ? `<br><small>${w.address}</small>` : '') + (w.precise === false ? '<br><small>（概略位置）</small>' : '');
+        const m = L.marker([w.lat, w.lng], { icon: markerIcon }).addTo(map).bindPopup(popup);
         lookupWaypointMarkers.push(m);
       });
-      // 相容舊變數：最後一個當 dest
       lookupDestMarker = lookupWaypointMarkers[lookupWaypointMarkers.length - 1] || null;
+    }
+
+    // 外送員位移很小（約 30 公尺內）且站點沒變：只移動圖示、不重打 OSRM（省流量、畫面更穩）
+    const now = Date.now();
+    const driverMovedFar = !lookupLastRouteDriver ||
+      (Math.abs(lookupLastRouteDriver.lat - lat) > 0.00028 || Math.abs(lookupLastRouteDriver.lng - lng) > 0.00028);
+    const shouldRefreshRoute = !lookupRouteLine || driverMovedFar || (now - lookupLastRouteAt > 60000);
+
+    if(!shouldRefreshRoute){
+      if(hintEl && lookupLastRouteDriver){
+        // 保留上次提示文字，不覆蓋
+      }
+      return;
     }
 
     // OSRM 多點路線：外送員目前位置 → 站點1 → 站點2 → … → 客戶
@@ -2004,8 +2038,10 @@
         const mins = Math.max(1, Math.round(route.duration / 60));
         const imprecise = resolved.some(w => w.precise === false);
         const pathLabel = resolved.map(w => w.label || '站點').join(' → ');
-        const preciseNote = imprecise ? '・部分門牌未精準定位，為路名概略位置' : '';
-        if(hintEl) hintEl.textContent = `整段路線：外送員 → ${pathLabel}・約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新${preciseNote}）`;
+        const preciseNote = imprecise ? '・部分為概略位置' : '・門牌級定位';
+        if(hintEl) hintEl.textContent = `整段路線：外送員 → ${pathLabel}・約 ${km} 公里・約 ${mins} 分鐘（參考值，不含即時路況${preciseNote}）`;
+        lookupLastRouteDriver = { lat, lng };
+        lookupLastRouteAt = Date.now();
         // Google 導航：多點途經
         const origin = `${lat},${lng}`;
         const dest = `${resolved[resolved.length-1].lat},${resolved[resolved.length-1].lng}`;
