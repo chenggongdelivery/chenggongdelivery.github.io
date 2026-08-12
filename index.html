@@ -1862,11 +1862,16 @@
   // 鄉下地址常常查得到路名、查不到門牌號，所以降級查詢能大幅提高成功率；
   // 不降級到只剩鄉鎮市，避免定位誤差太大（整個城鎮範圍可能有好幾公里）
   async function geocodeAddressWithFallback_(rawAddr){
-    const noNote = rawAddr.replace(/（[^）]*）\s*$/, '').replace(/\([^)]*\)\s*$/, '').trim();
+    // 地圖資料庫（OpenStreetMap）地名幾乎都用「台」而非傳統字「臺」（台東縣／台北市／台中市／台南市…），
+    // 兩者是不同的字，會讓查詢完全找不到結果，先正規化避免整批地址都查不到
+    const normalize = (s) => s.replace(/臺/g, '台');
+    const rawAddrN = normalize(rawAddr);
+
+    const noNote = rawAddrN.replace(/（[^）]*）\s*$/, '').replace(/\([^)]*\)\s*$/, '').trim();
     const noHouseNumber = noNote.replace(/\d+(-\d+)?號.*$/, '').trim();
 
     const candidates = [
-      { q: rawAddr, precise: true },
+      { q: rawAddrN, precise: true },
       { q: noNote, precise: true },
       { q: noHouseNumber, precise: false }
     ];
