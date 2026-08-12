@@ -51,7 +51,10 @@
   .brand-text .name{font-size:18px; line-height:1.1;}
   .brand-text .sub{font-size:10.5px; letter-spacing:.14em; color:var(--ocean-dark); font-family:'JetBrains Mono',monospace;}
   .join-btn{border:2px solid var(--ink); background:#06C755; color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap;}
-  .join-btn:active{transform:translateY(2px); box-shadow:none;}\n  .top-order-lookup-btn{appearance:none; -webkit-appearance:none; cursor:pointer; font-family:inherit;}
+  .join-btn:active{transform:translateY(2px); box-shadow:none;}
+  .header-btns{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .header-lookup-btn{border:2px solid var(--ink); background:var(--gold); color:var(--ink); padding:9px 16px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); white-space:nowrap; cursor:pointer; font-family:inherit;}
+  .header-lookup-btn:active{transform:translateY(2px); box-shadow:none;}
 
   main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
 
@@ -479,6 +482,7 @@
   @media (hover:hover){
     .copy-btn:hover{ filter:brightness(1.06); }
     .join-btn:hover{ filter:brightness(1.06); }
+    .header-lookup-btn:hover{ filter:brightness(1.06); }
     .zone-toggle button:not(.active):hover{ opacity:.85; background:var(--card); }
     .fee-card, .step, .extra-service{ transition:transform .15s ease, box-shadow .15s ease; }
     .fee-card:hover, .step:hover, .extra-service:hover{ transform:translateY(-2px); }
@@ -515,8 +519,8 @@
         <div class="sub">CHENGGONG · MIFENG DELIVERY</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <button type="button" class="join-btn top-order-lookup-btn" id="topOrderLookupBtn">🔍 訂單查詢</button>
+    <div class="header-btns">
+      <button type="button" class="header-lookup-btn" id="headerLookupBtn">🔍 訂單查詢</button>
       <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
     </div>
   </div>
@@ -607,7 +611,7 @@
   </div>
 
   <div class="section-title"><span class="eyebrow">先看看賣什麼</span><h2>商家菜單</h2></div>
-  <div class="menu-update-hint">📸 菜單陸續更新中<br>找不到您想吃的店家嗎？沒問題！歡迎在下方手動輸入商家資訊，我們一樣幫您跑腿買到家！</div>
+  <div class="menu-update-hint">📸 菜單陸續更新中</div>
   <div class="menu-gallery" id="menuGallery">
     <div class="empty">目前尚無菜單相片，想知道賣什麼可以直接在下方備註詢問。</div>
   </div>
@@ -1809,12 +1813,29 @@
 
   // ---------- 訂單查詢：輸入完整電話號碼即可查詢最近一筆訂單 ----------
   const lookupOverlay = document.getElementById('lookupOverlay');
+  // ---------- 外送員即時位置：查詢視窗開啟期間每 15 秒自動更新一次 ----------
+  let lookupPollTimer = null;
+  let lookupDestCoord = null;   // 快取送達地址轉換出的座標，避免每次都重打地理編碼
+  let lookupDriverMarker = null;
+  let lookupDestMarker = null;
+  let lookupRouteLine = null;
+  function stopLookupPolling(){
+    if(lookupPollTimer){ clearInterval(lookupPollTimer); lookupPollTimer = null; }
+  }
+  function resetLookupMapState(){
+    stopLookupPolling();
+    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
+    lookupDestCoord = null;
+    lookupDriverMarker = null;
+    lookupDestMarker = null;
+    lookupRouteLine = null;
+  }
   function openLookup(prefillPhone){
     document.getElementById('lookupPhone').value = prefillPhone || '';
     const resultEl = document.getElementById('lookupResult');
     resultEl.style.display = 'none';
     resultEl.textContent = '';
-    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
+    resetLookupMapState();
     const mapBox = document.getElementById('lookupMapBox');
     if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
     lookupOverlay.style.display = 'block';
@@ -1827,40 +1848,92 @@
   function closeLookup(){
     lookupOverlay.style.display = 'none';
     document.body.style.overflow = '';
-    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
+    resetLookupMapState();
     const mapBox = document.getElementById('lookupMapBox');
     if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
   }
   document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
   document.getElementById('orderLookupBtn').addEventListener('click', ()=> openLookup());
-  const topOrderLookupBtn = document.getElementById('topOrderLookupBtn');
-  if(topOrderLookupBtn){
-    topOrderLookupBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      openLookup();
-    });
-  }
+  document.getElementById('headerLookupBtn').addEventListener('click', ()=> openLookup());
   document.getElementById('lookupClose').addEventListener('click', closeLookup);
   lookupOverlay.addEventListener('click', (e)=>{ if(e.target === lookupOverlay) closeLookup(); });
 
-  document.getElementById('lookupSubmit').addEventListener('click', async ()=>{
-    const phone = document.getElementById('lookupPhone').value.trim();
+  // 依外送員目前位置 + 送達地址，畫出／更新路線（會重複呼叫，所以會快取地址座標、重複使用同一個 marker/路線物件）
+  async function drawDriverRoute(lat, lng, destAddr, mapBox){
+    const map = window._driverMap;
+    const hintEl = document.getElementById('routeHint');
+    if(!map) return;
+
+    if(!destAddr){
+      if(hintEl) hintEl.textContent = '（後端未回傳地址時無法畫路線）';
+      return;
+    }
+
+    if(!lookupDestCoord){
+      if(hintEl) hintEl.textContent = '路線規劃中…';
+      try{
+        const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(destAddr);
+        const geoRes = await fetch(geoUrl, { headers: { 'Accept': 'application/json' } });
+        const geoData = await geoRes.json();
+        if(geoData && geoData[0]){
+          lookupDestCoord = { lat: Number(geoData[0].lat), lng: Number(geoData[0].lon) };
+        }
+      }catch(e){ console.warn(e); }
+    }
+
+    if(!lookupDestCoord){
+      if(hintEl) hintEl.textContent = '無法定位送達地址，僅顯示外送員位置';
+      return;
+    }
+
+    const destLat = lookupDestCoord.lat, destLng = lookupDestCoord.lng;
+    if(!lookupDestMarker){
+      const homeIcon = L.divIcon({
+        className: 'driver-moto-marker',
+        html: '🏠',
+        iconSize: [30, 30],
+        iconAnchor: [15, 28]
+      });
+      lookupDestMarker = L.marker([destLat, destLng], { icon: homeIcon }).addTo(map).bindPopup('送達地址');
+    }
+
+    try{
+      const routeUrl = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
+      const routeRes = await fetch(routeUrl);
+      const routeData = await routeRes.json();
+      if(routeData && routeData.code === 'Ok' && routeData.routes && routeData.routes[0]){
+        const route = routeData.routes[0];
+        const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+        if(lookupRouteLine){
+          lookupRouteLine.setLatLngs(coords);
+        } else {
+          lookupRouteLine = L.polyline(coords, { color: '#1E5B67', weight: 5, opacity: 0.85 }).addTo(map);
+          map.fitBounds(lookupRouteLine.getBounds().pad(0.2));
+        }
+        const km = (route.distance / 1000).toFixed(1);
+        const mins = Math.max(1, Math.round(route.duration / 60));
+        if(hintEl) hintEl.textContent = `預估路程約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況・每 15 秒自動更新）`;
+        const gdir = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${destLat},${destLng}&travelmode=driving`;
+        const link = mapBox.querySelector('.map-link');
+        if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟導航 →'; }
+      } else if(hintEl){
+        hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
+      }
+    }catch(e){
+      if(hintEl) hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
+    }
+  }
+
+  // 查詢訂單狀態；isFirst=true 是使用者按查詢按鈕的那一次，之後每 15 秒會自動用 isFirst=false 重打一次來更新外送員位置
+  async function performLookup(digits, isFirst){
     const resultEl = document.getElementById('lookupResult');
     const mapBox = document.getElementById('lookupMapBox');
-    if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
 
-    if(!phone){
-      toast('請填寫聯絡電話');
-      return;
+    if(isFirst){
+      resultEl.style.display = 'block';
+      resultEl.textContent = '查詢中...';
+      if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
     }
-    const digits = phone.replace(/\D/g, '');
-    if(digits.length < 8){
-      toast('請輸入完整電話號碼');
-      return;
-    }
-
-    resultEl.style.display = 'block';
-    resultEl.textContent = '查詢中...';
 
     try{
       const url = `${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(digits)}&t=${Date.now()}`;
@@ -1907,19 +1980,20 @@
           const lng = Number(data.lng);
           const q = encodeURIComponent(lat + ',' + lng);
           const destAddr = (data.address || '').trim();
-          const updated = data.locationUpdatedAt
-            ? `<div style="font-size:11px;opacity:.8;margin-bottom:6px;font-weight:600;">🛵 位置更新：${data.locationUpdatedAt}</div>`
-            : '';
-          mapBox.innerHTML = `
-            ${updated}
-            <div class="map-frame"><div id="driverMap"></div></div>
-            <div id="routeHint" style="font-size:11px;opacity:.75;margin-top:6px;line-height:1.5;"></div>
-            <a class="map-link" href="https://maps.google.com/?q=${q}" target="_blank" rel="noopener">在 Google 地圖開啟外送員位置 →</a>
-          `;
-          mapBox.style.display = 'block';
-          setTimeout(async ()=>{
+          const updatedText = data.locationUpdatedAt ? `🛵 位置更新：${data.locationUpdatedAt}（每 15 秒自動更新）` : '🛵 追蹤中（每 15 秒自動更新）';
+
+          if(!window._driverMap){
+            // 第一次顯示：建立地圖
+            mapBox.innerHTML = `
+              <div id="driverUpdatedText" style="font-size:11px;opacity:.8;margin-bottom:6px;font-weight:600;">${updatedText}</div>
+              <div class="map-frame"><div id="driverMap"></div></div>
+              <div id="routeHint" style="font-size:11px;opacity:.75;margin-top:6px;line-height:1.5;"></div>
+              <a class="map-link" href="https://maps.google.com/?q=${q}" target="_blank" rel="noopener">在 Google 地圖開啟外送員位置 →</a>
+            `;
+            mapBox.style.display = 'block';
+
+            await new Promise(resolve => setTimeout(resolve, 150));
             try{
-              if(window._driverMap){ window._driverMap.remove(); window._driverMap = null; }
               const map = L.map('driverMap', { zoomControl:true, attributionControl:true }).setView([lat, lng], 16);
               L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -1931,76 +2005,56 @@
                 iconSize: [36, 36],
                 iconAnchor: [18, 30]
               });
-              const driverMarker = L.marker([lat, lng], { icon: motoIcon }).addTo(map).bindPopup('外送員位置');
+              lookupDriverMarker = L.marker([lat, lng], { icon: motoIcon }).addTo(map).bindPopup('外送員位置');
               window._driverMap = map;
               setTimeout(()=> map.invalidateSize(), 100);
 
-              const hintEl = document.getElementById('routeHint');
-              if(destAddr){
-                if(hintEl) hintEl.textContent = '路線規劃中…';
-                // 1) 地址轉座標（Nominatim，僅供輕量使用）
-                let destLat = null, destLng = null;
-                try{
-                  const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(destAddr);
-                  const geoRes = await fetch(geoUrl, { headers: { 'Accept': 'application/json' } });
-                  const geoData = await geoRes.json();
-                  if(geoData && geoData[0]){
-                    destLat = Number(geoData[0].lat);
-                    destLng = Number(geoData[0].lon);
-                  }
-                }catch(e){ console.warn(e); }
-
-                if(destLat != null && destLng != null){
-                  const homeIcon = L.divIcon({
-                    className: 'driver-moto-marker',
-                    html: '🏠',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 28]
-                  });
-                  L.marker([destLat, destLng], { icon: homeIcon }).addTo(map).bindPopup('送達地址');
-
-                  // 2) OSRM 路線（免費公共伺服器，適合小量）
-                  try{
-                    const routeUrl = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
-                    const routeRes = await fetch(routeUrl);
-                    const routeData = await routeRes.json();
-                    if(routeData && routeData.code === 'Ok' && routeData.routes && routeData.routes[0]){
-                      const route = routeData.routes[0];
-                      const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
-                      const line = L.polyline(coords, { color: '#1E5B67', weight: 5, opacity: 0.85 }).addTo(map);
-                      map.fitBounds(line.getBounds().pad(0.2));
-                      const km = (route.distance / 1000).toFixed(1);
-                      const mins = Math.max(1, Math.round(route.duration / 60));
-                      if(hintEl) hintEl.textContent = `預估路程約 ${km} 公里・約 ${mins} 分鐘（參考值，不含路況）`;
-                      const gdir = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${destLat},${destLng}&travelmode=driving`;
-                      const link = mapBox.querySelector('.map-link');
-                      if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟導航 →'; }
-                    } else if(hintEl){
-                      hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
-                      map.fitBounds(L.latLngBounds([[lat,lng],[destLat,destLng]]).pad(0.25));
-                    }
-                  }catch(e){
-                    if(hintEl) hintEl.textContent = '已標示送達位置（路線暫時無法取得）';
-                    map.fitBounds(L.latLngBounds([[lat,lng],[destLat,destLng]]).pad(0.25));
-                  }
-                } else if(hintEl){
-                  hintEl.textContent = '無法定位送達地址，僅顯示外送員位置';
-                }
-              } else if(hintEl){
-                hintEl.textContent = '（後端未回傳地址時無法畫路線）';
-              }
+              await drawDriverRoute(lat, lng, destAddr, mapBox);
+              mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
             }catch(err){
               console.warn(err);
             }
-            mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
-          }, 150);
+
+            // 開始每 15 秒自動更新一次外送員位置（就像 Foodpanda 一樣持續追蹤，不用手動重查）
+            if(!lookupPollTimer){
+              lookupPollTimer = setInterval(()=> performLookup(digits, false), 15000);
+            }
+          } else {
+            // 之後每次輪詢：只移動外送員圖示、更新時間文字、重畫路線，不重建整個地圖（避免畫面閃爍）
+            const updatedEl = document.getElementById('driverUpdatedText');
+            if(updatedEl) updatedEl.textContent = updatedText;
+            if(lookupDriverMarker) lookupDriverMarker.setLatLng([lat, lng]);
+            const link = mapBox.querySelector('.map-link');
+            if(link) link.href = `https://maps.google.com/?q=${q}`;
+            await drawDriverRoute(lat, lng, destAddr, mapBox);
+          }
+        } else {
+          // 狀態已不是「取餐中／運送中」（例如已送達）：停止自動更新、收起地圖
+          resetLookupMapState();
+          if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
         }
       } else {
-        resultEl.textContent = '❌ 查無資料，請確認電話號碼是否正確，或稍後再試。';
+        if(isFirst) resultEl.textContent = '❌ 查無資料，請確認電話號碼是否正確，或稍後再試。';
+        stopLookupPolling();
       }
     }catch(err){
-      resultEl.textContent = '查詢失敗，請稍後再試一次。';
+      if(isFirst) resultEl.textContent = '查詢失敗，請稍後再試一次。';
     }
+  }
+
+  document.getElementById('lookupSubmit').addEventListener('click', ()=>{
+    const phone = document.getElementById('lookupPhone').value.trim();
+    if(!phone){
+      toast('請填寫聯絡電話');
+      return;
+    }
+    const digits = phone.replace(/\D/g, '');
+    if(digits.length < 8){
+      toast('請輸入完整電話號碼');
+      return;
+    }
+    resetLookupMapState();
+    performLookup(digits, true);
   });
 
   function loadContent(){
