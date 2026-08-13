@@ -342,12 +342,6 @@
     max-width:100%; padding-bottom:2px;
   }
   .hero-cta-wrap{ position:relative; }
-  /* 右側淡出漸層：提示這排按鈕（開始下單／額外服務／外送費／付款方式）可以橫向滑動查看更多 */
-  .hero-cta-wrap::after{
-    content:''; position:absolute; top:0; right:0; bottom:2px; width:26px;
-    background:linear-gradient(to right, rgba(220,238,247,0), var(--paper));
-    pointer-events:none;
-  }
   .hero-cta a, .hero-cta button{
     border:2px solid var(--ink); border-radius:999px; padding:10px 14px; font-weight:700;
     font-size:13.5px; font-family:inherit; cursor:pointer; text-decoration:none;
@@ -996,12 +990,10 @@
   }
   .hero-cta{
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 4px;
+    row-gap: 8px;
     margin: 0 0 4px;
   }
   .hero-cta .cta-order,
