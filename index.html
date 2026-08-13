@@ -1,0 +1,3112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="dns-prefetch" href="https://script.google.com">
+<link rel="dns-prefetch" href="https://unpkg.com">
+
+<title>成功小蜜丰</title>
+<meta name="description" content="成功鎮在地代購外送社群，價格透明、範圍清楚，一鍵下單通知群組。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="成功小蜜丰｜成功鎮在地代購外送">
+<meta property="og:description" content="成功鎮外送新選擇，在地人專屬的外送方式。加入 LINE 社群，想吃什麼、喝什麼、買什麼，輕鬆幫您送到。">
+<meta property="og:url" content="https://chenggongdelivery.github.io/">
+<!-- 使用系統字體加速首屏，不載入 Google Fonts -->
+<style>
+  :root{
+    --ink:#22302E;
+    --paper:#DCEEF7;
+    --card:#F2F9FC;
+    --ocean:#1E5B67;
+    --ocean-dark:#153F48;
+    --seafoam:#7FADA9;
+    --coral:#E2532F;
+    --coral-dark:#B93F22;
+    --gold:#E3A94B;
+    --radius:14px;
+    --shadow:0 2px 0 var(--ink), 0 8px 20px -10px rgba(34,48,46,.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; color:var(--ink);
+    font-family:system-ui,-apple-system,'Segoe UI','PingFang TC','Microsoft JhengHei','Noto Sans TC',sans-serif; -webkit-font-smoothing:antialiased;
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 50% -8%, rgba(255,255,255,.75), transparent 62%),
+      linear-gradient(180deg, #EAF6FB 0%, #DDEFF8 38%, #CFE6F2 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='70' viewBox='0 0 180 70'%3E%3Cpath d='M0 22 Q45 -3 90 22 T180 22' stroke='%231E5B67' stroke-width='1.4' fill='none' opacity='0.07'/%3E%3Cpath d='M0 45 Q45 20 90 45 T180 45' stroke='%237FADA9' stroke-width='1.4' fill='none' opacity='0.1'/%3E%3C/svg%3E");
+    background-repeat:no-repeat, no-repeat, repeat;
+    background-attachment:scroll, scroll, fixed;
+  }
+  .mono{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace;}
+  h1,h2,h3,.display{font-family:system-ui,-apple-system,'PingFang TC','Microsoft JhengHei',serif; font-weight:800;}
+  a{color:inherit;}
+  ::selection{background:var(--coral); color:var(--paper);}
+
+  header.top{position:sticky; top:0; z-index:50; background:var(--paper); border-bottom:3px solid var(--ink);}
+  .top-inner{max-width:920px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .stamp{width:42px; height:42px; border-radius:50%; background:var(--coral); color:var(--paper); display:flex; align-items:center; justify-content:center; font-size:20px; border:2.5px solid var(--ink); transform:rotate(-6deg); flex-shrink:0; overflow:hidden;}
+  .brand .stamp{font-size:22px; line-height:1;}
+  .brand-text .name{font-size:18px; line-height:1.1;}
+  .brand-text .sub{font-size:10.5px; letter-spacing:.14em; color:var(--ocean-dark); font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace;}
+  .join-btn{border:2px solid var(--ink); background:#06C755; color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); text-decoration:none; display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .join-btn:active{transform:translateY(2px); box-shadow:none;}
+  .header-btns{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .header-lookup-btn{border:2px solid var(--ink); background:var(--gold); color:var(--ink); padding:9px 16px; border-radius:999px; font-weight:700; font-size:13.5px; box-shadow:0 3px 0 var(--ink); white-space:nowrap; cursor:pointer; font-family:inherit;}
+  .header-lookup-btn:active{transform:translateY(2px); box-shadow:none;}
+
+  main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
+
+  .hero{padding:20px 0 10px;}
+  .hero .eyebrow{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.18em; border:1.5px solid var(--coral-dark); color:var(--coral-dark); padding:3px 10px; border-radius:999px; display:inline-block; margin-bottom:14px;}
+  .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
+  .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
+
+  .loading-banner{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--card); color:var(--ocean-dark); border:2px dashed var(--ocean); border-radius:var(--radius);
+    padding:10px 16px; margin:16px 0; font-size:12.5px; font-weight:700;
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .loading-banner.hide{opacity:0; transform:translateY(-6px); pointer-events:none; height:0; margin:0; padding:0; border:none; overflow:hidden;}
+
+  .announcement-banner{
+    display:none; align-items:flex-start; gap:10px; background:var(--gold); color:var(--ink);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:28px 18px; margin:16px 0 0; font-weight:700; font-size:16px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
+  .hours-announcement-banner{
+    display:none; align-items:center; gap:10px; background:var(--coral-dark); color:#fff;
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:16px 0 0; font-weight:700; font-size:13.5px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
+  .delay-warning-banner{
+    display:none; align-items:flex-start; gap:10px; background:var(--gold); color:var(--ink);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:16px 0 0; font-weight:600; font-size:12.5px; line-height:1.7;
+    animation:fadeSlideIn .3s ease; white-space:pre-wrap;
+  }
+
+  .status-banner{
+    display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 18px; margin:20px 0; font-weight:700; font-size:14px; line-height:1.5;
+    animation:fadeSlideIn .3s ease;
+  }
+  .progress-banner{
+    display:none; align-items:center; gap:10px; background:var(--ocean); color:var(--paper);
+    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:12px 18px; margin:0 0 20px; font-weight:700; font-size:13.5px; line-height:1.5;
+    animation:fadeSlideIn .3s ease; cursor:pointer;
+  }
+  .progress-banner:hover{filter:brightness(1.08);}
+  @keyframes fadeSlideIn{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+  .disabled-btn{opacity:.4; pointer-events:none; cursor:not-allowed;}
+
+  .lookup-overlay{
+    display:none; position:fixed; inset:0; background:rgba(34,48,46,.75); z-index:300;
+    padding:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+  }
+  .lookup-box{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:20px 18px 28px; width:calc(100% - 24px); max-width:380px; position:relative; animation:popIn .25s ease;
+    margin:max(12px, env(safe-area-inset-top, 0px)) auto max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px));
+  }
+  #lookupMapBox{margin-top:12px; padding-bottom:4px;}
+  #lookupMapBox .map-frame{
+    border-radius:10px; overflow:hidden; border:2px solid var(--ink); background:#eee; height:260px;
+  }
+  #lookupMapBox #driverMap{width:100%; height:260px; z-index:1;}
+  #lookupMapBox .map-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--ocean);}
+  .driver-moto-marker{
+    background:transparent; border:none;
+    font-size:28px; line-height:1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.35));
+  }
+  .waypoint-num-marker{
+    background:transparent; border:none;
+  }
+  .waypoint-num-marker .wn-badge{
+    display:flex; align-items:center; justify-content:center;
+    min-width:28px; height:28px; padding:0 6px; border-radius:999px;
+    background:var(--coral); color:#fff; font-weight:900; font-size:12px;
+    border:2px solid var(--ink); box-shadow:0 2px 0 var(--ink);
+    font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; white-space:nowrap;
+  }
+  .waypoint-num-marker .wn-badge.home{background:var(--ocean);}
+  .waypoint-num-marker .wn-badge.shop{background:var(--gold); color:var(--ink);}
+  .pinned-addr-bar{margin-top:10px;}
+  .pinned-addr-bar .pa-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .pinned-addr-bar .pa-title{font-size:12px; font-weight:700; color:var(--ocean-dark);}
+  .pinned-addr-bar .pa-save{
+    border:2px solid var(--ink); background:var(--gold); color:var(--ink);
+    font-size:12px; font-weight:700; padding:6px 12px; border-radius:999px; cursor:pointer; font-family:inherit;
+  }
+  .pinned-addr-list{display:flex; flex-direction:column; gap:6px;}
+  .pinned-addr-item{
+    display:flex; align-items:stretch; border:2px solid var(--ink); border-radius:10px; background:var(--paper); overflow:hidden;
+  }
+  .pinned-addr-item .pa-use{
+    flex:1; text-align:left; border:none; background:transparent; padding:10px 12px; cursor:pointer;
+    font-family:inherit; font-size:12.5px; line-height:1.45; color:var(--ink); font-weight:600;
+  }
+  .pinned-addr-item .pa-del{
+    flex:0 0 40px; border:none; border-left:2px solid var(--ink); background:var(--card);
+    color:var(--coral-dark); font-size:16px; cursor:pointer; font-family:inherit;
+  }
+  .pinned-addr-empty{font-size:11.5px; color:var(--ocean-dark); opacity:.75; line-height:1.5;}
+  .lookup-box h3{margin:0 0 6px; font-size:17px;}
+  .lookup-box .hint{font-size:12px; color:var(--ocean-dark); opacity:.8; margin-bottom:16px; line-height:1.6;}
+  .lookup-box .field{margin-bottom:12px;}
+  .lookup-box .field label{font-size:12px; font-weight:700; color:var(--ocean-dark); display:block; margin-bottom:5px;}
+  .lookup-box input{
+    width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:8px; background:var(--paper);
+    font-family:inherit; font-size:14px;
+  }
+  .lookup-box .close-btn{
+    position:absolute; top:14px; right:14px; background:none; border:none; font-size:18px;
+    cursor:pointer; opacity:.6; padding:2px 6px;
+  }
+  .lookup-box .close-btn:hover{opacity:1;}
+  .lookup-result{
+    margin-top:14px; padding:14px 16px; background:var(--ink); color:var(--paper); border-radius:10px;
+    font-size:13px; line-height:1.85; white-space:pre-wrap; display:none; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace;
+  }
+
+  .honeypot-field{position:absolute; left:-9999px; top:-9999px; width:1px; height:1px; overflow:hidden;}
+
+  .utility-btn{
+    background:transparent; border:2px solid var(--ink); color:var(--ink);
+    font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:12.5px; font-weight:600;
+    padding:7px 14px; border-radius:999px; cursor:pointer; opacity:.75;
+  }
+  .utility-btn:hover{opacity:1; background:var(--card);}
+  .utility-btn:disabled{opacity:.3; cursor:not-allowed;}
+
+  .queue-badge{
+    display:none; flex-direction:column; gap:12px; margin-top:14px;
+    background:var(--ocean); color:var(--paper); border:2px solid var(--ink); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px 20px;
+  }
+  .queue-badge-top{display:flex; align-items:center; gap:14px;}
+  .queue-badge .num{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:34px; font-weight:900; line-height:1;}
+  .queue-badge .label{font-size:13px; line-height:1.6;}
+  .queue-badge .close-x{margin-left:auto; background:none; border:none; color:var(--paper); font-size:18px; cursor:pointer; opacity:.7; align-self:flex-start; padding:4px 6px;}
+  .queue-badge .close-x:hover{opacity:1;}
+  .queue-query-btn{
+    background:var(--paper); color:var(--ink); border:2px solid var(--ink); border-radius:999px;
+    padding:10px 16px; font-weight:700; font-size:13px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  .queue-query-btn:hover{filter:brightness(.96);}
+
+  .rules-box{
+    background:var(--ink); color:var(--paper); border-radius:var(--radius); padding:22px 24px;
+    margin:30px 0; box-shadow:var(--shadow); position:relative;
+  }
+  .rules-box h2{font-size:17px; margin:0 0 14px; color:var(--gold);}
+  .rules-box ul{list-style:none; margin:0; padding:0; display:grid; gap:10px;}
+  .rules-box li{display:flex; gap:10px; font-size:14px; line-height:1.6;}
+  .rules-box li .mark{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; color:var(--coral); font-weight:700; flex-shrink:0;}
+  .rules-box li.warn{background:rgba(226,83,47,.15); border:1px dashed var(--coral); padding:10px 12px; border-radius:8px;}
+  .rules-box li.warn .mark{color:var(--coral);}
+
+  /* ---- 精簡版面：可展開區塊／快速操作 ---- */
+  .hero{padding:12px 0 6px;}
+  .hero h1{font-size:clamp(24px,4vw,34px); margin-bottom:8px;}
+  .hero p{font-size:14px; margin-bottom:14px; max-width:480px;}
+  .hero-cta{display:flex; flex-wrap:wrap; gap:10px; margin-top:4px;}
+  .hero-cta a, .hero-cta button{
+    border:2px solid var(--ink); border-radius:999px; padding:11px 18px; font-weight:700;
+    font-size:14px; font-family:inherit; cursor:pointer; text-decoration:none;
+    box-shadow:0 3px 0 var(--ink); display:inline-flex; align-items:center; gap:6px;
+  }
+  .hero-cta a:active, .hero-cta button:active{transform:translateY(2px); box-shadow:none;}
+  .hero-cta .cta-order{background:#06C755; color:#fff;}
+  .hero-cta .cta-lookup{background:var(--gold); color:var(--ink);}
+  .section-title{margin:22px 0 12px;}
+  .info-fold{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius);
+    box-shadow:var(--shadow); margin:14px 0; overflow:hidden;
+  }
+  .info-fold > summary{
+    list-style:none; cursor:pointer; padding:14px 16px; font-weight:800; font-size:14.5px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px; user-select:none;
+    font-family:'Noto Serif TC','Songti TC','PMingLiU',serif;
+  }
+  .info-fold > summary::-webkit-details-marker{display:none;}
+  .info-fold > summary .fold-arrow{font-size:12px; opacity:.6; transition:transform .2s;}
+  .info-fold[open] > summary .fold-arrow{transform:rotate(90deg);}
+  .info-fold .fold-body{padding:0 16px 16px;}
+  .rules-box{margin:16px 0;}
+  .rules-box details.rules-fold > summary{
+    list-style:none; cursor:pointer; color:var(--gold); font-size:17px; font-weight:900;
+    font-family:'Noto Serif TC','Songti TC','PMingLiU',serif; display:flex; align-items:center; justify-content:space-between;
+  }
+  .rules-box details.rules-fold > summary::-webkit-details-marker{display:none;}
+  .rules-box details.rules-fold:not([open]) ul{display:none;}
+  .rules-box details.rules-fold[open] ul{margin-top:14px;}
+  .fee-card .range{font-size:12.5px;}
+  .menu-update-hint{font-size:12.5px; line-height:1.55; padding:10px 12px;}
+  .composer .field label{font-size:13px;}
+  .form-tip{font-size:12px; color:var(--ocean-dark); opacity:.85; margin:-4px 0 14px; line-height:1.55;}
+
+  .hero h1{font-size:clamp(22px,5vw,30px); margin:0 0 6px;}
+  .hero p{margin:0 0 12px; font-size:13.5px;}
+  .hero-cta{margin-top:0;}
+  .info-fold{margin:10px 0;}
+  .rules-box{margin:12px 0 24px;}
+  details.info-fold .fee-grid{margin-top:4px;}
+
+  .quick-chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0;}
+  .quick-chip{
+    border:1.5px solid var(--ink); background:var(--paper); border-radius:999px;
+    padding:6px 12px; font-size:12px; font-weight:700; text-decoration:none; color:var(--ink);
+  }
+
+  .section-title{display:flex; align-items:baseline; gap:10px; margin:36px 0 16px; flex-wrap:wrap;}
+  .section-title .eyebrow{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.16em; border:1.5px solid var(--coral-dark); color:var(--coral-dark); padding:2px 8px; border-radius:999px;}
+  .section-title h2{font-size:20px; margin:0;}
+
+  .fee-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:600px){ .fee-grid{grid-template-columns:1fr;} }
+  .fee-card{background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px;}
+  .fee-card .zone{font-size:12px; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; background:var(--seafoam); color:var(--ocean-dark); padding:2px 10px; border-radius:999px; display:inline-block; font-weight:700; margin-bottom:10px;}
+  .fee-card .price{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-weight:700; font-size:34px; color:var(--coral-dark); line-height:1;}
+  .fee-card .price span{font-size:14px; font-weight:600; color:var(--ink);}
+  .fee-card .range{font-size:13px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;}
+
+  .range-map{margin-top:18px; padding:18px 20px; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .range-map .label{font-size:12px; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; color:var(--ocean-dark); margin-bottom:10px;}
+
+  .menu-gallery{display:grid; gap:12px;}
+  .menu-gallery .empty{font-size:13.5px; color:var(--ocean-dark); opacity:.7; padding:6px 2px;}
+
+  .menu-category{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .menu-category summary{
+    list-style:none; cursor:pointer; padding:13px 16px; display:flex; align-items:center; justify-content:space-between;
+    gap:8px; font-family:'Noto Serif TC','Songti TC','PMingLiU',serif; font-weight:900; font-size:14.5px; user-select:none;
+  }
+  .menu-category summary::-webkit-details-marker{display:none;}
+  .menu-category summary .mc-count{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:11px; font-weight:600; color:var(--ocean-dark); opacity:.75;}
+  .menu-category summary .mc-arrow{transition:transform .2s ease; font-size:12px; color:var(--ocean-dark);}
+  .menu-category[open] summary .mc-arrow{transform:rotate(90deg);}
+  .menu-category-body{
+    padding:0 16px 16px; display:grid; grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:12px;
+  }
+  .menu-category-body .thumb{
+    width:100%; aspect-ratio:1/1; border-radius:10px; overflow:hidden; border:2px solid var(--ink);
+    cursor:pointer; background:#ddd; position:relative;
+  }
+  .menu-category-body .thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .menu-category-body .thumb .thumb-cap{
+    position:absolute; left:0; right:0; bottom:0; background:rgba(34,48,46,.78); color:var(--paper);
+    font-size:9px; line-height:1.35; padding:3px 4px; text-align:center;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .thumb-select-btn{
+    position:absolute; top:5px; right:5px; width:24px; height:24px; border-radius:50%;
+    border:2px solid var(--paper); background:rgba(34,48,46,.55); cursor:pointer; padding:0;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .thumb-select-btn::after{
+    content:''; display:block; width:100%; height:100%;
+  }
+  .thumb.selected{outline:3px solid #06C755; outline-offset:-3px;}
+  .thumb.selected .thumb-select-btn{background:#06C755; border-color:#06C755; transform:scale(1.05);}
+  .thumb.selected .thumb-select-btn::after{
+    content:'✓'; color:#fff; font-size:14px; font-weight:900; line-height:20px; display:block; text-align:center;
+  }
+
+  .cart-float-bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:190; display:flex; justify-content:center;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, var(--paper) 60%, transparent);
+  }
+  .cart-float-bar button{
+    width:100%; max-width:460px; padding:14px; border:2px solid var(--ink); border-radius:999px;
+    background:#06C755; color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; font-family:inherit;
+    box-shadow:0 4px 0 var(--ink), 0 8px 20px -6px rgba(34,48,46,.5); animation:popIn .2s ease;
+  }
+  .cart-review-panel{max-width:520px;}
+  .cart-review-item{
+    background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px; margin-bottom:12px;
+  }
+  .cart-review-item .cri-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .cart-review-item .cri-head strong{flex:1; font-size:14px;}
+  .cart-review-item .cri-thumbs{display:flex; gap:6px; margin-bottom:8px;}
+  .cart-review-item .cri-thumbs img{
+    width:44px; height:44px; object-fit:cover; border-radius:6px; border:1.5px solid var(--ink); cursor:pointer;
+  }
+  .cart-review-item textarea{
+    width:100%; min-height:52px; padding:8px 10px; border:2px solid var(--ink); border-radius:8px;
+    background:var(--card); font-family:inherit; font-size:13px; resize:vertical;
+  }
+  .cri-remove-btn{
+    flex-shrink:0; background:none; border:none; color:var(--coral-dark); font-size:12px; font-weight:700; cursor:pointer;
+  }
+
+  .menu-lightbox{
+    display:none; position:fixed; inset:0; background:rgba(34,48,46,.88); z-index:200;
+    align-items:center; justify-content:center; padding:20px; overflow-y:auto;
+  }
+  .menu-lightbox-panel{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    max-width:480px; width:100%; margin:auto; position:relative; overflow:hidden; animation:popIn .25s ease;
+  }
+  .menu-lightbox-close{
+    position:absolute; top:10px; right:10px; z-index:2; background:rgba(34,48,46,.7); color:var(--paper);
+    border:none; border-radius:999px; width:30px; height:30px; font-size:16px; cursor:pointer;
+  }
+  .menu-lightbox-close:hover{background:rgba(34,48,46,.9);}
+  .menu-lightbox-img-wrap{position:relative; background:var(--ink);}
+  .menu-lightbox-img-wrap img{width:100%; max-height:52vh; object-fit:contain; display:block; background:var(--ink);}
+  .menu-lightbox-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:2;
+    background:rgba(34,48,46,.6); color:var(--paper); border:none; border-radius:999px;
+    width:38px; height:38px; font-size:22px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-lightbox-nav:hover{background:rgba(34,48,46,.85);}
+  .menu-lightbox-nav:disabled{opacity:.25; cursor:not-allowed;}
+  .menu-lightbox-nav.prev{left:10px;}
+  .menu-lightbox-nav.next{right:10px;}
+  .menu-lightbox-page-indicator{
+    position:absolute; bottom:8px; left:50%; transform:translateX(-50%); z-index:2;
+    background:rgba(34,48,46,.7); color:var(--paper); font-size:11.5px; font-weight:700;
+    padding:3px 10px; border-radius:999px;
+  }
+  .menu-lightbox-body{padding:16px;}
+  .menu-lightbox-merchant{font-family:'Noto Serif TC','Songti TC','PMingLiU',serif; font-weight:900; font-size:16px; margin-bottom:10px;}
+  .menu-lightbox-body textarea{
+    width:100%; min-height:64px; padding:10px 12px; border:2px solid var(--ink); border-radius:8px;
+    background:var(--paper); font-family:inherit; font-size:13.5px; resize:vertical;
+  }
+  .menu-lightbox-add-btn{
+    width:100%; margin-top:10px; padding:11px; border:2px solid var(--ink); border-radius:999px;
+    background:#06C755; color:#fff; font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit;
+  }
+  .menu-lightbox-add-btn:hover{filter:brightness(1.06);}
+
+  .extra-services{display:grid; gap:12px;}
+  .extra-service{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px 18px; display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;
+  }
+  .extra-service .info h4{margin:0 0 4px; font-size:14.5px;}
+  .extra-service .info p{margin:0; font-size:13px; color:var(--ink); opacity:.75; line-height:1.6;}
+  .extra-service .note{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-weight:700; color:var(--coral-dark); font-size:13.5px; white-space:nowrap; flex-shrink:0;}
+  .ask-btn{
+    background:#06C755; color:#fff; border:2px solid var(--ink); border-radius:999px; padding:7px 16px;
+    font-weight:700; font-size:12.5px; text-decoration:none; white-space:nowrap; flex-shrink:0; display:inline-block;
+  }
+  .ask-btn:hover{filter:brightness(1.06);}
+  .extra-services .empty{font-size:13.5px; color:var(--ocean-dark); opacity:.7; padding:6px 2px;}
+
+  .menu-update-hint{
+    font-size:12px; color:var(--ocean-dark); opacity:.8; margin:-8px 0 14px; line-height:1.6;
+  }
+
+  .payment-box{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:18px 20px; font-size:13.5px; color:var(--ocean-dark); line-height:1.8; white-space:pre-wrap;
+  }
+
+  .payment-accounts{display:grid; gap:12px; margin-top:12px;}
+  .payment-account{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .payment-account .pa-info{flex:1; min-width:120px;}
+  .payment-account .pa-info strong{display:block; font-size:14px; margin-bottom:2px;}
+  .payment-account .pa-info span{font-size:11px; color:var(--ocean-dark); opacity:.7;}
+  .payment-account .pa-text{
+    font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:13px; color:var(--ink); word-break:break-all;
+    cursor:pointer; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .payment-account .pa-text:hover{text-decoration:underline;}
+  .payment-account .pa-copy-hint{
+    font-family:'Noto Sans TC',sans-serif; font-size:10.5px; font-weight:700; color:var(--ocean-dark);
+    opacity:.7; white-space:nowrap;
+  }
+  .payment-account .pa-qr{
+    width:64px; height:64px; border-radius:8px; overflow:hidden; border:2px solid var(--ink); flex-shrink:0; cursor:pointer;
+  }
+  .payment-account .pa-qr img{width:100%; height:100%; object-fit:cover; display:block;}
+  .payment-account .pa-link{
+    background:var(--ocean); color:var(--paper); border:2px solid var(--ink); border-radius:999px;
+    padding:8px 16px; font-weight:700; font-size:12.5px; text-decoration:none; white-space:nowrap; flex-shrink:0;
+  }
+  .payment-account .pa-link:hover{filter:brightness(1.1);}
+
+  .hours-card{
+    display:flex; align-items:center; gap:20px; background:var(--card); border:2px solid var(--ink);
+    border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; flex-wrap:wrap;
+  }
+  .hours-card .clock{
+    width:64px; height:64px; border-radius:50%; border:3px solid var(--ink); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative;
+  }
+  .hours-card .clock::before{content:''; position:absolute; width:2px; height:18px; background:var(--ink); top:8px; left:calc(50% - 1px); transform-origin:bottom; transform:rotate(35deg);}
+  .hours-card .clock::after{content:''; position:absolute; width:2px; height:22px; background:var(--coral); top:10px; left:calc(50% - 1px); transform-origin:bottom; transform:rotate(150deg);}
+  .hours-card .time{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:22px; font-weight:700;}
+  .hours-card .note{font-size:12.5px; color:var(--ocean-dark); margin-top:4px;}
+  .hours-card .provisional{font-size:11px; background:var(--gold); color:var(--ink); padding:2px 8px; border-radius:999px; font-weight:700; margin-left:8px; vertical-align:middle;}
+
+  .steps{display:grid; gap:14px;}
+  .step{display:flex; gap:14px; align-items:flex-start; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px;}
+  .step .num{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-weight:700; font-size:15px; width:30px; height:30px; border-radius:50%; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .step h4{margin:0 0 4px; font-size:14.5px;}
+  .step p{margin:0; font-size:13px; color:var(--ink); opacity:.7; line-height:1.6;}
+
+  .composer{background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px;}
+  .composer label{font-size:12px; font-weight:700; color:var(--ocean-dark); display:block; margin-bottom:5px;}
+  .composer .field{margin-bottom:14px;}
+  .composer input, .composer select, .composer textarea{
+    width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:8px; background:var(--paper);
+    font-family:inherit; font-size:14px;
+  }
+  .composer textarea{min-height:60px; resize:vertical;}
+  .zone-toggle{display:flex; gap:8px;}
+  .zone-toggle button{
+    flex:1; padding:10px; border:2px solid var(--ink); border-radius:8px; background:var(--paper);
+    font-weight:700; font-size:13px; opacity:.55;
+  }
+  .zone-toggle button.active{background:var(--ocean); color:var(--paper); opacity:1;}
+
+  .extra-service-picker{display:grid; gap:8px;}
+
+  #stopsContainer{display:grid; gap:14px;}
+  .stop-row{
+    background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:14px; display:grid; gap:8px;
+  }
+  .stop-row-header{display:flex; align-items:center; justify-content:space-between;}
+  .stop-label{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:var(--ocean-dark);}
+  .stop-remove{
+    background:none; border:none; color:var(--coral-dark); font-size:12px; font-weight:700; cursor:pointer; padding:2px 6px;
+  }
+  .stop-remove:hover{text-decoration:underline;}
+  .stop-row select, .stop-row input, .stop-row textarea{
+    width:100%; padding:9px 11px; border:2px solid var(--ink); border-radius:8px; background:var(--card);
+    font-family:inherit; font-size:13.5px;
+  }
+  .stop-hours-hint{font-size:11.5px; color:var(--ocean-dark); font-weight:600;}
+  .stop-preorder-check{
+    display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 10px;
+    background:var(--paper); border:1.5px dashed var(--ocean); border-radius:8px;
+    font-size:12px; font-weight:600; color:var(--ocean-dark); line-height:1.5; cursor:pointer;
+  }
+  .stop-preorder-check input{width:auto !important; flex-shrink:0; accent-color:var(--ocean);}
+  .extra-service-option{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:10px 12px; cursor:pointer;
+    transition:background .15s ease;
+  }
+  .extra-service-option:hover{background:var(--card);}
+  .extra-service-option .eso-info{display:flex; align-items:center; gap:8px; font-size:13.5px; line-height:1.5;}
+  .extra-service-option input[type="checkbox"]{width:auto; flex-shrink:0; accent-color:var(--ocean);}
+  .extra-service-option .eso-fee{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-weight:700; color:var(--coral-dark); font-size:13.5px; white-space:nowrap;}
+
+  .preview{margin-top:18px; background:var(--ink); color:var(--paper); border-radius:10px; padding:16px 18px; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:13px; white-space:pre-wrap; line-height:1.8; position:relative;}
+  .preview .fee-line{color:var(--gold); font-weight:700;}
+  .copy-btn{
+    margin-top:12px; border:2px solid var(--ink); background:var(--coral); color:var(--paper); padding:10px 20px;
+    border-radius:999px; font-weight:700; font-size:14px; box-shadow:0 3px 0 var(--ink); cursor:pointer;
+  }
+  .copy-btn:active{transform:translateY(2px); box-shadow:none;}
+
+  footer{max-width:920px; margin:0 auto; padding:24px 20px; font-size:11.5px; color:var(--ocean-dark); text-align:center; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:12px 22px; border-radius:999px;
+    font-size:13.5px; font-weight:600; opacity:0; pointer-events:none; transition:.25s; z-index:200;
+    box-shadow:0 8px 24px rgba(0,0,0,.3); max-width:min(90vw, 380px); text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+
+  /* ---- 最終視覺美化：焦點狀態、hover回饋、動畫細節 ---- */
+  a, button, .zone-toggle button, .utility-btn{-webkit-tap-highlight-color:transparent;}
+
+  .composer input:focus, .composer textarea:focus, .composer select:focus{
+    outline:none; border-color:var(--ocean); box-shadow:0 0 0 3px rgba(30,91,103,.18);
+  }
+  .copy-btn:focus-visible, .join-btn:focus-visible, .zone-toggle button:focus-visible,
+  .utility-btn:focus-visible, .queue-badge .close-x:focus-visible{
+    outline:2.5px solid var(--ocean); outline-offset:2px;
+  }
+
+  @media (hover:hover){
+    .copy-btn:hover{ filter:brightness(1.06); }
+    .join-btn:hover{ filter:brightness(1.06); }
+    .header-lookup-btn:hover{ filter:brightness(1.06); }
+    .zone-toggle button:not(.active):hover{ opacity:.85; background:var(--card); }
+    .fee-card, .step, .extra-service{ transition:transform .15s ease, box-shadow .15s ease; }
+    .fee-card:hover, .step:hover, .extra-service:hover{ transform:translateY(-2px); }
+  }
+
+  .zone-toggle button{transition:background .15s ease, opacity .15s ease;}
+  @media (max-width:380px){ .zone-toggle{flex-direction:column;} }
+
+  .composer input[type="file"]{padding:8px 10px; font-size:13px; cursor:pointer;}
+  .composer input[type="file"]::file-selector-button{
+    border:2px solid var(--ink); background:var(--ocean); color:var(--paper); font-weight:700;
+    padding:6px 14px; border-radius:999px; margin-right:10px; cursor:pointer; font-family:inherit; font-size:12.5px;
+  }
+  .composer input[type="file"]::file-selector-button:hover{filter:brightness(1.1);}
+
+  .queue-badge .close-x{padding:4px 6px; margin:-4px -6px 0 auto; border-radius:6px;}
+  .queue-badge .close-x:hover{background:rgba(243,233,210,.15);}
+  .queue-badge.pop{animation:popIn .28s ease;}
+  @keyframes popIn{ from{transform:scale(.94); opacity:0;} to{transform:scale(1); opacity:1;} }
+
+  .utility-btn{padding:8px 15px;}
+
+  /* ========== 行動版響應式佈局 ========== */
+  html{ -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body{ overflow-x: hidden; }
+  img, svg, video{ max-width: 100%; height: auto; }
+
+  /* 輸入框在 iOS 避免自動放大：字級至少 16px */
+  .composer input,
+  .composer select,
+  .composer textarea,
+  .lookup-box input,
+  .menu-lightbox-body textarea{
+    font-size: 16px;
+  }
+  .composer input,
+  .composer select,
+  .composer textarea{
+    min-height: 44px;
+    padding: 12px 14px;
+  }
+  .composer textarea{ min-height: 72px; }
+
+  .zone-toggle{ flex-wrap: wrap; }
+  .zone-toggle button{
+    flex: 1 1 auto;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .copy-btn, .join-btn, .header-lookup-btn, .utility-btn, .queue-query-btn, .hero-cta a, .hero-cta button{
+    min-height: 44px;
+  }
+
+  @media (max-width: 720px){
+    .top-inner{
+      padding: 10px 14px;
+      gap: 8px;
+    }
+    .brand .stamp{ width: 36px; height: 36px; font-size: 17px; }
+    .brand-text .name{ font-size: 16px; }
+    .brand-text .sub{ font-size: 9.5px; letter-spacing: .1em; }
+    .header-btns{ gap: 6px; }
+    .join-btn, .header-lookup-btn{
+      padding: 8px 12px;
+      font-size: 12.5px;
+    }
+    main{ padding: 0 14px 100px; }
+
+    .hero{ padding: 10px 0 4px; }
+    .hero h1{ font-size: clamp(22px, 7vw, 30px); line-height: 1.25; }
+    .hero p{ font-size: 13.5px; margin-bottom: 12px; }
+    .hero-cta{ flex-direction: column; gap: 8px; }
+    .hero-cta a, .hero-cta button{ width: 100%; justify-content: center; }
+    .quick-chip-row{ gap: 6px; }
+    .quick-chip{ padding: 7px 12px; font-size: 12px; }
+
+    .section-title{ margin: 22px 0 10px; gap: 6px; }
+    .section-title h2{ font-size: 18px; }
+    .section-title .eyebrow{ font-size: 10px; }
+
+    .rules-box{ padding: 16px 16px; margin: 12px 0; }
+    .fee-grid{ gap: 12px; }
+    .fee-card{ padding: 16px; }
+    .fee-card .price{ font-size: 28px; }
+
+    .range-map{ padding: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .range-map svg{ min-width: 520px; }
+
+    .hours-card{ padding: 14px 16px; gap: 12px; }
+    .menu-category-body{ grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
+    .composer{ padding: 16px 14px; }
+    .composer .field{ margin-bottom: 16px; }
+    .composer label{ font-size: 13px; margin-bottom: 6px; }
+
+    .stop-row{ padding: 12px; }
+    .stop-row-header{ flex-wrap: wrap; gap: 6px; }
+
+    .pinned-addr-bar .pa-head{ flex-wrap: wrap; gap: 8px; }
+    .pinned-addr-bar .pa-save{ width: 100%; text-align: center; }
+
+    .copy-btn{ width: 100%; justify-content: center; text-align: center; }
+    .composer > div[style*="display:flex"]{ flex-direction: column !important; }
+    .composer > div[style*="display:flex"] .copy-btn,
+    .composer > div[style*="display:flex"] .utility-btn{ width: 100%; }
+
+    .payment-box{ padding: 14px 16px; font-size: 13px; }
+    .info-fold > summary{ padding: 12px 14px; font-size: 14px; }
+    .menu-update-hint{ font-size: 12px; padding: 10px 12px; }
+
+    .cart-float-bar{
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    }
+    .cart-float-bar button{ font-size: 14px; padding: 14px; }
+
+    .lookup-box{
+      width: calc(100% - 16px);
+      max-width: none;
+      margin: max(8px, env(safe-area-inset-top, 0px)) auto max(80px, calc(env(safe-area-inset-bottom, 0px) + 60px));
+      padding: 18px 14px 24px;
+    }
+    #lookupMapBox .map-frame, #lookupMapBox #driverMap{ height: 220px; }
+
+    .menu-lightbox{ padding: 12px; }
+    .menu-lightbox-panel{ max-width: 100%; }
+
+    .announcement-banner, .hours-announcement-banner, .delay-warning-banner, .status-banner, .progress-banner{
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+    .announcement-banner{ font-size: 14px; padding: 16px 14px; }
+
+    footer{ padding: 20px 14px 28px; }
+  }
+
+  @media (max-width: 480px){
+    .top-inner{ flex-wrap: nowrap; }
+    .brand{ min-width: 0; flex: 1; }
+    .brand-text .name{
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw;
+    }
+    .header-btns{ flex-shrink: 0; }
+    .join-btn span.full-label{ /* reserved */ }
+
+    .fee-grid{ grid-template-columns: 1fr; }
+    .zone-toggle{ flex-direction: column; }
+    .zone-toggle button{ width: 100%; }
+
+    /* 地址列：鄉鎮與縣市在窄螢幕直向排列 */
+    .composer .field > div[style*="display:flex"]{
+      flex-direction: column !important;
+    }
+    .composer .field > div[style*="display:flex"] select,
+    .composer .field > div[style*="display:flex"] input{
+      flex: 1 1 auto !important;
+      width: 100% !important;
+    }
+    #cAddrCounty{ flex: 1 1 auto !important; max-width: none !important; }
+
+    .queue-badge{ padding: 14px 16px; }
+    .queue-badge .num{ font-size: 28px; }
+
+    .hero .eyebrow{ margin-bottom: 10px; }
+    .form-tip{ font-size: 12px; }
+  }
+
+  @media (max-width: 360px){
+    .join-btn, .header-lookup-btn{ padding: 7px 10px; font-size: 12px; }
+    .brand-text .sub{ display: none; }
+    main{ padding: 0 12px 100px; }
+    .composer{ padding: 14px 12px; }
+  }
+
+  /* 橫向手機：壓縮頂部與主內容留白 */
+  @media (max-height: 430px) and (orientation: landscape){
+    .hero{ padding: 6px 0; }
+    .hero h1{ font-size: 20px; }
+    .hero-cta{ flex-direction: row; }
+    .hero-cta a, .hero-cta button{ width: auto; }
+    main{ padding-bottom: 80px; }
+    .lookup-box{ margin-top: 8px; }
+  }
+
+  /* 支援瀏海／底部手勢安全區 */
+  @supports (padding: max(0px)){
+    header.top{
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+    }
+    body{
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+    }
+  }
+
+</style>
+
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="stamp" aria-hidden="true">🐝</div>
+      <div class="brand-text">
+        <div class="name display">成功小蜜丰</div>
+        <div class="sub">CHENGGONG · MIFENG DELIVERY</div>
+      </div>
+    </div>
+    <div class="header-btns">
+      <button type="button" class="header-lookup-btn" id="headerLookupBtn">🔍 訂單查詢</button>
+      <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群 →</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
+  <div class="announcement-banner" id="announcementBanner"></div>
+  <div class="hours-announcement-banner" id="hoursAnnouncementBanner"></div>
+  <div class="delay-warning-banner" id="delayWarningBanner"></div>
+
+  <div class="hero">
+    <h1>成功小蜜丰</h1>
+    <p>代購外送 · 選店填地址即可下單</p>
+    <div class="hero-cta">
+      <a class="cta-order" href="#orderComposer">🛒 下單</a>
+      <button type="button" class="cta-lookup" id="heroLookupBtn">🔍 查訂單</button>
+    </div>
+  </div>
+
+  <div class="status-banner" id="statusBanner"></div>
+  <div class="progress-banner" id="progressBanner"></div>
+
+  <details class="info-fold" id="menuSection" style="margin-top:14px;">
+    <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
+    <div class="fold-body">
+      <div class="menu-update-hint">點菜單加入品項；沒有的店可在上方表單手動填。</div>
+      <div class="menu-gallery" id="menuGallery">
+        <div class="empty">菜單準備中。</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="section-title" id="orderComposer" style="margin-top:18px;"><span class="eyebrow">下單</span><h2>訂單</h2></div>
+<div class="composer">
+    <div class="field">
+      <label>要買哪幾家</label>
+      <div id="stopsContainer"></div>
+      <button type="button" class="utility-btn" id="addStopBtn" style="margin-top:8px;">➕ 加一家店</button>
+      <div id="transferFeeHint" style="display:none; font-size:12px; color:var(--coral-dark); margin-top:8px; font-weight:600; line-height:1.6;"></div>
+    </div>
+    <div class="field">
+      <label>送到哪裡</label>
+      <div style="display:flex; gap:8px;">
+        <select id="cAddrCounty" style="flex:0 0 92px;">
+          <option value="臺東縣">臺東縣</option>
+        </select>
+        <select id="cAddrTownship" style="flex:1;">
+          <option value="">請選擇鄉鎮市</option>
+        </select>
+      </div>
+      <select id="cAddrRoad" style="margin-top:8px;">
+        <option value="">請選擇路名</option>
+        <option value="其他">其他（自行輸入）</option>
+      </select>
+      <input id="cAddrRoadOther" placeholder="請輸入路名" style="display:none; margin-top:8px;">
+      <input id="cAddrDetail" placeholder="巷弄、門牌號" style="margin-top:8px;">
+      <input type="hidden" id="cAddress">
+      <div id="addressZoneHint" style="display:none; font-size:12px; margin-top:6px; font-weight:700; line-height:1.6;"></div>
+    </div>
+    <div class="field">
+      <label>地址備註（選填）</label>
+      <input id="cAddrNote" placeholder="例：全家旁邊">
+    </div>
+    <details class="info-fold" style="margin:0 0 14px;box-shadow:none;">
+      <summary style="font-size:13px;">📌 常用地址 <span class="fold-arrow">▸</span></summary>
+      <div class="fold-body">
+        <div class="pinned-addr-bar" id="pinnedAddrBar">
+          <div class="pa-head">
+            <span class="pa-title">常用地址</span>
+            <button type="button" class="pa-save" id="pinAddressBtn">釘選目前地址</button>
+          </div>
+          <div class="pinned-addr-list" id="pinnedAddrList"></div>
+          <div class="pinned-addr-empty" id="pinnedAddrEmpty">可釘選常用地址（最多 8 筆）</div>
+        </div>
+      </div>
+    </details>
+    <div class="field">
+      <label>範圍</label>
+      <div class="zone-toggle">
+        <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
+        <button type="button" class="zone-btn" data-fee="60">鎮外（$60）</button>
+      </div>
+    </div>
+    <div class="field" id="extraServiceField" style="display:none;">
+      <label>加購服務（選填）</label>
+      <div class="extra-service-picker" id="extraServicePicker"></div>
+    </div>
+    <div class="field">
+      <label>聯絡電話（必填）</label>
+      <input id="cPhone" type="tel" inputmode="numeric" placeholder="0912-345-678" maxlength="12" required>
+    </div>
+    <div class="field">
+      <label>暱稱（必填）</label>
+      <input id="cContact" placeholder="群組暱稱" required>
+    </div>
+    <div class="field">
+      <label>預約（選填）</label>
+      <div style="display:flex; gap:8px;">
+        <input id="cScheduleDate" type="date" style="flex:1;">
+        <select id="cScheduleTime" style="flex:1;">
+          <option value="">請選擇時段</option>
+        </select>
+      </div>
+      <input type="hidden" id="cSchedule">
+      <div id="scheduleHint" style="font-size:11.5px; color:var(--ocean-dark); opacity:.8; margin-top:5px;"></div>
+    </div>
+    <div class="field">
+      <label>備註</label>
+      <input id="cNote" placeholder="例：不加香菜">
+    </div>
+    <div class="field">
+      <label>付款方式</label>
+      <div class="zone-toggle">
+        <button type="button" class="pay-btn active" data-pay="現場付款">現場付款</button>
+        <button type="button" class="pay-btn" data-pay="匯款">匯款轉帳</button>
+      </div>
+      <div class="field" id="remitFields" style="display:none; margin-top:12px; padding:0;">
+        <label>匯款帳戶大名</label>
+        <input id="cRemitName" placeholder="例：王小明（與匯款帳戶戶名一致）">
+        <label style="margin-top:10px;">匯款帳號後五碼</label>
+        <input id="cRemitLast5" type="text" inputmode="numeric" maxlength="5" placeholder="例：12345">
+        <div style="font-size:11px; color:var(--ocean-dark); opacity:.75; margin-top:5px; line-height:1.6;">請與實際匯款帳戶一致，方便核對</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>照片</label>
+      <input type="file" id="cPhoto" accept="image/*">
+      <div id="photoPreviewBox" style="display:none; margin-top:8px; display:flex; align-items:center; gap:10px;">
+        <img id="photoPreviewImg" src="" alt="照片預覽" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:2px solid var(--ink);">
+        <button type="button" class="utility-btn" id="photoRemoveBtn" style="padding:5px 12px;">移除照片</button>
+      </div>
+      <div style="font-size:11px; color:var(--ocean-dark); opacity:.75; margin-top:4px;"></div>
+    </div>
+    <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px;">
+      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
+        <input type="checkbox" id="cLegalConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
+        <span>本人確認已年滿 18 歲，委託內容合法、如實填寫，不含毒品、槍砲彈藥或其他依法禁止／限制販售之物品；如有不實，願自行承擔相關法律責任。</span>
+      </label>
+    </div>
+    <div class="honeypot-field" aria-hidden="true">
+      <label for="cHoneypot">請勿填寫此欄位</label>
+      <input id="cHoneypot" name="extra_note_field" tabindex="-1" autocomplete="off">
+    </div>
+    <details class="info-fold" style="margin:10px 0 14px;box-shadow:none;">
+      <summary style="font-size:13px;">訂單預覽 <span class="fold-arrow">▸</span></summary>
+      <div class="fold-body"><div class="preview" id="preview"></div></div>
+    </details>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button type="button" class="copy-btn" id="sendLineBtn" style="background:#06C755;">送出訂單 →</button>
+    </div>
+    <div class="queue-badge" id="queueBadge">
+      <div class="queue-badge-top">
+        <div class="num" id="queueNum">#0</div>
+        <div class="label" id="queueLabel">您的委託單號<br>我們將依單號順序為您服務</div>
+        <button class="close-x" id="queueClose" aria-label="關閉">✕</button>
+      </div>
+      <button type="button" class="queue-query-btn" id="queueQueryBtn">🔍 查詢訂單狀態</button>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+      <button type="button" class="utility-btn" id="clearBtn">🗑️ 清除表單</button>
+      <button type="button" class="utility-btn" id="undoBtn" disabled>↩️ 返回上一步</button>
+    </div>
+    <div style="font-size:11.5px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;">電話與地址僅供配送，不會公開</div>
+  </div>
+
+  
+
+  <details class="info-fold" id="feeSection">
+    <summary>💰 外送費：鎮內 $30　鎮外 $60 <span class="fold-arrow">▸</span></summary>
+    <div class="fold-body">
+      <div class="fee-grid">
+        <div class="fee-card">
+          <span class="zone">鎮內</span>
+          <div class="price">$30 <span>／單</span></div>
+          <div class="range">三仙台加油站 ↔ 全滿加油站</div>
+        </div>
+        <div class="fee-card">
+          <span class="zone">鎮外</span>
+          <div class="price">$60 <span>／單</span></div>
+          <div class="range">北至小港天后宮 · 南至和平國小</div>
+        </div>
+      </div>
+      <div class="range-map">
+    <div class="label">服務範圍示意 · 沿海岸線 北 → 南</div>
+    <svg viewBox="0 0 700 100" width="100%" height="100" role="img" aria-label="服務範圍：北至小港天后宮，南到和平國小，鎮內範圍為三仙台加油站到全滿加油站">
+      <line x1="30" y1="50" x2="670" y2="50" stroke="#22302E" stroke-width="2" stroke-linecap="round" opacity=".25"/>
+      <line x1="70" y1="50" x2="630" y2="50" stroke="#7FADA9" stroke-width="4" stroke-linecap="round"/>
+      <line x1="220" y1="50" x2="470" y2="50" stroke="#1E5B67" stroke-width="5" stroke-linecap="round"/>
+      <g font-family="system-ui,sans-serif" font-size="11.5" fill="#153F48" font-weight="600" text-anchor="middle">
+        <circle cx="70" cy="50" r="6" fill="#E3A94B" stroke="#22302E" stroke-width="2"/>
+        <text x="70" y="30">小港天后宮</text>
+        <text x="70" y="76" font-size="10" fill="#22302E" opacity=".55">鎮外北界</text>
+
+        <circle cx="220" cy="50" r="7" fill="#E2532F" stroke="#22302E" stroke-width="2"/>
+        <text x="220" y="30" font-weight="700">三仙台加油站</text>
+        <text x="220" y="76" font-size="10" fill="#22302E" opacity=".55">鎮內北界</text>
+
+        <circle cx="345" cy="50" r="8" fill="#E2532F" stroke="#22302E" stroke-width="2.5"/>
+        <text x="345" y="30" font-weight="900">成功鎮</text>
+        <text x="345" y="76" font-size="10" fill="#22302E" opacity=".55">起點</text>
+
+        <circle cx="470" cy="50" r="7" fill="#E2532F" stroke="#22302E" stroke-width="2"/>
+        <text x="470" y="30" font-weight="700">全滿加油站</text>
+        <text x="470" y="76" font-size="10" fill="#22302E" opacity=".55">鎮內南界</text>
+
+        <circle cx="630" cy="50" r="6" fill="#E3A94B" stroke="#22302E" stroke-width="2"/>
+        <text x="630" y="30">和平國小</text>
+        <text x="630" y="76" font-size="10" fill="#22302E" opacity=".55">鎮外南界</text>
+      </g>
+    </svg>
+  </div>
+    </div>
+  </details>
+
+  <details class="info-fold" id="hoursSection">
+    <summary>🕒 營業時間 <span id="hoursTimeText">08:00 – 20:00</span><span class="provisional" id="provisionalBadge" style="margin-left:8px;">暫定</span> <span class="fold-arrow">▸</span></summary>
+    <div class="fold-body">
+      <div class="hours-card" style="box-shadow:none;margin:0;">
+        <div class="clock" aria-hidden="true"></div>
+        <div>
+          <div class="time" id="hoursTime">依人力調整，異動會公告</div>
+          <div class="note">非營業時間可預約</div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="info-fold">
+    <summary>💳 付款方式 <span class="fold-arrow">▸</span></summary>
+    <div class="fold-body">
+      <div class="payment-box" id="paymentBox" style="margin:0;">現場付款或匯款（商品費 + 外送費）</div>
+      <div class="payment-accounts" id="paymentAccounts"></div>
+    </div>
+  </details>
+
+  <details class="info-fold">
+    <summary>➕ 額外服務 <span class="fold-arrow">▸</span></summary>
+    <div class="fold-body">
+      <div style="margin-bottom:8px;"><a class="ask-btn" id="askInlineBtn" href="#" target="_blank" rel="noopener">💬 私訊</a></div>
+      <div class="extra-services" id="extraServices">
+        <div class="empty">目前無額外服務。</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="rules-box">
+    <details class="rules-fold">
+      <summary>📌 社群守則 <span class="fold-arrow">▸</span></summary>
+      <ul id="rulesList">
+        <li class="warn"><span class="mark">禁止</span>切勿在群內打廣告！！本群只提供代購外送服務，其餘一律禁止。</li>
+        <li><span class="mark">01</span>下單時請清楚告知：商家名稱、品項、地址、聯絡方式。</li>
+        <li><span class="mark">02</span>外送費依鎮內／鎮外分級計算，商品費用另計。</li>
+        <li><span class="mark">03</span>下單恕不接受取消，請確認購買後再下單以免造成雙方困擾及損失。</li>
+        <li><span class="mark">04</span>收到商品時請當場核對品項與金額，事後恕不負責。</li>
+        <li><span class="mark">05</span>颱風、豪雨等特殊天候將視情況暫停外送，另於群內公告。</li>
+        <li><span class="mark">06</span>惡意棄單者將列入黑名單。</li>
+        <li><span class="mark">07</span>本群遵守相關法規，不提供未成年人代購酒類、香菸及其他依法限制販售之商品，敬請見諒與配合。</li>
+        <li><span class="mark">08</span>依法禁止代購或限制販售之物品恕不提供代購服務。</li>
+        <li><span class="mark">09</span>本服務僅提供代購,委託內容須具體明確;委託人應對委託內容之合法性負完全責任,如因提供不實資訊或違法物品而生之法律責任,概由委託人自行承擔,與代購者無涉。</li>
+      </ul>
+    </details>
+  </div>
+
+</main>
+
+<footer>成功小蜜丰 · 本頁僅供社群公告與下單參考使用</footer>
+<div class="toast" id="toast"></div>
+
+<div class="cart-float-bar" id="cartFloatBar" style="display:none;">
+  <button type="button" id="cartFloatBtn"></button>
+</div>
+
+<div class="menu-lightbox" id="cartReviewOverlay">
+  <div class="menu-lightbox-panel cart-review-panel">
+    <button class="menu-lightbox-close" id="cartReviewClose" aria-label="關閉">✕</button>
+    <div class="menu-lightbox-body">
+      <div class="menu-lightbox-merchant">🛒 確認購物清單</div>
+      <div class="hint" style="font-size:12px; color:var(--ocean-dark); opacity:.75; margin-bottom:14px; line-height:1.6;">已選的菜單依商家分組，各自填寫想買的品項，填好按下方按鈕一次全部加入訂單</div>
+      <div id="cartReviewList"></div>
+      <button type="button" class="menu-lightbox-add-btn" id="cartReviewAddAllBtn">✅ 全部加入訂單</button>
+    </div>
+  </div>
+</div>
+
+<div class="menu-lightbox" id="menuLightbox">
+  <div class="menu-lightbox-panel">
+    <button class="menu-lightbox-close" id="menuLightboxClose" aria-label="關閉">✕</button>
+    <div class="menu-lightbox-img-wrap">
+      <img id="menuLightboxImg" src="" alt="菜單放大圖">
+      <button type="button" class="menu-lightbox-nav prev" id="menuLightboxPrevBtn" aria-label="上一張" style="display:none;">‹</button>
+      <button type="button" class="menu-lightbox-nav next" id="menuLightboxNextBtn" aria-label="下一張" style="display:none;">›</button>
+      <div class="menu-lightbox-page-indicator" id="menuLightboxPageIndicator" style="display:none;"></div>
+    </div>
+    <div class="menu-lightbox-body">
+      <div class="menu-lightbox-merchant" id="menuLightboxMerchant"></div>
+      <textarea id="menuLightboxItemsInput" placeholder="邊看邊打想買的品項..."></textarea>
+      <button type="button" class="menu-lightbox-add-btn" id="menuLightboxAddBtn">✅ 加入訂單</button>
+    </div>
+  </div>
+</div>
+
+<div class="lookup-overlay" id="lookupOverlay">
+  <div class="lookup-box">
+    <button class="close-btn" id="lookupClose" aria-label="關閉">✕</button>
+    <h3>🔍 查詢我的訂單</h3>
+    <div class="hint">輸入你下單時填寫的完整聯絡電話，查詢最近一筆訂單狀態</div>
+    <div class="field">
+      <label>聯絡電話</label>
+      <input id="lookupPhone" type="tel" inputmode="numeric" placeholder="0912-345-678">
+    </div>
+    <button class="copy-btn" id="lookupSubmit" style="width:100%; background:var(--ocean); display:block;">查詢</button>
+    <div class="lookup-result" id="lookupResult"></div>
+    <div id="lookupMapBox" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsoU2dTmol9_RyAauZOu_268u_QUCWfWkiPn1BpFVtgbW1bAOdTdG_SM6fMMey099Z3w/exec';
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderRules(rules){
+    if(!rules || !rules.length) return; // 沒資料就維持頁面上寫死的預設守則
+    const ul = document.getElementById('rulesList');
+    ul.innerHTML = '';
+    rules.forEach(rule => {
+      const li = document.createElement('li');
+      if(rule.mark === '禁止') li.className = 'warn';
+      li.innerHTML = `<span class="mark">${escapeHtml(rule.mark)}</span>${escapeHtml(rule.text)}`;
+      ul.appendChild(li);
+    });
+  }
+
+  let availableExtraServices = [];
+
+  let merchantHoursMap = {};
+  let merchantFreeMap = {};
+  let merchantCategoryMap = {};
+  let merchantGroups = {};
+  let merchantGroupOrder = [];
+  let transferFeePerStop = 15;
+  let stopCount = 0;
+
+  function renderMerchants(merchants){
+    merchantHoursMap = {};
+    merchantFreeMap = {};
+    merchantCategoryMap = {};
+    merchantGroups = {};
+    merchantGroupOrder = [];
+
+    // 依「分類」欄位分組，沒填分類的歸到「其他商家」
+    (merchants || []).forEach(m => {
+      const cat = m.category && m.category.trim() ? m.category.trim() : '其他商家';
+      if(!merchantGroups[cat]){ merchantGroups[cat] = []; merchantGroupOrder.push(cat); }
+      merchantGroups[cat].push(m);
+      merchantHoursMap[m.name] = m.hours || '';
+      merchantFreeMap[m.name] = !!m.freeDelivery;
+      merchantCategoryMap[m.name] = cat;
+    });
+
+    // 重新套用選單內容到目前所有站點的下拉選單（保留原本已選的值）
+    document.querySelectorAll('.stop-merchant').forEach(sel => populateMerchantSelect(sel));
+
+    // 第一次載入時，畫面上還沒有任何站點，先建立一個空白站點
+    if(document.getElementById('stopsContainer').children.length === 0){
+      createStopRow(true);
+    }
+    updatePreview();
+  }
+
+  function populateMerchantSelect(selectEl, query){
+    const currentValue = selectEl.value;
+    const q = (query || '').trim().toLowerCase();
+    selectEl.innerHTML = '<option value="">請選擇商家</option>';
+    let matchCount = 0;
+    merchantGroupOrder.forEach(cat => {
+      const matched = merchantGroups[cat].filter(m => !q || m.name.toLowerCase().includes(q));
+      if(!matched.length) return;
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = cat;
+      matched.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.name;
+        opt.textContent = m.hours ? `${m.name}（${m.hours}）` : m.name;
+        optgroup.appendChild(opt);
+        matchCount++;
+      });
+      selectEl.appendChild(optgroup);
+    });
+    const otherOpt = document.createElement('option');
+    otherOpt.value = '其他';
+    otherOpt.textContent = '其他（自行輸入）';
+    selectEl.appendChild(otherOpt);
+
+    if(currentValue && Array.from(selectEl.options).some(o => o.value === currentValue)){
+      selectEl.value = currentValue;
+    }
+    return matchCount;
+  }
+
+  function updateStopHoursHint(row){
+    const val = row.querySelector('.stop-merchant').value;
+    const hintEl = row.querySelector('.stop-hours-hint');
+    const hours = merchantHoursMap[val];
+    if(val && val !== '其他' && hours){
+      hintEl.textContent = `🕒 營業時間：${hours}`;
+      hintEl.style.display = 'block';
+    } else {
+      hintEl.style.display = 'none';
+    }
+  }
+
+  function renumberStops(){
+    document.querySelectorAll('.stop-row').forEach((row, i) => {
+      row.querySelector('.stop-label').textContent = `站點 ${i + 1}`;
+      const removeBtn = row.querySelector('.stop-remove');
+      if(removeBtn) removeBtn.style.display = (i === 0) ? 'none' : 'inline-block';
+    });
+  }
+
+  function updateTransferHint(){
+    const stops = collectStops();
+    const hintEl = document.getElementById('transferFeeHint');
+    if(stops.length > 1){
+      const total = (stops.length - 1) * transferFeePerStop;
+      hintEl.textContent = `🔀 已新增 ${stops.length} 個商家，將自動加收中途轉點費 $${total}（每多一站 +$${transferFeePerStop}，已計入外送費）`;
+      hintEl.style.display = 'block';
+    } else {
+      hintEl.style.display = 'none';
+    }
+  }
+
+  function createStopRow(isFirst){
+    const id = stopCount++;
+    const row = document.createElement('div');
+    row.className = 'stop-row';
+    row.dataset.stopId = id;
+    row.innerHTML = `
+      <div class="stop-row-header">
+        <span class="stop-label">站點</span>
+        <button type="button" class="stop-remove" style="display:none;">✕ 移除</button>
+      </div>
+      <input class="stop-merchant-search" type="text" placeholder="🔍 搜尋商家名稱...">
+      <select class="stop-merchant"><option value="">請選擇商家</option><option value="其他">其他（自行輸入）</option></select>
+      <input class="stop-merchant-other" placeholder="請輸入商家名稱" style="display:none;">
+      <div class="stop-hours-hint" style="display:none;"></div>
+      <textarea class="stop-items" placeholder="購買品項，例如：便當一個、飲料一杯"></textarea>
+      <label class="stop-preorder-check">
+        <input type="checkbox" class="stop-preordered">
+        ☎️ 已自行電話向店家預購（外送員可直接取餐，不用等現場點餐）
+      </label>
+    `;
+    document.getElementById('stopsContainer').appendChild(row);
+    populateMerchantSelect(row.querySelector('.stop-merchant'));
+
+    row.querySelector('.stop-merchant-search').addEventListener('input', (e)=>{
+      const sel = row.querySelector('.stop-merchant');
+      const matchCount = populateMerchantSelect(sel, e.target.value);
+      // 只找到一間符合時，自動幫客戶選起來，減少再點一次選單的步驟
+      if(matchCount === 1 && e.target.value.trim()){
+        const onlyOption = Array.from(sel.options).find(o => o.value && o.value !== '其他');
+        if(onlyOption){
+          sel.value = onlyOption.value;
+          updateStopHoursHint(row);
+          updatePreview();
+        }
+      }
+    });
+
+    row.querySelector('.stop-merchant').addEventListener('change', (e)=>{
+      const isOther = e.target.value === '其他';
+      row.querySelector('.stop-merchant-other').style.display = isOther ? 'block' : 'none';
+      updateStopHoursHint(row);
+      updatePreview();
+    });
+    row.querySelector('.stop-merchant-other').addEventListener('input', updatePreview);
+    row.querySelector('.stop-items').addEventListener('input', updatePreview);
+    row.querySelector('.stop-preordered').addEventListener('change', updatePreview);
+
+    const removeBtn = row.querySelector('.stop-remove');
+    removeBtn.addEventListener('click', ()=>{
+      row.remove();
+      renumberStops();
+      updateTransferHint();
+      updatePreview();
+    });
+
+    renumberStops();
+    return row;
+  }
+
+  function collectStops(){
+    return Array.from(document.querySelectorAll('.stop-row')).map(row => {
+      const sel = row.querySelector('.stop-merchant').value;
+      const other = row.querySelector('.stop-merchant-other').value.trim();
+      const merchant = sel === '其他' ? other : sel;
+      const items = row.querySelector('.stop-items').value.trim();
+      const preordered = row.querySelector('.stop-preordered').checked;
+      return { merchant, items, preordered };
+    });
+  }
+
+  function hasFreeDeliveryMerchant(stops){
+    return stops.some(s => merchantFreeMap[s.merchant]);
+  }
+
+  // 修正過的外送費計算：只有「全部站點都是免運商家」才整筆免收，
+  // 混合免運跟非免運商家時，依非免運的站點數量計算基本費＋轉點費，不會整筆被免運商家拖累歸零
+  function calculateDeliveryBase(stops, zoneFee, transferPerStop){
+    const chargeableStops = stops.filter(s => !(s.merchant && merchantFreeMap[s.merchant]));
+    const hasFreeStop = stops.some(s => s.merchant && merchantFreeMap[s.merchant]);
+    if(chargeableStops.length === 0){
+      return { baseFee: 0, transferTotal: 0, allFree: true, hasFreeStop: hasFreeStop };
+    }
+    return {
+      baseFee: zoneFee,
+      transferTotal: (chargeableStops.length - 1) * transferPerStop,
+      allFree: false,
+      hasFreeStop: hasFreeStop
+    };
+  }
+
+  function rebuildStops(stopsData){
+    document.getElementById('stopsContainer').innerHTML = '';
+    stopCount = 0;
+    const list = (stopsData && stopsData.length) ? stopsData : [{ merchant: '', items: '' }];
+    list.forEach((s, i) => {
+      const row = createStopRow(i === 0);
+      const sel = row.querySelector('.stop-merchant');
+      const matched = s.merchant && Array.from(sel.options).some(o => o.value === s.merchant);
+      if(matched){
+        sel.value = s.merchant;
+      } else if(s.merchant){
+        sel.value = '其他';
+        row.querySelector('.stop-merchant-other').style.display = 'block';
+        row.querySelector('.stop-merchant-other').value = s.merchant;
+      }
+      row.querySelector('.stop-items').value = s.items || '';
+      row.querySelector('.stop-preordered').checked = !!s.preordered;
+      updateStopHoursHint(row);
+    });
+    updateTransferHint();
+  }
+
+  document.getElementById('addStopBtn').addEventListener('click', ()=>{
+    createStopRow(false);
+    updateTransferHint();
+    updatePreview();
+  });
+
+  function renderPaymentAccounts(accounts){
+    const box = document.getElementById('paymentAccounts');
+    box.innerHTML = '';
+    if(!accounts || !accounts.length) return;
+
+    accounts.forEach(acc => {
+      const card = document.createElement('div');
+      card.className = 'payment-account';
+
+      let contentHtml = '';
+      if(acc.type === 'image'){
+        contentHtml = `<div class="pa-qr"><img src="${escapeHtml(acc.value)}" alt="${escapeHtml(acc.name)}"></div>`;
+      } else if(acc.type === 'link'){
+        contentHtml = `<a class="pa-link" href="${escapeHtml(acc.value)}" target="_blank" rel="noopener">前往付款 →</a>`;
+      } else {
+        contentHtml = `<div class="pa-text" title="點一下複製帳號">${escapeHtml(acc.value)} <span class="pa-copy-hint">📋 點我複製</span></div>`;
+      }
+
+      card.innerHTML = `
+        <div class="pa-info">
+          <strong>${escapeHtml(acc.name)}</strong>
+          ${acc.method ? `<span>${escapeHtml(acc.method)}</span>` : ''}
+        </div>
+        ${contentHtml}
+      `;
+      box.appendChild(card);
+
+      if(acc.type === 'image'){
+        card.querySelector('.pa-qr').addEventListener('click', ()=>{
+          document.getElementById('menuLightboxImg').src = acc.value;
+          document.getElementById('menuLightbox').style.display = 'flex';
+        });
+      } else if(acc.type === 'text'){
+        const textEl = card.querySelector('.pa-text');
+        textEl.addEventListener('click', async ()=>{
+          let copied = false;
+          try{
+            await navigator.clipboard.writeText(acc.value);
+            copied = true;
+          }catch(err){
+            copied = legacyCopyText(acc.value);
+          }
+          toast(copied ? '✅ 已複製帳號' : '複製失敗，請長按文字手動選取複製');
+        });
+      }
+    });
+  }
+
+  function legacyCopyText(text){
+    // 備援複製方式：適用不支援或封鎖 navigator.clipboard 的瀏覽器
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    let ok = false;
+    try{ ok = document.execCommand('copy'); }catch(err){ ok = false; }
+    document.body.removeChild(textarea);
+    return ok;
+  }
+
+  // ---------- 菜單購物車：可多選不同商家的菜單縮圖，統一確認品項後一次加入訂單 ----------
+  let cartIdCounter = 0;
+  let cartSelections = []; // { cartId, merchant, image }
+
+  function toggleCartSelection(cartId, merchant, image, thumbEl){
+    const idx = cartSelections.findIndex(c => c.cartId === cartId);
+    if(idx > -1){
+      cartSelections.splice(idx, 1);
+      thumbEl.classList.remove('selected');
+    } else {
+      cartSelections.push({ cartId, merchant, image });
+      thumbEl.classList.add('selected');
+    }
+    updateCartFloatBar();
+  }
+
+  function countFilledStops(){
+    return Array.from(document.querySelectorAll('.stop-row')).filter(row => {
+      const sel = row.querySelector('.stop-merchant').value;
+      const other = row.querySelector('.stop-merchant-other').value.trim();
+      return sel === '其他' ? !!other : !!sel;
+    }).length;
+  }
+
+  function updateCartFloatBar(){
+    const bar = document.getElementById('cartFloatBar');
+    const btn = document.getElementById('cartFloatBtn');
+
+    if(cartSelections.length > 0){
+      // 菜單裡還有勾選、但還沒按「全部加入訂單」的張數，優先顯示這個，提醒客戶要去確認
+      btn.innerHTML = `🛒 已選 <span id="cartCount">${cartSelections.length}</span> 張・去看看`;
+      btn.dataset.mode = 'review';
+      bar.style.display = 'flex';
+    } else {
+      // 沒有待確認的菜單選擇了，改顯示整張訂單目前實際有幾個站點（不管是菜單加的還是手動新增的）
+      const stopCount = countFilledStops();
+      if(stopCount > 0){
+        btn.innerHTML = `📦 訂單目前共 <strong>${stopCount}</strong> 個站點・前往確認`;
+        btn.dataset.mode = 'scroll';
+        bar.style.display = 'flex';
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+  }
+
+  document.getElementById('cartFloatBtn').addEventListener('click', ()=>{
+    if(document.getElementById('cartFloatBtn').dataset.mode === 'review'){
+      openCartReview();
+    } else {
+      document.getElementById('stopsContainer').scrollIntoView({ behavior:'smooth', block:'center' });
+    }
+  });
+
+  function openCartReview(){
+    const listEl = document.getElementById('cartReviewList');
+    listEl.innerHTML = '';
+
+    // 依商家分組，同商家選了好幾張菜單，共用同一個品項輸入框
+    const groups = {};
+    const order = [];
+    cartSelections.forEach(sel => {
+      if(!groups[sel.merchant]){ groups[sel.merchant] = []; order.push(sel.merchant); }
+      groups[sel.merchant].push(sel);
+    });
+
+    order.forEach(merchant => {
+      const items = groups[merchant];
+      const item = document.createElement('div');
+      item.className = 'cart-review-item';
+      item.innerHTML = `
+        <div class="cri-head">
+          <strong>${escapeHtml(merchant)}</strong>
+          <span style="font-size:11px; color:var(--ocean-dark); opacity:.7;">${items.length} 張菜單</span>
+        </div>
+        <div class="cri-thumbs">${items.map(i => `<img src="${escapeHtml(i.image)}" alt="${escapeHtml(merchant)}">`).join('')}</div>
+        <textarea placeholder="想買的品項..." data-merchant="${escapeHtml(merchant)}"></textarea>
+      `;
+      item.querySelectorAll('.cri-thumbs img').forEach((img, i) => {
+        img.addEventListener('click', ()=>{ closeCartReview(); openMenuLightbox(merchant, items, i); });
+      });
+      listEl.appendChild(item);
+    });
+
+    document.getElementById('cartReviewOverlay').style.display = 'flex';
+  }
+  function closeCartReview(){
+    document.getElementById('cartReviewOverlay').style.display = 'none';
+  }
+  document.getElementById('cartReviewClose').addEventListener('click', closeCartReview);
+  document.getElementById('cartReviewOverlay').addEventListener('click', (e)=>{
+    if(e.target === document.getElementById('cartReviewOverlay')) closeCartReview();
+  });
+
+  document.getElementById('cartReviewAddAllBtn').addEventListener('click', ()=>{
+    const textareas = Array.from(document.querySelectorAll('#cartReviewList textarea'));
+    const empties = textareas.filter(t => !t.value.trim());
+    if(empties.length){
+      toast('請把每個商家的品項都填寫完整');
+      empties[0].focus();
+      return;
+    }
+
+    let lastRow = null;
+    textareas.forEach(t => {
+      lastRow = addItemsToStop(t.dataset.merchant, t.value.trim());
+    });
+    updatePreview();
+    toast(`已將 ${textareas.length} 家商家的品項加入訂單`);
+
+    // 清空購物車跟畫面上的勾選狀態
+    cartSelections = [];
+    document.querySelectorAll('.thumb.selected').forEach(el => el.classList.remove('selected'));
+    updateCartFloatBar();
+    closeCartReview();
+    if(lastRow) lastRow.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+
+  function renderMenus(menus){
+    const box = document.getElementById('menuGallery');
+    if(!menus || !menus.length){
+      box.innerHTML = '<div class="empty">目前尚無菜單相片，想知道賣什麼可以直接在下方備註詢問。</div>';
+      return;
+    }
+
+    // 商家名稱 → 分類的對照表（沒在商家名單裡的，歸到「其他」）
+    const merchantCategoryMap = {};
+    merchantGroupOrder.forEach(cat => {
+      merchantGroups[cat].forEach(m => { merchantCategoryMap[m.name] = cat; });
+    });
+
+    // 先依分類分組，分類內再依商家分組（同商家多張照片放一起）
+    const catOrder = [];
+    const catGroups = {};
+    menus.forEach(m => {
+      const cat = merchantCategoryMap[m.merchant] || '其他商家';
+      if(!catGroups[cat]){ catGroups[cat] = { merchants: {}, order: [] }; catOrder.push(cat); }
+      const g = catGroups[cat];
+      if(!g.merchants[m.merchant]){ g.merchants[m.merchant] = []; g.order.push(m.merchant); }
+      g.merchants[m.merchant].push(m);
+    });
+
+    box.innerHTML = '';
+    catOrder.forEach(cat => {
+      const g = catGroups[cat];
+      const totalPhotos = g.order.reduce((sum, name) => sum + g.merchants[name].length, 0);
+
+      const details = document.createElement('details');
+      details.className = 'menu-category';
+      details.open = false;
+      const summary = document.createElement('summary');
+      summary.innerHTML = `<span>${escapeHtml(cat)}</span><span class="mc-count">${g.order.length} 間商家・${totalPhotos} 張<span class="mc-arrow">▸</span></span>`;
+      details.appendChild(summary);
+
+      const body = document.createElement('div');
+      body.className = 'menu-category-body';
+
+      g.order.forEach(merchant => {
+        const photos = g.merchants[merchant];
+        photos.forEach((m, idx) => {
+          const cartId = 'cart' + (cartIdCounter++);
+          const thumb = document.createElement('div');
+          thumb.className = 'thumb';
+          thumb.dataset.cartId = cartId;
+          thumb.innerHTML = `
+            <img src="${escapeHtml(m.image)}" alt="${escapeHtml(merchant)}" loading="lazy">
+            <div class="thumb-cap">${escapeHtml(merchant)}</div>
+            <button type="button" class="thumb-select-btn" aria-label="加入購物清單"></button>
+          `;
+          thumb.querySelector('img').addEventListener('click', ()=>{ openMenuLightbox(merchant, photos, idx); });
+          thumb.querySelector('.thumb-select-btn').addEventListener('click', (e)=>{
+            e.stopPropagation();
+            toggleCartSelection(cartId, merchant, m.image, thumb);
+          });
+          body.appendChild(thumb);
+        });
+      });
+
+      details.appendChild(body);
+      box.appendChild(details);
+    });
+  }
+
+  // ---------- 菜單放大檢視：直接在放大畫面下方輸入品項，按一下就加入訂單 ----------
+  const menuLightboxEl = document.getElementById('menuLightbox');
+  let lightboxPhotos = [];
+  let lightboxIndex = 0;
+  let lightboxMerchant = '';
+
+  function openMenuLightbox(merchant, photos, index){
+    lightboxMerchant = merchant;
+    lightboxPhotos = photos;
+    lightboxIndex = index;
+    renderLightboxPhoto();
+    menuLightboxEl.style.display = 'flex';
+  }
+
+  function renderLightboxPhoto(){
+    document.getElementById('menuLightboxMerchant').textContent = lightboxMerchant;
+    document.getElementById('menuLightboxImg').src = lightboxPhotos[lightboxIndex].image;
+    document.getElementById('menuLightboxItemsInput').value = '';
+
+    const pageIndicator = document.getElementById('menuLightboxPageIndicator');
+    const prevBtn = document.getElementById('menuLightboxPrevBtn');
+    const nextBtn = document.getElementById('menuLightboxNextBtn');
+    if(lightboxPhotos.length > 1){
+      pageIndicator.textContent = `${lightboxIndex + 1} / ${lightboxPhotos.length}`;
+      pageIndicator.style.display = 'block';
+      prevBtn.style.display = 'flex';
+      nextBtn.style.display = 'flex';
+      prevBtn.disabled = (lightboxIndex === 0);
+      nextBtn.disabled = (lightboxIndex === lightboxPhotos.length - 1);
+    } else {
+      pageIndicator.style.display = 'none';
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+    }
+  }
+
+  document.getElementById('menuLightboxPrevBtn').addEventListener('click', ()=>{
+    if(lightboxIndex > 0){ lightboxIndex--; renderLightboxPhoto(); }
+  });
+  document.getElementById('menuLightboxNextBtn').addEventListener('click', ()=>{
+    if(lightboxIndex < lightboxPhotos.length - 1){ lightboxIndex++; renderLightboxPhoto(); }
+  });
+
+  function closeMenuLightbox(){
+    menuLightboxEl.style.display = 'none';
+  }
+  document.getElementById('menuLightboxClose').addEventListener('click', closeMenuLightbox);
+  menuLightboxEl.addEventListener('click', (e)=>{
+    if(e.target === menuLightboxEl) closeMenuLightbox(); // 點空白背景才關閉，點面板本身不會誤觸關閉
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(menuLightboxEl.style.display !== 'flex') return;
+    if(e.key === 'ArrowLeft') document.getElementById('menuLightboxPrevBtn').click();
+    if(e.key === 'ArrowRight') document.getElementById('menuLightboxNextBtn').click();
+    if(e.key === 'Escape') closeMenuLightbox();
+  });
+
+  // 共用邏輯：把某個商家的品項加進站點（找同商家的站點優先，沒有就找空白站點，都沒有就新增一個）
+  function addItemsToStop(merchant, itemsText){
+    const rows = Array.from(document.querySelectorAll('.stop-row'));
+    let targetRow = rows.find(row => row.querySelector('.stop-merchant').value === merchant);
+    if(!targetRow) targetRow = rows.find(row => !row.querySelector('.stop-merchant').value);
+    if(!targetRow){
+      targetRow = createStopRow(false);
+      updateTransferHint();
+    }
+
+    const sel = targetRow.querySelector('.stop-merchant');
+    const matched = Array.from(sel.options).some(o => o.value === merchant);
+    if(matched){
+      sel.value = merchant;
+    } else {
+      sel.value = '其他';
+      targetRow.querySelector('.stop-merchant-other').style.display = 'block';
+      targetRow.querySelector('.stop-merchant-other').value = merchant;
+    }
+    updateStopHoursHint(targetRow);
+
+    const itemsField = targetRow.querySelector('.stop-items');
+    itemsField.value = itemsField.value.trim() ? `${itemsField.value.trim()}、${itemsText}` : itemsText;
+    return targetRow;
+  }
+
+  document.getElementById('menuLightboxAddBtn').addEventListener('click', ()=>{
+    const merchant = document.getElementById('menuLightboxMerchant').textContent;
+    const itemsText = document.getElementById('menuLightboxItemsInput').value.trim();
+    if(!itemsText){
+      toast('請先輸入想買的品項');
+      return;
+    }
+
+    const targetRow = addItemsToStop(merchant, itemsText);
+    updatePreview();
+    toast(`已將「${merchant}」的品項加入訂單`);
+    closeMenuLightbox();
+    targetRow.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+
+  let inquiryLinkUrl = '';
+  let addressZoneRules = [];
+
+  function renderAddressZones(zones){
+    addressZoneRules = zones || [];
+  }
+
+  function renderDeliverableTownships(townships){
+    const sel = document.getElementById('cAddrTownship');
+    const currentValue = sel.value;
+    sel.innerHTML = '<option value="">請選擇鄉鎮市</option>';
+    (townships || []).forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      sel.appendChild(opt);
+    });
+    if(currentValue && Array.from(sel.options).some(o => o.value === currentValue)){
+      sel.value = currentValue;
+    }
+  }
+
+  // ---------- 依路名緯度精準判斷鎮內/鎮外/超出範圍（比關鍵字比對更準確） ----------
+  let boundaryLats = { innerNorth: null, innerSouth: null, outerNorth: null, outerSouth: null };
+
+  function getSelectedRoadLat(){
+    const roadName = document.getElementById('cAddrRoad').value;
+    if(!roadName || roadName === '其他') return null;
+    const road = deliverableRoadsList.find(r => r.name === roadName);
+    return (road && road.lat != null) ? road.lat : null;
+  }
+
+  function determineZoneByLat(lat){
+    const { innerNorth, innerSouth, outerNorth, outerSouth } = boundaryLats;
+    if(innerNorth == null || innerSouth == null || outerNorth == null || outerSouth == null) return null;
+    if(lat > outerNorth || lat < outerSouth) return '超出範圍';
+    if(lat <= innerNorth && lat >= innerSouth) return '鎮內';
+    return '鎮外';
+  }
+
+  function applyZoneResult(zone, hintEl, isPrecise){
+    const precisionNote = isPrecise ? '（依路名座標判斷）' : '';
+    if(zone === '鎮內'){
+      fee = 30;
+      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
+      hintEl.textContent = `✓ 已自動判斷為「鎮內」範圍${precisionNote}`;
+      hintEl.style.color = 'var(--ocean-dark)';
+      hintEl.style.display = 'block';
+      updatePreview();
+    } else if(zone === '鎮外'){
+      fee = 60;
+      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.zone-btn[data-fee="60"]').classList.add('active');
+      hintEl.textContent = `✓ 已自動判斷為「鎮外」範圍${precisionNote}`;
+      hintEl.style.color = 'var(--ocean-dark)';
+      hintEl.style.display = 'block';
+      updatePreview();
+    } else {
+      // 超出範圍：不自動選範圍，改用醒目提示，並提供可直接點擊的私訊連結
+      const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
+      hintEl.style.color = 'var(--coral-dark)';
+      hintEl.style.display = 'block';
+    }
+  }
+
+  function checkAddressZone(){
+    const addr = document.getElementById('cAddress').value.trim();
+    const hintEl = document.getElementById('addressZoneHint');
+    if(!addr){
+      hintEl.style.display = 'none';
+      return;
+    }
+
+    // 優先用選定路名標記過的座標精準判斷
+    const roadLat = getSelectedRoadLat();
+    let zone = roadLat != null ? determineZoneByLat(roadLat) : null;
+    let isPrecise = zone != null;
+
+    if(!zone){
+      // 沒有座標資料（路名還沒標記緯度、或選了「其他」自行輸入），退回關鍵字比對當備援
+      const matched = addressZoneRules.find(r => r.keyword && addr.includes(r.keyword));
+      zone = matched ? matched.zone : null;
+      isPrecise = false;
+    }
+
+    if(!zone){
+      hintEl.style.display = 'none';
+      return;
+    }
+
+    applyZoneResult(zone, hintEl, isPrecise);
+  }
+  document.getElementById('cAddress').addEventListener('input', checkAddressZone);
+
+  // ---------- 地址欄位改為縣市/鄉鎮/路名下拉選單 + 詳細地址 + 備註，組合後同步進隱藏的cAddress欄位供其他既有邏輯使用 ----------
+  let deliverableRoadsList = [];
+
+  function getRoadValue(){
+    const sel = document.getElementById('cAddrRoad').value;
+    return sel === '其他' ? document.getElementById('cAddrRoadOther').value.trim() : sel;
+  }
+
+  function syncAddressField(){
+    const county = document.getElementById('cAddrCounty').value;
+    const township = document.getElementById('cAddrTownship').value;
+    const road = getRoadValue();
+    const detail = document.getElementById('cAddrDetail').value.trim();
+    const note = document.getElementById('cAddrNote').value.trim();
+    let combined = township ? `${county}${township}${road}${detail}` : '';
+    if(combined && note) combined += `（${note}）`;
+    const cAddressEl = document.getElementById('cAddress');
+    cAddressEl.value = combined;
+    cAddressEl.dispatchEvent(new Event('input', { bubbles:true })); // 觸發原有的範圍自動判斷、預覽更新等邏輯
+  }
+  document.getElementById('cAddrTownship').addEventListener('change', syncAddressField);
+  document.getElementById('cAddrRoad').addEventListener('change', (e)=>{
+    document.getElementById('cAddrRoadOther').style.display = (e.target.value === '其他') ? 'block' : 'none';
+    syncAddressField();
+  });
+  document.getElementById('cAddrRoadOther').addEventListener('input', syncAddressField);
+  document.getElementById('cAddrDetail').addEventListener('input', syncAddressField);
+  document.getElementById('cAddrNote').addEventListener('input', syncAddressField);
+
+  // ---------- 釘選常用地址（localStorage） ----------
+  const PINNED_ADDR_KEY = 'cgmf_pinned_addresses_v1';
+  const PINNED_ADDR_MAX = 8;
+  function loadPinnedAddresses(){
+    try{ const raw = localStorage.getItem(PINNED_ADDR_KEY); const list = raw ? JSON.parse(raw) : []; return Array.isArray(list) ? list : []; }
+    catch(e){ return []; }
+  }
+  function savePinnedAddresses(list){ localStorage.setItem(PINNED_ADDR_KEY, JSON.stringify(list.slice(0, PINNED_ADDR_MAX))); }
+  function formatPinnedLabel(item){
+    const road = item.road === '其他' ? (item.roadOther || '其他路名') : (item.road || '');
+    let s = `${item.township || ''}${road}${item.detail || ''}`;
+    if(item.note) s += `（${item.note}）`;
+    return s || '（未命名地址）';
+  }
+  function renderPinnedAddresses(){
+    const list = loadPinnedAddresses();
+    const box = document.getElementById('pinnedAddrList');
+    const empty = document.getElementById('pinnedAddrEmpty');
+    if(!box) return;
+    box.innerHTML = '';
+    if(!list.length){ if(empty) empty.style.display = 'block'; return; }
+    if(empty) empty.style.display = 'none';
+    list.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'pinned-addr-item';
+      row.innerHTML = `<button type="button" class="pa-use" data-idx="${idx}">${escapeHtml(formatPinnedLabel(item))}</button>
+        <button type="button" class="pa-del" data-idx="${idx}" title="取消釘選">✕</button>`;
+      box.appendChild(row);
+    });
+    box.querySelectorAll('.pa-use').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = loadPinnedAddresses()[Number(btn.dataset.idx)];
+        if(item) applyPinnedAddress(item);
+      });
+    });
+    box.querySelectorAll('.pa-del').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const list = loadPinnedAddresses();
+        list.splice(Number(btn.dataset.idx), 1);
+        savePinnedAddresses(list);
+        renderPinnedAddresses();
+        toast('已取消釘選');
+      });
+    });
+  }
+  function applyPinnedAddress(item){
+    const townshipEl = document.getElementById('cAddrTownship');
+    if(item.township && ![...townshipEl.options].some(o => o.value === item.township)){
+      const opt = document.createElement('option'); opt.value = item.township; opt.textContent = item.township; townshipEl.appendChild(opt);
+    }
+    if(item.township) townshipEl.value = item.township;
+    const roadEl = document.getElementById('cAddrRoad');
+    if(item.road && item.road !== '其他' && ![...roadEl.options].some(o => o.value === item.road)){
+      const opt = document.createElement('option'); opt.value = item.road; opt.textContent = item.road;
+      const otherOpt = [...roadEl.options].find(o => o.value === '其他');
+      if(otherOpt) roadEl.insertBefore(opt, otherOpt); else roadEl.appendChild(opt);
+    }
+    roadEl.value = item.road || '';
+    document.getElementById('cAddrRoadOther').value = item.roadOther || '';
+    document.getElementById('cAddrRoadOther').style.display = (item.road === '其他') ? 'block' : 'none';
+    document.getElementById('cAddrDetail').value = item.detail || '';
+    document.getElementById('cAddrNote').value = item.note || '';
+    syncAddressField();
+    updatePreview();
+    toast('已帶入常用地址');
+  }
+  document.getElementById('pinAddressBtn').addEventListener('click', ()=>{
+    const item = {
+      township: document.getElementById('cAddrTownship').value || '',
+      road: document.getElementById('cAddrRoad').value || '',
+      roadOther: document.getElementById('cAddrRoadOther').value.trim(),
+      detail: document.getElementById('cAddrDetail').value.trim(),
+      note: document.getElementById('cAddrNote').value.trim(),
+      savedAt: Date.now()
+    };
+    if(!item.township || !item.detail){ toast('請至少選擇鄉鎮並填寫門牌，再釘選'); return; }
+    let list = loadPinnedAddresses();
+    const label = formatPinnedLabel(item);
+    if(list.some(x => formatPinnedLabel(x) === label)){ toast('這個地址已經釘選過了'); return; }
+    if(list.length >= PINNED_ADDR_MAX){ toast(`最多釘選 ${PINNED_ADDR_MAX} 個地址`); return; }
+    list.unshift(item);
+    savePinnedAddresses(list);
+    renderPinnedAddresses();
+    toast('已釘選常用地址');
+  });
+  renderPinnedAddresses();
+
+
+  function renderDeliverableRoads(roads){
+    deliverableRoadsList = roads || [];
+    const sel = document.getElementById('cAddrRoad');
+    const currentValue = sel.value;
+    sel.innerHTML = '<option value="">請選擇路名</option>';
+    deliverableRoadsList.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = r.name;
+      sel.appendChild(opt);
+    });
+    const otherOpt = document.createElement('option');
+    otherOpt.value = '其他';
+    otherOpt.textContent = '其他（自行輸入）';
+    sel.appendChild(otherOpt);
+    if(currentValue && Array.from(sel.options).some(o => o.value === currentValue)){
+      sel.value = currentValue;
+    }
+  }
+
+  function renderServices(services){
+    const box = document.getElementById('extraServices');
+    const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+    document.getElementById('askInlineBtn').href = askUrl;
+    if(!services || !services.length){
+      box.innerHTML = '<div class="empty">目前無額外服務，有需要可寫在備註。</div>';
+    } else {
+      box.innerHTML = '';
+      services.forEach(svc => {
+        const card = document.createElement('div');
+        card.className = 'extra-service';
+        card.innerHTML = `
+          <div class="info">
+            <h4>${escapeHtml(svc.name)}</h4>
+            ${svc.desc ? `<p>${escapeHtml(svc.desc)}</p>` : ''}
+          </div>
+          ${svc.note ? `<div class="note">${escapeHtml(svc.note)}</div>` : ''}
+        `;
+        box.appendChild(card);
+      });
+    }
+    renderExtraServicePicker(services);
+  }
+
+  function renderExtraServicePicker(services){
+    const priced = (services || []).filter(s => Number(s.fee) > 0);
+    const fieldEl = document.getElementById('extraServiceField');
+    const pickerEl = document.getElementById('extraServicePicker');
+
+    availableExtraServices = priced;
+
+    if(!priced.length){
+      fieldEl.style.display = 'none';
+      pickerEl.innerHTML = '';
+      return;
+    }
+
+    fieldEl.style.display = 'block';
+    pickerEl.innerHTML = '';
+    priced.forEach((svc, i) => {
+      const label = document.createElement('label');
+      label.className = 'extra-service-option';
+      label.innerHTML = `
+        <span class="eso-info">
+          <input type="checkbox" data-idx="${i}">
+          ${escapeHtml(svc.name)}${svc.desc ? `（${escapeHtml(svc.desc)}）` : ''}
+        </span>
+        <span class="eso-fee">+$${svc.fee}</span>
+      `;
+      pickerEl.appendChild(label);
+    });
+    pickerEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', updatePreview);
+    });
+  }
+
+  function getSelectedExtraServices(){
+    const boxes = document.querySelectorAll('#extraServicePicker input[type="checkbox"]:checked');
+    return Array.from(boxes).map(cb => availableExtraServices[Number(cb.dataset.idx)]).filter(Boolean);
+  }
+
+  let orderingDisabled = false; // 完全不能下單（強制公休時為true）
+  let orderingMode = 'open'; // 'open' | 'reservationOnly' | 'closed'
+  let businessOpenTime = '08:00';
+  let businessCloseTime = '20:00';
+
+  function renderSettings(settings){
+    if(!settings) return;
+    inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
+
+    // 範圍判斷用的界線緯度：後台有填才啟用精準座標判斷，沒填就自動退回關鍵字比對
+    const parseLat = v => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : null; };
+    boundaryLats.innerNorth = parseLat(settings['鎮內北界緯度']);
+    boundaryLats.innerSouth = parseLat(settings['鎮內南界緯度']);
+    boundaryLats.outerNorth = parseLat(settings['鎮外北界緯度']);
+    boundaryLats.outerSouth = parseLat(settings['鎮外南界緯度']);
+
+    const announcement = (settings['公告內容'] || '').trim();
+    const announcementEl = document.getElementById('announcementBanner');
+    if(announcement){
+      announcementEl.textContent = `📢 ${announcement}`;
+      announcementEl.style.display = 'flex';
+    } else {
+      announcementEl.style.display = 'none';
+    }
+
+    const hoursAnnouncement = (settings['營業時間調整公告'] || '').trim();
+    const hoursAnnouncementEl = document.getElementById('hoursAnnouncementBanner');
+    if(hoursAnnouncement){
+      hoursAnnouncementEl.textContent = `🕒 ${hoursAnnouncement}`;
+      hoursAnnouncementEl.style.display = 'flex';
+    } else {
+      hoursAnnouncementEl.style.display = 'none';
+    }
+
+    const delayWarning = (settings['配送延遲提醒'] || '').trim();
+    const delayWarningEl = document.getElementById('delayWarningBanner');
+    if(delayWarning){
+      delayWarningEl.textContent = `⚠️ ${delayWarning}`;
+      delayWarningEl.style.display = 'flex';
+    } else {
+      delayWarningEl.style.display = 'none';
+    }
+
+    const note = (settings['收款帳號說明'] || '').trim();
+    if(note){
+      document.getElementById('paymentBox').textContent = note;
+    }
+    // 沒填寫就維持頁面上預設的「僅提供現場付款」說明
+
+    const transferFeeVal = Number(settings['轉點費(每站)']);
+    transferFeePerStop = isNaN(transferFeeVal) ? 15 : transferFeeVal;
+    updateTransferHint();
+    updatePreview();
+
+    const openTime = settings['營業開始時間'] || '08:00';
+    const closeTime = settings['營業結束時間'] || '20:00';
+    businessOpenTime = openTime;
+    businessCloseTime = closeTime;
+    const hoursEl = document.getElementById('hoursTimeText');
+    if(hoursEl) hoursEl.textContent = `${openTime} – ${closeTime}`;
+
+    reservationOpenTime = settings['預約開始時間'] || openTime;
+    reservationCloseTime = settings['預約結束時間'] || closeTime;
+    const intervalVal = Number(settings['預約時段間隔']);
+    reservationIntervalMin = isNaN(intervalVal) || intervalVal <= 0 ? 30 : intervalVal;
+    populateScheduleTimeOptions();
+    const scheduleHintEl = document.getElementById('scheduleHint');
+    if(scheduleHintEl) scheduleHintEl.textContent = `預約時段開放 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一個時段`;
+
+    const showProvisional = (settings['顯示暫定標籤'] || 'TRUE').toString().toUpperCase() !== 'FALSE';
+    const provisionalEl = document.getElementById('provisionalBadge');
+    if(provisionalEl) provisionalEl.style.display = showProvisional ? 'inline-block' : 'none';
+
+    const isOpen = (settings['是否營業'] || 'TRUE').toString().toUpperCase() !== 'FALSE';
+    const forcedClosed = (settings['強制公休'] || 'FALSE').toString().toUpperCase() === 'TRUE';
+    const banner = document.getElementById('statusBanner');
+    const sendBtn = document.getElementById('sendLineBtn');
+
+    if(isOpen){
+      // 正常營業時間內：完全開放
+      orderingMode = 'open';
+      orderingDisabled = false;
+      banner.style.display = 'none';
+      sendBtn.classList.remove('disabled-btn');
+    } else if(forcedClosed){
+      // 手動強制公休：完全不能下單，包含預約單
+      orderingMode = 'closed';
+      orderingDisabled = true;
+      const msg = (settings['暫停服務公告'] || '目前暫停接單，造成不便敬請見諒').trim();
+      banner.textContent = `⏸️ ${msg}`;
+      banner.style.display = 'flex';
+      sendBtn.classList.add('disabled-btn');
+    } else {
+      // 單純非營業時間：只能下預約單，立即單會被擋下
+      orderingMode = 'reservationOnly';
+      orderingDisabled = false;
+      const msg = (settings['暫停服務公告'] || `目前非營業時間，僅開放預約單，服務時段為 ${openTime}–${closeTime}`).trim();
+      banner.textContent = `🌙 ${msg}`;
+      banner.style.display = 'flex';
+      sendBtn.classList.remove('disabled-btn');
+    }
+
+    const progress = (settings['目前處理進度'] || '').trim();
+    const progressEl = document.getElementById('progressBanner');
+    if(progress){
+      progressEl.textContent = `📋 目前處理進度：第 ${progress} 張委託單（點我查詢我的訂單）`;
+      progressEl.style.display = 'flex';
+    } else {
+      progressEl.style.display = 'none';
+    }
+  }
+
+  // ---------- 訂單查詢：輸入完整電話號碼即可查詢最近一筆訂單 ----------
+  const lookupOverlay = document.getElementById('lookupOverlay');
+  // ---------- 外送員即時位置：查詢視窗開啟期間持續自動更新，直到訂單「已送達」或視窗關閉 ----------
+  let lookupPollTimer = null;
+  let lookupDestCoord = null;   // 快取「目前追蹤目標地址」轉換出的座標，避免每次都重打地理編碼（單一目的地相容）
+  let lookupDestAddrKey = null; // 目前快取座標對應的地址字串／取餐或送達階段，地址或階段一變就要重新定位
+  let lookupDriverMarker = null;
+  let lookupDestMarker = null;
+  let lookupRouteLine = null;
+  // 多站路線：快取各站點座標、圖示與路線鍵（站點變更時重算）
+  let lookupWaypointCoords = {}; // addr -> {lat,lng,precise}
+  let lookupWaypointMarkers = [];
+  let lookupRouteKey = null;
+
+  // ---------- 延遲載入 Leaflet（只有查詢地圖時才下載，加速首屏） ----------
+  let _leafletLoading = null;
+  function ensureLeaflet_(){
+    if(window.L) return Promise.resolve();
+    if(_leafletLoading) return _leafletLoading;
+    _leafletLoading = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      css.crossOrigin = '';
+      document.head.appendChild(css);
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      s.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      s.crossOrigin = '';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Leaflet load failed'));
+      document.head.appendChild(s);
+    });
+    return _leafletLoading;
+  }
+
+
+  let lookupLastRouteDriver = null; // 上次畫線時的外送員座標，位移很小就不重打 OSRM
+  let lookupLastRouteAt = 0;
+  function stopLookupPolling(){
+    if(lookupPollTimer){ clearInterval(lookupPollTimer); lookupPollTimer = null; }
+  }
+  // 只收起地圖本身（例如訂單還沒到取餐中／運送中、或訂單已送達），輪詢是否要繼續由呼叫端決定
+  function teardownDriverMap_(){
+    if(window._driverMap){ try{ window._driverMap.remove(); }catch(e){} window._driverMap = null; }
+    lookupDestCoord = null;
+    lookupDestAddrKey = null;
+    lookupDriverMarker = null;
+    lookupDestMarker = null;
+    lookupRouteLine = null;
+    lookupWaypointCoords = {};
+    lookupWaypointMarkers = [];
+    lookupRouteKey = null;
+    lookupLastRouteDriver = null;
+    lookupLastRouteAt = 0;
+  }
+  // 開啟／關閉查詢視窗時使用：地圖收起、輪詢也一併停止
+  function resetLookupMapState(){
+    stopLookupPolling();
+    teardownDriverMap_();
+  }
+  function openLookup(prefillPhone){
+    document.getElementById('lookupPhone').value = prefillPhone || '';
+    const resultEl = document.getElementById('lookupResult');
+    resultEl.style.display = 'none';
+    resultEl.textContent = '';
+    resetLookupMapState();
+    const mapBox = document.getElementById('lookupMapBox');
+    if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
+    lookupOverlay.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    lookupOverlay.scrollTop = 0;
+    // 一打開查詢就預載地圖庫，結果回來時可立刻顯示地圖
+    ensureLeaflet_().catch(()=>{});
+    if(!prefillPhone){
+      document.getElementById('lookupPhone').focus();
+    }
+  }
+  function closeLookup(){
+    lookupOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+    resetLookupMapState();
+    const mapBox = document.getElementById('lookupMapBox');
+    if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
+  }
+  document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
+  const orderLookupBtn = document.getElementById('orderLookupBtn');
+  if(orderLookupBtn) orderLookupBtn.addEventListener('click', ()=> openLookup());
+  const heroLookupBtn = document.getElementById('heroLookupBtn');
+  if(heroLookupBtn) heroLookupBtn.addEventListener('click', ()=> openLookup());
+  document.getElementById('headerLookupBtn').addEventListener('click', ()=> openLookup());
+  document.getElementById('lookupClose').addEventListener('click', closeLookup);
+  lookupOverlay.addEventListener('click', (e)=>{ if(e.target === lookupOverlay) closeLookup(); });
+
+  // 把地址轉座標：先試完整地址，找不到就降級（去掉備註括號→去掉門牌號只留路名），
+  // 鄉下地址常常查得到路名、查不到門牌號，所以降級查詢能大幅提高成功率；
+  // 不降級到只剩鄉鎮市，避免定位誤差太大（整個城鎮範圍可能有好幾公里）
+  async function geocodeAddressWithFallback_(rawAddr){
+    // 後備方案：前端 OpenStreetMap（後端 Google 地理編碼失敗時才會用到）
+    // 地名幾乎都用「台」而非「臺」，先正規化；台東地區再自動補上縣名提高命中
+    const normalize = (s) => s.replace(/臺/g, '台');
+    const rawAddrN = normalize(rawAddr);
+
+    const noNote = rawAddrN.replace(/（[^）]*）\s*$/, '').replace(/\([^)]*\)\s*$/, '').trim();
+    const noHouseNumber = noNote.replace(/\d+(-\d+)?號.*$/, '').trim();
+    const withCounty = /縣|市/.test(noNote) ? noNote : ('台東縣' + noNote);
+
+    const candidates = [
+      { q: rawAddrN, precise: true },
+      { q: noNote, precise: true },
+      { q: withCounty, precise: true },
+      { q: noHouseNumber, precise: false }
+    ];
+    const tried = new Set();
+
+    for(const c of candidates){
+      if(!c.q || tried.has(c.q)) continue;
+      tried.add(c.q);
+      try{
+        const geoUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q=' + encodeURIComponent(c.q);
+        const geoRes = await fetch(geoUrl, { headers: { 'Accept': 'application/json' } });
+        const geoData = await geoRes.json();
+        if(geoData && geoData[0]){
+          return { lat: Number(geoData[0].lat), lng: Number(geoData[0].lon), precise: c.precise };
+        }
+      }catch(e){ console.warn(e); }
+    }
+    return null;
+  }
+
+  // 依外送員目前位置 + 多站商家 + 客戶地址，畫出／更新整段路線
+  // waypoints: [{label, address, icon}] 依序站點1→站點2→…→客戶
+  // 取餐中／運送中都會盡量畫「外送員 → 各商家站點 → 客戶」完整路徑
+  async function drawDriverRoute(lat, lng, waypoints, mapBox){
+    const map = window._driverMap;
+    const hintEl = document.getElementById('routeHint');
+    if(!map) return;
+
+    const pts = (waypoints || []).filter(w => w && (w.address || '').trim());
+    const routeKey = pts.map(w => (w.label || '') + '|' + (w.address || '').trim()).join('||');
+
+    if(lookupRouteKey !== routeKey){
+      lookupRouteKey = routeKey;
+      lookupWaypointMarkers.forEach(m => { try{ m.remove(); }catch(e){} });
+      lookupWaypointMarkers = [];
+      if(lookupDestMarker){ try{ lookupDestMarker.remove(); }catch(e){} lookupDestMarker = null; }
+      if(lookupRouteLine){ try{ lookupRouteLine.remove(); }catch(e){} lookupRouteLine = null; }
+      lookupLastRouteDriver = null;
+      lookupLastRouteAt = 0;
+      // 保留已成功地理編碼的座標快取，避免站點順序微調時整批重查
+    }
+
+    if(!pts.length){
+      if(hintEl) hintEl.textContent = '（無法取得站點／送達地址，暫時無法畫完整路線）';
+      return;
+    }
+
+    if(hintEl) hintEl.textContent = '路線規劃中…';
+
+    // 優先用後端已算好的座標；沒有才前端地理編碼（有快取就跳過）
+    const resolved = [];
+    for(const w of pts){
+      const addr = (w.address || '').trim();
+      const cacheKey = addr || `${w.lat},${w.lng}`;
+      if(w.lat != null && w.lng != null && !isNaN(Number(w.lat)) && !isNaN(Number(w.lng))){
+        lookupWaypointCoords[cacheKey] = {
+          lat: Number(w.lat),
+          lng: Number(w.lng),
+          precise: w.precise !== false
+        };
+      } else if(addr && !lookupWaypointCoords[cacheKey]){
+        const coord = await geocodeAddressWithFallback_(addr);
+        if(coord) lookupWaypointCoords[cacheKey] = coord;
+      }
+      const c = lookupWaypointCoords[cacheKey];
+      if(c){
+        resolved.push({ ...w, address: addr, lat: c.lat, lng: c.lng, precise: c.precise !== false });
+      }
+    }
+
+    if(!resolved.length){
+      if(hintEl) hintEl.textContent = '無法定位站點地址，僅顯示外送員位置';
+      return;
+    }
+
+    // 為每個已定位站點放編號圖示（重用既有 marker 集合）
+    if(!lookupWaypointMarkers.length){
+      resolved.forEach((w, i) => {
+        const isLast = i === resolved.length - 1;
+        const isHome = isLast && /送達|客戶|home/i.test(w.label || '') || (isLast && (w.icon === '🏠'));
+        const num = isHome ? '🏠' : String(i + 1);
+        const badgeClass = isHome ? 'home' : 'shop';
+        const markerIcon = L.divIcon({
+          className: 'waypoint-num-marker',
+          html: `<div class="wn-badge ${badgeClass}">${num}</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        });
+        const label = w.label || `站點${i+1}`;
+        const popup = label + (w.address ? `<br><small>${w.address}</small>` : '') + (w.precise === false ? '<br><small>（概略位置）</small>' : '');
+        const m = L.marker([w.lat, w.lng], { icon: markerIcon }).addTo(map).bindPopup(popup);
+        lookupWaypointMarkers.push(m);
+      });
+      lookupDestMarker = lookupWaypointMarkers[lookupWaypointMarkers.length - 1] || null;
+    }
+
+    // 外送員位移很小（約 30 公尺內）且站點沒變：只移動圖示、不重打 OSRM（省流量、畫面更穩）
+    const now = Date.now();
+    const driverMovedFar = !lookupLastRouteDriver ||
+      (Math.abs(lookupLastRouteDriver.lat - lat) > 0.00028 || Math.abs(lookupLastRouteDriver.lng - lng) > 0.00028);
+    const shouldRefreshRoute = !lookupRouteLine || driverMovedFar || (now - lookupLastRouteAt > 60000);
+
+    if(!shouldRefreshRoute){
+      if(hintEl && lookupLastRouteDriver){
+        // 保留上次提示文字，不覆蓋
+      }
+      return;
+    }
+
+    // OSRM 多點路線：外送員目前位置 → 站點1 → 站點2 → … → 客戶
+    try{
+      const coordParts = [`${lng},${lat}`].concat(resolved.map(w => `${w.lng},${w.lat}`));
+      const routeUrl = `https://router.project-osrm.org/route/v1/driving/${coordParts.join(';')}?overview=full&geometries=geojson`;
+      const routeRes = await fetch(routeUrl);
+      const routeData = await routeRes.json();
+      if(routeData && routeData.code === 'Ok' && routeData.routes && routeData.routes[0]){
+        const route = routeData.routes[0];
+        const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+        if(lookupRouteLine){
+          lookupRouteLine.setLatLngs(coords);
+        } else {
+          lookupRouteLine = L.polyline(coords, {
+            color: '#E2532F',
+            weight: 5,
+            opacity: 0.85,
+            lineJoin: 'round'
+          }).addTo(map);
+        }
+        const bounds = L.latLngBounds([[lat, lng]].concat(resolved.map(w => [w.lat, w.lng])));
+        try{ map.fitBounds(bounds.pad(0.18)); }catch(e){}
+        const km = (route.distance / 1000).toFixed(1);
+        const mins = Math.max(1, Math.round(route.duration / 60));
+        const imprecise = resolved.some(w => w.precise === false);
+        const pathLabel = resolved.map(w => w.label || '站點').join(' → ');
+        const preciseNote = imprecise ? '・部分為概略位置' : '・門牌級定位';
+        if(hintEl) hintEl.textContent = `整段路線：外送員 → ${pathLabel}・約 ${km} 公里・約 ${mins} 分鐘（參考值，不含即時路況${preciseNote}）`;
+        lookupLastRouteDriver = { lat, lng };
+        lookupLastRouteAt = Date.now();
+        // Google 導航：多點途經
+        const origin = `${lat},${lng}`;
+        const dest = `${resolved[resolved.length-1].lat},${resolved[resolved.length-1].lng}`;
+        const via = resolved.slice(0, -1).map(w => `${w.lat},${w.lng}`).join('|');
+        const gdir = via
+          ? `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&waypoints=${encodeURIComponent(via)}&travelmode=driving`
+          : `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving`;
+        const link = mapBox.querySelector('.map-link');
+        if(link){ link.href = gdir; link.textContent = '在 Google 地圖開啟整段導航 →'; }
+      } else if(hintEl){
+        if(hintEl) hintEl.textContent = '已標示各站點位置（路線暫時無法取得）';
+        const bounds = L.latLngBounds([[lat, lng]].concat(resolved.map(w => [w.lat, w.lng])));
+        try{ map.fitBounds(bounds.pad(0.18)); }catch(e){}
+      }
+    }catch(e){
+      if(hintEl) hintEl.textContent = '已標示各站點位置（路線暫時無法取得）';
+      try{
+        const bounds = L.latLngBounds([[lat, lng]].concat(resolved.map(w => [w.lat, w.lng])));
+        map.fitBounds(bounds.pad(0.18));
+      }catch(err){}
+    }
+  }
+
+  // 查詢訂單狀態；isFirst=true 是使用者按查詢按鈕的那一次，之後每 15 秒會自動用 isFirst=false 重打一次，
+  // 不管目前訂單是不是「取餐中／運送中」都會持續輪詢，這樣狀態一變（例如從待處理變成取餐中）畫面就會自動反映，
+  // 直到訂單變成「已送達」或查無資料才停止
+  async function performLookup(digits, isFirst){
+    const resultEl = document.getElementById('lookupResult');
+    const mapBox = document.getElementById('lookupMapBox');
+
+    if(isFirst){
+      resultEl.style.display = 'block';
+      resultEl.textContent = '查詢中...';
+      if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
+    }
+
+    try{
+      const url = `${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(digits)}&t=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      const data = await res.json();
+
+      if(data.found){
+        const numLabel = String(data.queueNumber || '').startsWith('R') ? data.queueNumber : `#${data.queueNumber}`;
+        let msg =
+`✅ 查詢成功（顯示最近一筆訂單）
+
+單號：${numLabel}
+商家：${data.merchant || '—'}
+品項：${data.items || '—'}
+範圍：${data.zone || '—'}`;
+        if(data.schedule) msg += `\n預約時間：${formatSchedule(data.schedule)}`;
+        if(data.extraServices) msg += `\n加購服務：${data.extraServices}`;
+        msg += `
+外送費：$${data.fee || '—'}`;
+        if(data.goodsAmount){
+          const goodsNum = Number(data.goodsAmount) || 0;
+          const feeNum = Number(data.fee) || 0;
+          msg += `\n商品金額：$${data.goodsAmount}（已由店家/後台確認）\n💰 應付總金額：$${goodsNum + feeNum}`;
+        }
+        msg += `
+備註：${data.note || '—'}
+下單時間：${data.time || '—'}`;
+        if(data.paymentMethod === '匯款'){
+          msg += `\n付款方式：💳 匯款轉帳（${data.paymentConfirmed ? '✅ 已收到款項，馬上為您服務' : '⏳ 款項確認中'}）`;
+        }
+        msg += `
+
+目前狀態：${data.status || '待處理'}`;
+        if(data.deliverer) msg += `\n外送員：${data.deliverer}`;
+        resultEl.textContent = msg;
+
+        const st = String(data.status || '');
+        const isPickupPhase = st === '取餐中';
+        const isDeliveryPhase = st === '運送中';
+        const canShowMap = (isPickupPhase || isDeliveryPhase);
+        const hasDriverLoc = data.lat != null && data.lng != null && !isNaN(Number(data.lat)) && !isNaN(Number(data.lng));
+
+        if(canShowMap && mapBox){
+          let lat = hasDriverLoc ? Number(data.lat) : null;
+          let lng = hasDriverLoc ? Number(data.lng) : null;
+          // 取餐中：只畫商家站點；運送中：只畫客戶送達地址
+          // 優先使用後端 Google 地理編碼回傳的 lat/lng
+          const stopsFromApi = Array.isArray(data.merchantStops) ? data.merchantStops : [];
+          const routeWaypoints = [];
+          if(isPickupPhase){
+            if(stopsFromApi.length){
+              stopsFromApi.forEach((s, i) => {
+                const addr = (s && s.address || '').trim();
+                const hasCoord = s && s.lat != null && s.lng != null && !isNaN(Number(s.lat)) && !isNaN(Number(s.lng));
+                if(!addr && !hasCoord) return;
+                routeWaypoints.push({
+                  label: `站點${i+1} ${(s.name || '').trim()}`.trim() || `商家站點${i+1}`,
+                  address: addr || (s.formatted || ''),
+                  icon: '🏪',
+                  lat: hasCoord ? Number(s.lat) : null,
+                  lng: hasCoord ? Number(s.lng) : null,
+                  precise: s.precise !== false
+                });
+              });
+            } else if((data.merchantAddress || '').trim()){
+              routeWaypoints.push({
+                label: '商家（取餐地點）',
+                address: (data.merchantAddress || '').trim(),
+                icon: '🏪'
+              });
+            }
+          } else {
+            // 運送中：前往客戶
+            if((data.address || '').trim() || (data.addressLat != null && data.addressLng != null)){
+              const hasCust = data.addressLat != null && data.addressLng != null
+                && !isNaN(Number(data.addressLat)) && !isNaN(Number(data.addressLng));
+              routeWaypoints.push({
+                label: '送達地址',
+                address: (data.address || '').trim(),
+                icon: '🏠',
+                lat: hasCust ? Number(data.addressLat) : null,
+                lng: hasCust ? Number(data.addressLng) : null,
+                precise: data.addressPrecise !== false
+              });
+            }
+          }
+          const phaseText = isPickupPhase ? '🍱 前往商家取餐中' : '🚚 運送中，前往送達地址';
+          const updatedText = hasDriverLoc
+            ? (data.locationUpdatedAt
+                ? `${phaseText}・位置更新：${data.locationUpdatedAt}（每 15 秒自動更新）`
+                : `${phaseText}（每 15 秒自動更新）`)
+            : `${phaseText}・外送員定位中，先顯示目的地`;
+
+          // 沒有外送員座標時，用站點／送達地址當地圖中心（成功鎮大概位置當最後備援）
+          if(lat == null || lng == null){
+            const withCoord = routeWaypoints.find(w => w.lat != null && w.lng != null);
+            if(withCoord){ lat = Number(withCoord.lat); lng = Number(withCoord.lng); }
+            else { lat = 23.101; lng = 121.380; }
+          }
+
+          if(!window._driverMap){
+            // 第一次顯示：建立地圖（開啟查詢時已預載 Leaflet，這裡通常可立刻畫）
+            mapBox.innerHTML = `
+              <div id="driverUpdatedText" style="font-size:11px;opacity:.8;margin-bottom:6px;font-weight:600;">${updatedText}</div>
+              <div class="map-frame"><div id="driverMap"></div></div>
+              <div id="routeHint" style="font-size:11px;opacity:.75;margin-top:6px;line-height:1.5;"></div>
+              <a class="map-link" href="${hasDriverLoc ? `https://maps.google.com/?q=${encodeURIComponent(lat+','+lng)}` : '#'}" target="_blank" rel="noopener">${hasDriverLoc ? '在 Google 地圖開啟外送員位置 →' : '等待外送員回報位置…'}</a>
+            `;
+            mapBox.style.display = 'block';
+
+            try{
+              await ensureLeaflet_();
+              await new Promise(resolve => setTimeout(resolve, 50));
+              const map = L.map('driverMap', { zoomControl:true, attributionControl:true }).setView([lat, lng], 15);
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+              }).addTo(map);
+              if(hasDriverLoc){
+                const motoIcon = L.divIcon({
+                  className: 'driver-moto-marker',
+                  html: '🛵',
+                  iconSize: [36, 36],
+                  iconAnchor: [18, 30]
+                });
+                lookupDriverMarker = L.marker([lat, lng], { icon: motoIcon }).addTo(map).bindPopup('外送員位置');
+              } else {
+                lookupDriverMarker = null;
+              }
+              window._driverMap = map;
+              setTimeout(()=> map.invalidateSize(), 100);
+
+              await drawDriverRoute(lat, lng, routeWaypoints, mapBox);
+              mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
+            }catch(err){
+              console.warn(err);
+              const hint = document.getElementById('routeHint');
+              if(hint) hint.textContent = '地圖載入失敗，請稍後再試';
+            }
+          } else {
+            // 之後每次輪詢：更新文字／外送員圖示／路線
+            const updatedEl = document.getElementById('driverUpdatedText');
+            if(updatedEl) updatedEl.textContent = updatedText;
+            if(hasDriverLoc){
+              if(lookupDriverMarker){
+                lookupDriverMarker.setLatLng([lat, lng]);
+              } else if(window._driverMap){
+                const motoIcon = L.divIcon({
+                  className: 'driver-moto-marker',
+                  html: '🛵',
+                  iconSize: [36, 36],
+                  iconAnchor: [18, 30]
+                });
+                lookupDriverMarker = L.marker([lat, lng], { icon: motoIcon }).addTo(window._driverMap).bindPopup('外送員位置');
+              }
+            }
+            const link = mapBox.querySelector('.map-link');
+            if(link && hasDriverLoc){
+              link.href = `https://maps.google.com/?q=${encodeURIComponent(lat+','+lng)}`;
+              link.textContent = '在 Google 地圖開啟外送員位置 →';
+            }
+            await drawDriverRoute(lat, lng, routeWaypoints, mapBox);
+          }
+        } else {
+          // 狀態還不是「取餐中／運送中」（例如待處理、處理中）：先收起地圖，但輪詢繼續，狀態一變就會自動長出地圖
+          teardownDriverMap_();
+          if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
+        }
+
+        // 訂單還沒送達就持續每 15 秒自動查詢一次；已送達就沒有再更新的必要，自動停止
+        if(st !== '已送達'){
+          if(!lookupPollTimer){
+            lookupPollTimer = setInterval(()=> performLookup(digits, false), 15000);
+          }
+        } else {
+          stopLookupPolling();
+        }
+      } else {
+        if(isFirst) resultEl.textContent = '❌ 查無資料，請確認電話號碼是否正確，或稍後再試。';
+        stopLookupPolling();
+      }
+    }catch(err){
+      if(isFirst) resultEl.textContent = '查詢失敗，請稍後再試一次。';
+    }
+  }
+
+  document.getElementById('lookupSubmit').addEventListener('click', ()=>{
+    const phone = document.getElementById('lookupPhone').value.trim();
+    if(!phone){
+      toast('請填寫聯絡電話');
+      return;
+    }
+    const digits = phone.replace(/\D/g, '');
+    if(digits.length < 8){
+      toast('請輸入完整電話號碼');
+      return;
+    }
+    resetLookupMapState();
+    ensureLeaflet_().catch(()=>{});
+    performLookup(digits, true);
+  });
+
+  function loadContent(){
+    const loadingEl = document.getElementById('loadingBanner');
+    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
+    const freshUrl = SCRIPT_URL + '?t=' + Date.now();
+    fetch(freshUrl, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        renderRules(data.rules);
+        renderSettings(data.settings);
+        renderServices(data.services);
+        renderMerchants(data.merchants);
+        renderMenus(data.menus);
+        renderAddressZones(data.addressZones);
+        renderDeliverableTownships(data.deliverableTownships);
+        renderDeliverableRoads(data.deliverableRoads);
+        renderPaymentAccounts(data.paymentAccounts);
+        loadingEl.classList.add('hide');
+      })
+      .catch(()=>{
+        // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
+        loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
+        loadingEl.style.borderColor = 'var(--coral-dark)';
+        loadingEl.style.color = 'var(--coral-dark)';
+      });
+  }
+  loadContent();
+
+  // 預約日期欄位不能選過去的日期
+  (function setScheduleDateMin(){
+    const el = document.getElementById('cScheduleDate');
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    el.min = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  })();
+
+  // ---------- 預約時段：固定時段下拉選單，跟後台設定的預約開始/結束/間隔連動 ----------
+  let reservationOpenTime = '08:00';
+  let reservationCloseTime = '20:00';
+  let reservationIntervalMin = 30;
+
+  function generateReservationSlots(){
+    const slots = [];
+    const [openH, openM] = reservationOpenTime.split(':').map(Number);
+    const [closeH, closeM] = reservationCloseTime.split(':').map(Number);
+    let mins = openH * 60 + openM;
+    const endMins = closeH * 60 + closeM;
+    while(mins < endMins){
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+      mins += reservationIntervalMin;
+    }
+    return slots;
+  }
+
+  function populateScheduleTimeOptions(){
+    const sel = document.getElementById('cScheduleTime');
+    const currentValue = sel.value;
+    sel.innerHTML = '<option value="">請選擇時段</option>';
+    generateReservationSlots().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      sel.appendChild(opt);
+    });
+    if(currentValue && Array.from(sel.options).some(o => o.value === currentValue)){
+      sel.value = currentValue;
+    }
+  }
+
+  function syncScheduleValue(){
+    const dateVal = document.getElementById('cScheduleDate').value;
+    const timeVal = document.getElementById('cScheduleTime').value;
+    document.getElementById('cSchedule').value = (dateVal && timeVal) ? `${dateVal}T${timeVal}` : '';
+    updatePreview();
+  }
+
+  function applyScheduleValue(value){
+    // 把「YYYY-MM-DDTHH:mm」拆回日期選擇器與時段選單，供返回上一步/還原表單使用
+    if(value && value.includes('T')){
+      const [datePart, timePart] = value.split('T');
+      document.getElementById('cScheduleDate').value = datePart;
+      populateScheduleTimeOptions();
+      document.getElementById('cScheduleTime').value = timePart;
+    } else {
+      document.getElementById('cScheduleDate').value = '';
+      populateScheduleTimeOptions();
+    }
+    document.getElementById('cSchedule').value = value || '';
+  }
+
+  document.getElementById('cScheduleDate').addEventListener('change', syncScheduleValue);
+  document.getElementById('cScheduleTime').addEventListener('change', syncScheduleValue);
+  populateScheduleTimeOptions();
+
+  const toastEl = document.getElementById('toast');
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(()=>toastEl.classList.remove('show'), 2200);
+  }
+
+  async function logOrder(orderData){
+    // 改用一般模式（不是 no-cors），才能讀到後台回傳的當日單號
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(orderData)
+      });
+      return await res.json(); // { result:'success', queueNumber: N }
+    } catch (err) {
+      return null; // 記錄失敗、或讀不到單號都不影響下單流程
+    }
+  }
+
+  let fee = 30;
+  document.querySelectorAll('.zone-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      fee = parseInt(btn.dataset.fee, 10);
+      updatePreview();
+    });
+  });
+
+  let paymentMethod = '現場付款';
+  document.querySelectorAll('.pay-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      paymentMethod = btn.dataset.pay;
+      document.getElementById('remitFields').style.display = (paymentMethod === '匯款') ? 'block' : 'none';
+      updatePreview();
+    });
+  });
+
+  const ids = ['cAddress','cPhone','cContact','cNote','cRemitName','cRemitLast5'];
+  ids.forEach(id=>document.getElementById(id).addEventListener('input', updatePreview));
+
+  function formatSchedule(raw){
+    if(!raw) return '';
+    const d = new Date(raw);
+    if(isNaN(d.getTime())) return raw;
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function updatePreview(){
+    const stops = collectStops();
+    const addressRaw = document.getElementById('cAddress').value.trim();
+    const phoneRaw = document.getElementById('cPhone').value.trim();
+    const contact = document.getElementById('cContact').value.trim() || '（尚未填寫）';
+    const schedule = document.getElementById('cSchedule').value;
+    const note = document.getElementById('cNote').value.trim();
+    const zoneLabel = fee === 30 ? '鎮內' : '鎮外';
+    const selectedExtras = getSelectedExtraServices();
+    const extraServiceTotal = selectedExtras.reduce((sum, s) => sum + Number(s.fee || 0), 0);
+    const deliveryBase = calculateDeliveryBase(stops, fee, transferFeePerStop);
+    const baseFee = deliveryBase.baseFee;
+    const transferTotal = deliveryBase.transferTotal;
+    const freeDelivery = deliveryBase.allFree;
+    const totalFee = baseFee + extraServiceTotal + transferTotal;
+    const remitName = document.getElementById('cRemitName').value.trim();
+    const remitLast5 = document.getElementById('cRemitLast5').value.trim();
+
+    const stopsText = stops.map((s, i) => `【站點${i+1}】${s.merchant || '（尚未填寫）'}：${s.items || '（尚未填寫）'}${s.preordered ? '　☎️已電話預購' : ''}`).join('\n');
+
+    let text =
+`【代購委託】
+${stopsText}
+地址：${addressRaw || '（尚未填寫）'}
+範圍：${zoneLabel}
+社群暱稱：${contact}
+聯絡電話：${phoneRaw || '（尚未填寫）'}`;
+    text += schedule ? `\n⏰ 預約時間：${formatSchedule(schedule)}` : `\n⏰ 送達時間：依訂單順序處理`;
+    if(stops.length > 1){
+      text += `\n🔀 中途轉點：共 ${stops.length} 個商家（加收 $${transferTotal}）`;
+    }
+    if(selectedExtras.length){
+      const extraNames = selectedExtras.map(s => `${s.name}(+$${s.fee})`).join('、');
+      text += `\n加購服務：${extraNames}`;
+    }
+    if(note) text += `\n備註：${note}`;
+    const freeNote = deliveryBase.allFree ? '，全部商家免運費' : (deliveryBase.hasFreeStop ? '，含免運商家已扣除該站費用' : '');
+    const feeBreakdown = (extraServiceTotal || transferTotal || freeDelivery || deliveryBase.hasFreeStop)
+      ? `$${totalFee}（基本 $${baseFee}${freeNote}${transferTotal ? ` + 轉點 $${transferTotal}` : ''}${extraServiceTotal ? ` + 加購 $${extraServiceTotal}` : ''}）`
+      : `$${fee}`;
+    text += `\n外送費：${feeBreakdown}（商品費用另計）`;
+    text += `\n💳 付款方式：${paymentMethod}`;
+    if(paymentMethod === '匯款'){
+      text += `\n匯款戶名：${remitName || '（尚未填寫）'}`;
+      text += `\n匯款帳號末五碼：${remitLast5 || '（尚未填寫）'}`;
+    }
+    document.getElementById('preview').textContent = text;
+    updateCartFloatBar();
+  }
+  updatePreview();
+
+  // ---------- 照片上傳（壓縮後轉base64，只送進後台試算表） ----------
+  let photoBase64 = null;
+  let photoMime = null;
+
+  function compressImage(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('讀取檔案失敗'));
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('圖片解析失敗'));
+        img.onload = () => {
+          const maxSize = 1000;
+          let { width, height } = img;
+          if(width > maxSize || height > maxSize){
+            if(width > height){ height = Math.round(height * maxSize / width); width = maxSize; }
+            else { width = Math.round(width * maxSize / height); height = maxSize; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve({ base64: dataUrl.split(',')[1], mime: 'image/jpeg', preview: dataUrl });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById('cPhoto').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    try{
+      toast('照片處理中...');
+      const { base64, mime, preview } = await compressImage(file);
+      photoBase64 = base64;
+      photoMime = mime;
+      document.getElementById('photoPreviewImg').src = preview;
+      document.getElementById('photoPreviewBox').style.display = 'flex';
+      toast('照片已附上');
+    }catch(err){
+      toast('照片處理失敗，請換一張試試');
+      e.target.value = '';
+    }
+  });
+
+  function clearPhoto(){
+    photoBase64 = null;
+    photoMime = null;
+    document.getElementById('cPhoto').value = '';
+    document.getElementById('photoPreviewBox').style.display = 'none';
+    document.getElementById('photoPreviewImg').src = '';
+  }
+  document.getElementById('photoRemoveBtn').addEventListener('click', clearPhoto);
+
+  function getFormData(){
+    const stops = collectStops();
+    const merchantNames = stops.map(s => s.merchant).filter(Boolean).join('、');
+    const itemsCombined = stops.map((s, i) => `【站點${i+1}】${s.merchant || '未填商家'}：${s.items || ''}${s.preordered ? '　☎️已電話預購' : ''}`).join('\n');
+
+    const selectedExtras = getSelectedExtraServices();
+    const extraServiceTotal = selectedExtras.reduce((sum, s) => sum + Number(s.fee || 0), 0);
+    const deliveryBase = calculateDeliveryBase(stops, fee, transferFeePerStop);
+    const baseFee = deliveryBase.baseFee;
+    const transferTotal = deliveryBase.transferTotal;
+    const freeDelivery = deliveryBase.allFree;
+    const chargeableStopCount = stops.filter(s => !(s.merchant && merchantFreeMap[s.merchant])).length;
+
+    let extraNames = selectedExtras.map(s => `${s.name}(+$${s.fee})`).join('、');
+    if(transferTotal){
+      const transferLabel = `中途轉點x${chargeableStopCount - 1}(+$${transferTotal})`;
+      extraNames = extraNames ? `${extraNames}、${transferLabel}` : transferLabel;
+    }
+    if(freeDelivery){
+      extraNames = extraNames ? `${extraNames}、全部商家免運費` : '全部商家免運費';
+    } else if(deliveryBase.hasFreeStop){
+      extraNames = extraNames ? `${extraNames}、含免運商家已扣除該站費用` : '含免運商家已扣除該站費用';
+    }
+
+    return {
+      merchant: merchantNames,
+      items: itemsCombined,
+      address: document.getElementById('cAddress').value.trim(),
+      phone: document.getElementById('cPhone').value.trim(),
+      contact: document.getElementById('cContact').value.trim(),
+      schedule: document.getElementById('cSchedule').value,
+      note: document.getElementById('cNote').value.trim(),
+      zone: fee === 30 ? '鎮內' : '鎮外',
+      fee: baseFee + extraServiceTotal + transferTotal,
+      extraServices: extraNames,
+      paymentMethod: paymentMethod,
+      remitName: paymentMethod === '匯款' ? document.getElementById('cRemitName').value.trim() : '',
+      remitLast5: paymentMethod === '匯款' ? document.getElementById('cRemitLast5').value.trim() : '',
+      legalConfirm: document.getElementById('cLegalConfirm').checked,
+      photoBase64,
+      photoMime
+    };
+  }
+
+  function isValidPhone(raw){
+    // 只接受兩種固定格式：手機 0000-000-000（10碼）或市話 000-000000（9碼）
+    return /^\d{4}-\d{3}-\d{3}$/.test(raw) || /^\d{3}-\d{6}$/.test(raw);
+  }
+
+  function formatPhoneOnBlur(){
+    const el = document.getElementById('cPhone');
+    const digits = el.value.replace(/\D/g, '');
+    if(digits.length === 10){
+      el.value = digits.slice(0,4) + '-' + digits.slice(4,7) + '-' + digits.slice(7);
+    } else if(digits.length === 9){
+      el.value = digits.slice(0,3) + '-' + digits.slice(3);
+    }
+    updatePreview();
+  }
+  document.getElementById('cPhone').addEventListener('blur', formatPhoneOnBlur);
+
+  function isBot(){
+    // 蜜罐欄位：正常使用者看不到也不會填，機器人通常會自動填入
+    return document.getElementById('cHoneypot').value.trim() !== '';
+  }
+
+  let undoSnapshot = null;
+  const undoBtn = document.getElementById('undoBtn');
+
+  function snapshotForm(){
+    const data = {};
+    ids.forEach(id => { data[id] = document.getElementById(id).value; });
+    data.cAddrTownship = document.getElementById('cAddrTownship').value;
+    data.cAddrRoad = document.getElementById('cAddrRoad').value;
+    data.cAddrRoadOther = document.getElementById('cAddrRoadOther').value;
+    data.cAddrDetail = document.getElementById('cAddrDetail').value;
+    data.cAddrNote = document.getElementById('cAddrNote').value;
+    data.fee = fee;
+    data.extraIdx = Array.from(document.querySelectorAll('#extraServicePicker input:checked')).map(cb => cb.dataset.idx);
+    data.stops = collectStops();
+    data.legalConfirm = document.getElementById('cLegalConfirm').checked;
+    data.schedule = document.getElementById('cSchedule').value;
+    data.paymentMethod = paymentMethod;
+    return data;
+  }
+
+  function restoreForm(snapshot){
+    if(!snapshot) return;
+    ids.forEach(id => { document.getElementById(id).value = snapshot[id] || ''; });
+    document.getElementById('cAddrTownship').value = snapshot.cAddrTownship || '';
+    document.getElementById('cAddrRoad').value = snapshot.cAddrRoad || '';
+    document.getElementById('cAddrRoadOther').value = snapshot.cAddrRoadOther || '';
+    document.getElementById('cAddrRoadOther').style.display = (snapshot.cAddrRoad === '其他') ? 'block' : 'none';
+    document.getElementById('cAddrDetail').value = snapshot.cAddrDetail || '';
+    document.getElementById('cAddrNote').value = snapshot.cAddrNote || '';
+    syncAddressField();
+    fee = snapshot.fee || 30;
+    rebuildStops(snapshot.stops);
+    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.zone-btn[data-fee="${fee}"]`).classList.add('active');
+    document.querySelectorAll('#extraServicePicker input').forEach(cb => {
+      cb.checked = (snapshot.extraIdx || []).includes(cb.dataset.idx);
+    });
+    document.getElementById('cLegalConfirm').checked = !!snapshot.legalConfirm;
+    applyScheduleValue(snapshot.schedule || '');
+    paymentMethod = snapshot.paymentMethod || '現場付款';
+    document.querySelectorAll('.pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === paymentMethod));
+    document.getElementById('remitFields').style.display = (paymentMethod === '匯款') ? 'block' : 'none';
+    updatePreview();
+  }
+
+  function resetForm(){
+    undoSnapshot = snapshotForm(); // 清空前先存一份快照，供「返回上一步」使用
+    undoBtn.disabled = false;
+    ids.forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('cAddrTownship').value = '';
+    document.getElementById('cAddrRoad').value = '';
+    document.getElementById('cAddrRoadOther').value = '';
+    document.getElementById('cAddrRoadOther').style.display = 'none';
+    document.getElementById('cAddrDetail').value = '';
+    document.getElementById('cAddrNote').value = '';
+    syncAddressField();
+    fee = 30;
+    clearPhoto();
+    rebuildStops([{ merchant: '', items: '' }]);
+    document.querySelectorAll('#extraServicePicker input').forEach(cb => { cb.checked = false; });
+    document.getElementById('cLegalConfirm').checked = false;
+    applyScheduleValue('');
+    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
+    paymentMethod = '現場付款';
+    document.querySelectorAll('.pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === '現場付款'));
+    document.getElementById('remitFields').style.display = 'none';
+    updatePreview();
+  }
+
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    resetForm();
+    toast('表單已清除');
+  });
+
+  undoBtn.addEventListener('click', ()=>{
+    if(!undoSnapshot) return;
+    restoreForm(undoSnapshot);
+    undoBtn.disabled = true;
+    undoSnapshot = null;
+    toast('已還原剛剛的內容');
+  });
+
+  function flashSuccess(btn, tempLabel){
+    const original = btn.dataset.originalLabel || btn.innerHTML;
+    btn.dataset.originalLabel = original;
+    btn.innerHTML = tempLabel;
+    setTimeout(()=>{ btn.innerHTML = original; }, 1600);
+  }
+
+  function popBadge(){
+    const el = document.getElementById('queueBadge');
+    el.classList.remove('pop');
+    void el.offsetWidth; // 強制重新觸發動畫
+    el.classList.add('pop');
+  }
+
+  let lastOrderPhone = '';
+
+  function showQueueBadge(n){
+    document.getElementById('queueNum').textContent = '#' + n;
+    document.getElementById('queueLabel').innerHTML = '您的委託單號<br>我們將依單號順序為您服務';
+    document.getElementById('queueBadge').style.display = 'flex';
+    document.getElementById('queueQueryBtn').style.display = 'block';
+    popBadge();
+  }
+  function showQueuePending(){
+    document.getElementById('queueNum').textContent = '⏳';
+    document.getElementById('queueLabel').innerHTML = '訂單已送出，委託單號查詢中<br>請稍候幾秒不要離開頁面';
+    document.getElementById('queueBadge').style.display = 'flex';
+    document.getElementById('queueQueryBtn').style.display = 'block';
+    popBadge();
+  }
+  function showReservationPending(){
+    document.getElementById('queueNum').textContent = '⏳';
+    document.getElementById('queueLabel').innerHTML = '正在確認時段是否可預約<br>請稍候幾秒不要離開頁面';
+    document.getElementById('queueBadge').style.display = 'flex';
+    document.getElementById('queueQueryBtn').style.display = 'none';
+    popBadge();
+  }
+  function showReservedBadge(n){
+    document.getElementById('queueNum').textContent = n ? n : '📅';
+    document.getElementById('queueLabel').innerHTML = '已為您預約';
+    document.getElementById('queueBadge').style.display = 'flex';
+    document.getElementById('queueQueryBtn').style.display = 'block';
+    popBadge();
+  }
+  function hideQueueBadge(){
+    document.getElementById('queueBadge').style.display = 'none';
+  }
+  document.getElementById('queueClose').addEventListener('click', hideQueueBadge);
+  document.getElementById('queueQueryBtn').addEventListener('click', ()=>{
+    openLookup(lastOrderPhone);
+  });
+
+  function validateRequired(data){
+    if(orderingMode === 'reservationOnly' && !data.schedule){
+      toast('目前非營業時間，僅開放預約單，請選擇預約時間');
+      document.getElementById('cScheduleDate').focus();
+      return false;
+    }
+    if(!data.phone){
+      toast('請先填寫客戶聯絡電話');
+      document.getElementById('cPhone').focus();
+      return false;
+    }
+    if(!isValidPhone(data.phone)){
+      toast('電話格式需為 0000-000-000 或 000-000000，請確認');
+      document.getElementById('cPhone').focus();
+      return false;
+    }
+    if(!data.contact){
+      toast('請先填寫社群暱稱');
+      document.getElementById('cContact').focus();
+      return false;
+    }
+    if(data.schedule && new Date(data.schedule).getTime() < Date.now()){
+      toast('預約時間不能是過去的時間，請重新選擇');
+      document.getElementById('cScheduleDate').focus();
+      return false;
+    }
+    if(data.schedule){
+      const d = new Date(data.schedule);
+      const pad = n => String(n).padStart(2, '0');
+      const timeOfDay = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const withinReservationHours = timeOfDay >= reservationOpenTime && timeOfDay < reservationCloseTime;
+      if(!withinReservationHours){
+        toast(`預約時段開放 ${reservationOpenTime}–${reservationCloseTime}，請重新選擇`);
+        document.getElementById('cScheduleTime').focus();
+        return false;
+      }
+    }
+    if(!document.getElementById('cLegalConfirm').checked){
+      toast('請先勾選最下方的年齡與合法性確認');
+      document.getElementById('cLegalConfirm').focus();
+      return false;
+    }
+    if(data.paymentMethod === '匯款'){
+      if(!data.remitName){
+        toast('選擇匯款付款，請填寫匯款帳戶大名');
+        document.getElementById('cRemitName').focus();
+        return false;
+      }
+      if(!/^\d{5}$/.test(data.remitLast5)){
+        toast('請填寫正確的匯款帳號末五碼（5 碼數字）');
+        document.getElementById('cRemitLast5').focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  document.getElementById('sendLineBtn').addEventListener('click', async (e)=>{
+    if(orderingDisabled){ toast('目前暫停接單中，請稍後再試'); return; }
+    if(isBot()) return; // 疑似機器人，靜默略過
+    formatPhoneOnBlur(); // 確保送出前電話已經是排版好的格式
+    const data = getFormData();
+    if(!validateRequired(data)) return;
+    const btn = e.currentTarget;
+    lastOrderPhone = data.phone;
+
+    // 先立刻顯示「處理中」狀態，讓客戶知道已經有反應，接著等後台確認寫入成功
+    if(data.schedule){
+      showReservationPending();
+    } else {
+      showQueuePending();
+    }
+
+    const result = await logOrder(data);
+
+    if(result && result.result === 'error'){
+      hideQueueBadge();
+      toast(result.message || '送出失敗，請稍後再試');
+      return; // 不清空表單，讓客戶可以修改後重新送出（例如預約時段衝突時換個時間）
+    }
+
+    flashSuccess(btn, '✓ 已送出');
+
+    if(data.schedule){
+      toast('預約已送出，感謝您的委託');
+      showReservedBadge(result && result.queueNumber);
+    } else {
+      toast('訂單已送出，感謝您的委託');
+      if(result && result.queueNumber){
+        showQueueBadge(result.queueNumber);
+      } else {
+        document.getElementById('queueLabel').innerHTML = '訂單已記錄，單號查詢逾時<br>請截圖此畫面作為下單憑證';
+      }
+    }
+    resetForm();
+  });
+
+})();
+</script>
+</body>
+</html>
