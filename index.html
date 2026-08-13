@@ -1475,6 +1475,19 @@
     }
   }
 
+  /* 頂部社群守則／營業時間面板移到 body 後的安全樣式 */
+  body > .header-rules-panel[data-header-panel-portal="true"]{
+    display:block !important;
+    position:fixed !important;
+    z-index:10000 !important;
+    box-sizing:border-box !important;
+    overflow:auto !important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    visibility:visible !important;
+    opacity:1 !important;
+  }
+
   /* Android／iOS 固定底部操作列：把安全區與瀏覽器手勢區都算進去 */
   @media (max-width: 639px){
     .cart-float-bar{
@@ -2938,18 +2951,53 @@
   }
   document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
 
+  /*
+     手機頂部選單面板：不能留在 .top-inner 裡。
+     .top-inner 為了讓手機可以左右滑動而使用 overflow-x:auto，
+     iOS Safari / Android Chrome 會因此把超出高度的下拉面板裁掉。
+     開啟時把面板暫時移到 body，改用真正的 viewport fixed 定位，
+     關閉時再放回原本的 details，避免任何手機瀏覽器裁切。
+  */
   function placeHeaderPanel_(details){
     if(!details || !details.open) return;
-    const panel = details.querySelector('.header-rules-panel');
+    const panel = details._headerPanel || details.querySelector('.header-rules-panel');
     const sum = details.querySelector('summary');
     if(!panel || !sum) return;
+
     const r = sum.getBoundingClientRect();
-    let left = r.left;
     const width = Math.min(window.innerWidth * 0.92, 360);
+    let left = r.left;
     if(left + width > window.innerWidth - 8) left = Math.max(8, window.innerWidth - width - 8);
-    panel.style.top = (r.bottom + 8) + 'px';
+    left = Math.max(8, left);
+
+    panel.style.position = 'fixed';
+    panel.style.top = Math.max(8, r.bottom + 8) + 'px';
     panel.style.left = left + 'px';
+    panel.style.right = 'auto';
+    panel.style.width = width + 'px';
+    panel.style.maxWidth = 'calc(100vw - 16px)';
+    panel.style.maxHeight = 'min(70vh, 420px)';
+    panel.style.zIndex = '10000';
   }
+
+  function moveHeaderPanelToBody_(details){
+    if(!details || details._headerPanel) return;
+    const panel = details.querySelector('.header-rules-panel');
+    if(!panel) return;
+    details._headerPanel = panel;
+    panel.dataset.headerPanelPortal = 'true';
+    document.body.appendChild(panel);
+  }
+
+  function restoreHeaderPanel_(details){
+    if(!details || !details._headerPanel) return;
+    const panel = details._headerPanel;
+    details.appendChild(panel);
+    delete panel.dataset.headerPanelPortal;
+    panel.removeAttribute('style');
+    details._headerPanel = null;
+  }
+
   ['headerRules','headerHours'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -2961,24 +3009,34 @@
           const o = document.getElementById(oid);
           if(o) o.open = false;
         });
-        placeHeaderPanel_(el);
+        moveHeaderPanelToBody_(el);
+        requestAnimationFrame(()=>placeHeaderPanel_(el));
+      }else{
+        restoreHeaderPanel_(el);
       }
     });
   });
+
   window.addEventListener('resize', ()=>{
     ['headerRules','headerHours'].forEach(id=>{
       const el = document.getElementById(id);
       if(el && el.open) placeHeaderPanel_(el);
     });
   });
+  window.addEventListener('scroll', ()=>{
+    ['headerRules','headerHours'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el && el.open) placeHeaderPanel_(el);
+    });
+  }, {passive:true});
 
   document.addEventListener('click', (e)=>{
     const t = e.target;
     ['heroExtraFold','heroFeeFold','heroPayFold','headerRules','headerHours'].forEach(id=>{
       const el = document.getElementById(id);
       if(!el || !el.open) return;
-      if(el.contains(t)) return;
-      // fixed panel is still inside details in DOM, so contains works
+      const panel = el._headerPanel || el.querySelector('.header-rules-panel');
+      if(el.contains(t) || (panel && panel.contains(t))) return;
       el.open = false;
     });
   });
