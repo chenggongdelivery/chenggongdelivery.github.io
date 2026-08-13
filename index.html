@@ -1907,6 +1907,14 @@
     .hero h1{ font-size: 30px; }
   }
 
+
+  .announce-stack{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:8px;
+  }
+  .announce-stack .announce-wrap{ margin:0; }
 </style>
 
 </head>
@@ -1953,10 +1961,11 @@
 
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
+  <div class="announce-stack" id="announceStack">
   <div class="announce-wrap" id="hoursAnnouncementWrap" style="display:none;">
     <details class="announce-fold hours" id="hoursAnnouncementDetails">
       <summary>
-        <span>🕒 營業調整公告</span>
+        <span>🕒 營業時間調整公告</span>
         <span class="announce-new-badge" id="hoursAnnouncementNewBadge" style="display:none;">新</span>
         <span class="fold-arrow">▸</span>
       </summary>
@@ -1982,6 +1991,7 @@
       </summary>
       <div class="announce-body" id="delayWarningBanner"></div>
     </details>
+  </div>
   </div>
 
   <div class="merchant-ads" id="merchantAdsSection" style="display:none;">
@@ -3219,14 +3229,14 @@ function renderSettings(settings){
       details.ontoggle = ()=>{ if(!details.open) markRead(); };
     }
     applyFoldableAnnouncement_(
-      'cg_announcement_v1',
-      (settings['公告內容'] || '').trim(),
-      'announcementWrap', 'announcementDetails', 'announcementBanner', 'announcementNewBadge'
-    );
-    applyFoldableAnnouncement_(
       'cg_hours_announcement_v1',
       (settings['營業時間調整公告'] || '').trim(),
       'hoursAnnouncementWrap', 'hoursAnnouncementDetails', 'hoursAnnouncementBanner', 'hoursAnnouncementNewBadge'
+    );
+    applyFoldableAnnouncement_(
+      'cg_announcement_v1',
+      (settings['公告內容'] || '').trim(),
+      'announcementWrap', 'announcementDetails', 'announcementBanner', 'announcementNewBadge'
     );
     applyFoldableAnnouncement_(
       'cg_delay_warning_v1',
