@@ -1542,161 +1542,143 @@
   }
 
 
-  /* ========== 手機／電腦共用響應式修正 ========== */
-  html, body{
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  main, header.top, footer, .composer, .hero, .info-fold, .announce-wrap{
-    max-width: 100%;
-    box-sizing: border-box;
-  }
+  
+  /* ========== 固定版面：不依賴動態定位，避免被裁切遮住 ========== */
+  html, body{ max-width:100%; overflow-x:hidden; }
   main{
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
+    max-width:920px;
+    margin:0 auto;
+    padding:12px 16px 120px; /* 底部留白，避免被浮動列擋住 */
+    box-sizing:border-box;
   }
 
-  /* 頂部列：單列可滑，不重疊 */
-  .top-inner{
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    gap: 6px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-  }
-  .top-inner > *{
-    flex-shrink: 0;
-  }
-
-  /* 標題按鈕列 */
   .hero-cta{
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 8px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-    width: 100%;
+    display:block !important;
+    overflow:visible !important;
+    margin:0 0 10px;
   }
-  .hero-cta > *{
-    flex: 0 0 auto !important;
-  }
-  .hero-cta .cta-order,
-  .hero-extra > summary{
-    width: auto !important;
-    max-width: none;
+  .hero-cta .cta-order{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    padding:10px 18px;
+    border-radius:999px;
+    border:2px solid var(--ink);
+    background:#06C755;
+    color:#fff;
+    font-weight:700;
+    text-decoration:none;
+    box-shadow:0 2px 0 var(--ink);
   }
 
-  /* 表單：避免任何子元素撐破 */
-  .composer{
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
+  .info-blocks{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin:0 0 12px;
+    width:100%;
   }
-  .composer .field,
-  .composer .field > *,
-  .stop-row,
-  .schedule-row,
-  .zone-toggle,
-  .pinned-addr-bar{
-    min-width: 0;
-    max-width: 100%;
+  .info-block{
+    width:100%;
+    border:2px solid var(--ink);
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 2px 0 var(--ink);
+    overflow:hidden;
+  }
+  .info-block > summary{
+    list-style:none;
+    cursor:pointer;
+    padding:12px 14px;
+    font-weight:700;
+    font-size:14px;
+    min-height:44px;
+    display:flex;
+    align-items:center;
+  }
+  .info-block > summary::-webkit-details-marker{ display:none; }
+  .info-block[open] > summary{
+    background:var(--ink);
+    color:var(--gold);
+    border-bottom:1px solid rgba(255,255,255,.12);
+  }
+  .info-block-body{
+    padding:12px 14px 14px;
+    background:var(--card);
+  }
+  .info-block-body .fee-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .info-block-body .range-map{
+    margin-top:10px;
+  }
+  .info-block-body .range-map svg{
+    width:100%;
+    height:auto;
+    min-width:0 !important;
+  }
+
+  /* 表單付款方式：固定可見 */
+  .composer .zone-toggle{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .composer .zone-toggle button{
+    width:100%;
+    min-height:44px;
+  }
+  .composer .field{
+    min-width:0;
+    max-width:100%;
   }
   .composer input,
   .composer select,
-  .composer textarea,
-  .composer button{
-    max-width: 100%;
-    box-sizing: border-box;
+  .composer textarea{
+    max-width:100%;
+    box-sizing:border-box;
   }
-  .composer input[type="date"]{
-    min-width: 0 !important;
-    width: 100%;
-  }
-
-  /* 預約：電腦橫排、手機直排 */
   .schedule-row{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
   }
-  .schedule-row input[type="date"],
+  .schedule-row input,
   .schedule-row select{
-    flex: 1 1 160px;
-    min-width: 0 !important;
-    width: 100%;
-    max-width: 100%;
+    width:100%;
+    min-width:0 !important;
   }
-
-  /* 地址列 */
   .addr-row{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
   }
-  .addr-row select,
-  .addr-row input{
-    flex: 1 1 120px;
-    min-width: 0;
-    max-width: 100%;
+  .addr-row select{ width:100%; }
+
+  /* 電腦：兩欄較寬時再並排 */
+  @media (min-width:720px){
+    .info-block-body .fee-grid{ grid-template-columns:1fr 1fr; }
+    .composer .zone-toggle{ flex-direction:row; }
+    .composer .zone-toggle button{ flex:1; }
+    .schedule-row{ flex-direction:row; }
+    .schedule-row input,
+    .schedule-row select{ flex:1; width:auto; }
+    .addr-row{ flex-direction:row; }
+    .addr-row select{ flex:1; }
   }
 
-  /* 鎮內鎮外／付款 */
-  .zone-toggle{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .zone-toggle button{
-    flex: 1 1 120px;
-    min-width: 0;
-  }
-
-  /* 範圍圖 */
-  .range-map, .range-map-scroll, .range-map svg{
-    max-width: 100%;
-  }
-  .range-map svg{
-    width: 100%;
-    height: auto;
-    min-width: 0 !important;
-  }
-
-  /* 下拉面板不超出螢幕 */
-  .header-rules-panel,
-  .hero-extra-panel{
-    max-width: min(92vw, 360px);
-  }
-
-  @media (min-width: 768px){
-    main{ padding-left: 20px; padding-right: 20px; }
-    .schedule-row{
-      flex-wrap: nowrap;
-    }
-    .schedule-row input[type="date"],
-    .schedule-row select{
-      flex: 1 1 0;
-      width: auto;
-    }
-    .hero-cta{
-      overflow: visible;
-    }
-    .zone-toggle button{
-      flex: 1 1 0;
-    }
-  }
-
-  @media (max-width: 480px){
-    .schedule-row{ flex-direction: column; flex-wrap: nowrap; }
-    .schedule-row input[type="date"],
-    .schedule-row select{ flex: 1 1 auto; width: 100%; }
-    .zone-toggle{ flex-direction: column; }
-    .zone-toggle button{ width: 100%; flex: 1 1 auto; }
+  /* 關掉舊的 absolute 面板規則干擾 */
+  .hero-extra-panel,
+  .hero-fee-panel{
+    position:static !important;
+    width:auto !important;
+    max-width:none !important;
+    max-height:none !important;
+    box-shadow:none !important;
+    transform:none !important;
   }
 
 </style>
@@ -1779,22 +1761,23 @@
   <div class="hero">
     <h1>成功小蜜丰</h1>
     <p>選店、填地址、送出</p>
-    <div class="hero-cta-wrap">
     <div class="hero-cta">
       <a class="cta-order" href="#orderComposer">🛒 開始下單</a>
-      <details class="hero-extra" id="heroExtraFold">
+    </div>
+    <div class="info-blocks">
+      <details class="info-block" id="heroExtraFold">
         <summary>➕ 額外服務</summary>
-        <div class="hero-extra-panel">
+        <div class="info-block-body">
           <a class="ask-btn" id="askInlineBtn" href="#" target="_blank" rel="noopener">💬 私訊小蜜丰</a>
           <div class="extra-services" id="extraServices">
             <div class="empty">目前無額外服務。</div>
           </div>
         </div>
       </details>
-      <details class="hero-extra" id="heroFeeFold">
+      <details class="info-block" id="heroFeeFold">
         <summary>💰 外送費</summary>
-        <div class="hero-extra-panel hero-fee-panel">
-          <div class="fee-grid">
+        <div class="info-block-body">
+<div class="fee-grid">
         <div class="fee-card">
           <span class="zone">鎮內</span>
           <div class="price">$30 <span>／單</span></div>
@@ -1846,17 +1829,15 @@
   </div>
         </div>
       </details>
-      <details class="hero-extra" id="heroPayFold">
+      <details class="info-block" id="heroPayFold">
         <summary>💳 付款方式</summary>
-        <div class="hero-extra-panel">
-          <div class="payment-box" id="paymentBox" style="margin:0;">現場付款或匯款（商品費 + 外送費）</div>
-      <div class="payment-accounts" id="paymentAccounts"></div>
+        <div class="info-block-body">
+          <div class="payment-box" id="paymentBox">現場付款或匯款（商品費 + 外送費）</div>
+          <div class="payment-accounts" id="paymentAccounts"></div>
         </div>
       </details>
     </div>
-    </div>
   </div>
-
 
   <div class="status-banner" id="statusBanner"></div>
   <div class="progress-banner" id="progressBanner"></div>
