@@ -597,22 +597,6 @@
   .composer{background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px;}
   .composer label{font-size:12px; font-weight:700; color:var(--ocean-dark); display:block; margin-bottom:5px;}
   .composer .field{margin-bottom:14px;}
-  /* 預約日期／時段：避免 iOS / Android 原生控制項撐破表單寬度 */
-  .schedule-row{
-    display:flex;
-    gap:8px;
-    width:100%;
-    min-width:0;
-    box-sizing:border-box;
-  }
-  .schedule-row > #cScheduleDate,
-  .schedule-row > #cScheduleTime{
-    flex:1 1 0;
-    width:0;
-    min-width:0;
-    max-width:100%;
-    box-sizing:border-box;
-  }
   .composer input, .composer select, .composer textarea{
     width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:8px; background:var(--paper);
     font-family:inherit; font-size:14px;
@@ -787,23 +771,6 @@
     .menu-category-body{ grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
     .composer{ padding: 16px 14px; }
     .composer .field{ margin-bottom: 16px; }
-  /* 預約日期／時段：避免手機原生 date/select 控制項因內建最小寬度溢出 */
-  .schedule-row{
-    display:flex;
-    gap:8px;
-    width:100%;
-    min-width:0;
-    box-sizing:border-box;
-  }
-  .schedule-row > #cScheduleDate,
-  .schedule-row > #cScheduleTime{
-    flex:1 1 0 !important;
-    width:0 !important;
-    min-width:0 !important;
-    max-width:100%;
-    box-sizing:border-box;
-  }
-
     .composer label{ font-size: 13px; margin-bottom: 6px; }
 
     .stop-row{ padding: 12px; }
@@ -813,9 +780,15 @@
     .pinned-addr-bar .pa-save{ width: 100%; text-align: center; }
 
     .copy-btn{ width: 100%; justify-content: center; text-align: center; }
-    .composer > div[style*="display:flex"]{ flex-direction: column !important; }
-    .composer > div[style*="display:flex"] .copy-btn,
-    .composer > div[style*="display:flex"] .utility-btn{ width: 100%; }
+    .form-actions{ display:flex; flex-wrap:wrap; gap:10px; }
+  .form-actions .copy-btn{ flex:1 1 160px; }
+  @media (max-width:480px){
+    .composer .form-actions{ display:flex; flex-direction:column; gap:10px; }
+    .composer .form-actions .copy-btn,
+    .composer .form-actions .utility-btn{ width: 100%; }
+  }
+    .composer .form-actions .copy-btn,
+    .composer .form-actions .utility-btn{ width: 100%; }
 
     .payment-box{ padding: 14px 16px; font-size: 13px; }
     .info-fold > summary{ padding: 12px 14px; font-size: 14px; }
@@ -870,20 +843,6 @@
     footer{ padding: 20px 14px 28px; }
   }
 
-  @media (max-width: 720px){
-    .schedule-row{
-      flex-direction:column;
-      gap:8px;
-    }
-    .schedule-row > #cScheduleDate,
-    .schedule-row > #cScheduleTime{
-      width:100% !important;
-      min-width:0 !important;
-      max-width:100% !important;
-      flex:0 1 auto !important;
-    }
-  }
-
   @media (max-width: 480px){
     .top-inner{ flex-wrap: nowrap; }
     .brand{ min-width: 0; flex: 1; }
@@ -898,14 +857,7 @@
     .zone-toggle button{ width: 100%; }
 
     /* 地址列：鄉鎮與縣市在窄螢幕直向排列 */
-    .composer .field > div[style*="display:flex"]{
-      flex-direction: column !important;
-    }
-    .composer .field > div[style*="display:flex"] select,
-    .composer .field > div[style*="display:flex"] input{
-      flex: 1 1 auto !important;
-      width: 100% !important;
-    }
+    /* 地址／預約改由 .addr-row / .schedule-row 自行處理，避免電腦版被強制直排 */
     #cAddrCounty{ flex: 1 1 auto !important; max-width: none !important; }
 
     .queue-badge{ padding: 14px 16px; }
@@ -1545,6 +1497,208 @@
     }
   }
 
+
+  /* 預約時間列：避免 date/select 原生最小寬度撐破表單 */
+  .schedule-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:stretch;
+    min-width:0;
+    max-width:100%;
+  }
+  .schedule-row input[type="date"],
+  .schedule-row select{
+    flex:1 1 140px;
+    min-width:0 !important;
+    max-width:100%;
+    width:100%;
+    box-sizing:border-box;
+  }
+  /* iOS / Chrome 原生 date 控件常有過大 min-width */
+  .composer input[type="date"]{
+    min-width:0;
+    max-width:100%;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .composer .field{
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+  }
+  .composer{
+    overflow:hidden;
+  }
+  @media (max-width:480px){
+    .schedule-row{
+      flex-direction:column;
+    }
+    .schedule-row input[type="date"],
+    .schedule-row select{
+      flex:1 1 auto;
+      width:100%;
+    }
+  }
+
+
+  /* ========== 手機／電腦共用響應式修正 ========== */
+  html, body{
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  main, header.top, footer, .composer, .hero, .info-fold, .announce-wrap{
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  main{
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  /* 頂部列：單列可滑，不重疊 */
+  .top-inner{
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+  .top-inner > *{
+    flex-shrink: 0;
+  }
+
+  /* 標題按鈕列 */
+  .hero-cta{
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    width: 100%;
+  }
+  .hero-cta > *{
+    flex: 0 0 auto !important;
+  }
+  .hero-cta .cta-order,
+  .hero-extra > summary{
+    width: auto !important;
+    max-width: none;
+  }
+
+  /* 表單：避免任何子元素撐破 */
+  .composer{
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .composer .field,
+  .composer .field > *,
+  .stop-row,
+  .schedule-row,
+  .zone-toggle,
+  .pinned-addr-bar{
+    min-width: 0;
+    max-width: 100%;
+  }
+  .composer input,
+  .composer select,
+  .composer textarea,
+  .composer button{
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .composer input[type="date"]{
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  /* 預約：電腦橫排、手機直排 */
+  .schedule-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .schedule-row input[type="date"],
+  .schedule-row select{
+    flex: 1 1 160px;
+    min-width: 0 !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* 地址列 */
+  .addr-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .addr-row select,
+  .addr-row input{
+    flex: 1 1 120px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* 鎮內鎮外／付款 */
+  .zone-toggle{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .zone-toggle button{
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+
+  /* 範圍圖 */
+  .range-map, .range-map-scroll, .range-map svg{
+    max-width: 100%;
+  }
+  .range-map svg{
+    width: 100%;
+    height: auto;
+    min-width: 0 !important;
+  }
+
+  /* 下拉面板不超出螢幕 */
+  .header-rules-panel,
+  .hero-extra-panel{
+    max-width: min(92vw, 360px);
+  }
+
+  @media (min-width: 768px){
+    main{ padding-left: 20px; padding-right: 20px; }
+    .schedule-row{
+      flex-wrap: nowrap;
+    }
+    .schedule-row input[type="date"],
+    .schedule-row select{
+      flex: 1 1 0;
+      width: auto;
+    }
+    .hero-cta{
+      overflow: visible;
+    }
+    .zone-toggle button{
+      flex: 1 1 0;
+    }
+  }
+
+  @media (max-width: 480px){
+    .schedule-row{ flex-direction: column; flex-wrap: nowrap; }
+    .schedule-row input[type="date"],
+    .schedule-row select{ flex: 1 1 auto; width: 100%; }
+    .zone-toggle{ flex-direction: column; }
+    .zone-toggle button{ width: 100%; flex: 1 1 auto; }
+  }
+
 </style>
 
 </head>
@@ -1727,11 +1881,11 @@
     </div>
     <div class="field">
       <label>送到哪裡</label>
-      <div style="display:flex; gap:8px;">
-        <select id="cAddrCounty" style="flex:0 0 92px;">
+      <div class="addr-row">
+        <select id="cAddrCounty">
           <option value="臺東縣">臺東縣</option>
         </select>
-        <select id="cAddrTownship" style="flex:1;">
+        <select id="cAddrTownship">
           <option value="">請選擇鄉鎮市</option>
         </select>
       </div>
@@ -1832,7 +1986,7 @@
       <summary style="font-size:13px;">訂單預覽 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body"><div class="preview" id="preview"></div></div>
     </details>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <div class="form-actions">
       <button type="button" class="copy-btn" id="sendLineBtn" style="background:#06C755;">送出訂單 →</button>
     </div>
     <div class="queue-badge" id="queueBadge">
@@ -1843,7 +1997,7 @@
       </div>
       <button type="button" class="queue-query-btn" id="queueQueryBtn">🔍 查詢訂單狀態</button>
     </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+    <div class="form-actions" style="margin-top:10px;">
       <button type="button" class="utility-btn" id="clearBtn">🗑️ 清除表單</button>
       <button type="button" class="utility-btn" id="undoBtn" disabled>↩️ 返回上一步</button>
     </div>
