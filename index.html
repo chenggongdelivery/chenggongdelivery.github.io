@@ -1355,6 +1355,136 @@
     }
   }
 
+
+
+  /* ==========================================================
+     手機／Android 最終修復：頂部圖示與「社群守則」不可重疊
+     以 320px～480px 手機寬度為優先，Android Chrome / iOS Safari 皆適用
+     ========================================================== */
+  @media (max-width: 639px){
+    header.top{
+      overflow:visible;
+      isolation:isolate;
+    }
+
+    /* 手機頂部列不要讓元素互相擠壓或覆蓋 */
+    header.top .top-inner{
+      width:100%;
+      max-width:none;
+      box-sizing:border-box;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:nowrap;
+      gap:8px;
+      padding:8px 10px;
+      overflow-x:auto;
+      overflow-y:visible;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    header.top .top-inner::-webkit-scrollbar{display:none;}
+
+    /* 吉祥物／網站圖示固定寬度，絕不被「社群守則」吃掉 */
+    header.top .brand{
+      flex:0 0 36px !important;
+      width:36px !important;
+      min-width:36px !important;
+      max-width:36px !important;
+      margin:0 !important;
+      gap:0 !important;
+      position:relative;
+      z-index:5;
+    }
+    header.top .brand .stamp{
+      width:34px !important;
+      height:34px !important;
+      min-width:34px !important;
+      flex:0 0 34px !important;
+      margin:0 !important;
+    }
+    header.top .brand-text{display:none !important;}
+
+    /* 社群守則、營業時間都獨立佔位，不得壓到圖示 */
+    header.top .header-rules,
+    header.top .header-hours,
+    header.top .header-lookup-btn,
+    header.top .join-btn{
+      flex:0 0 auto !important;
+      flex-shrink:0 !important;
+      position:relative;
+      z-index:4;
+    }
+    header.top .header-rules{margin-left:0 !important;}
+    header.top .header-rules > summary{
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:clip;
+      box-sizing:border-box;
+    }
+
+    /* 不再用 spacer 把手機頂部擠到互相重疊 */
+    header.top .header-spacer{display:none !important;}
+
+    /* 手機上不要讓右側淡出遮罩蓋到按鈕／文字 */
+    header.top::after{display:none !important;}
+
+    /* Android Chrome / iOS Safari 觸控最佳化 */
+    header.top button,
+    header.top summary,
+    header.top a,
+    button,
+    summary,
+    a{
+      -webkit-tap-highlight-color:transparent;
+      touch-action:manipulation;
+    }
+  }
+
+  /* 超窄 Android 手機：保持圖示完整，其他按鈕可左右滑動查看 */
+  @media (max-width: 360px){
+    header.top .top-inner{
+      gap:6px;
+      padding-left:8px;
+      padding-right:8px;
+    }
+    header.top .brand{
+      flex-basis:34px !important;
+      width:34px !important;
+      min-width:34px !important;
+      max-width:34px !important;
+    }
+    header.top .brand .stamp{
+      width:32px !important;
+      height:32px !important;
+      min-width:32px !important;
+      flex-basis:32px !important;
+    }
+    header.top .header-rules > summary{
+      padding:6px 8px !important;
+      font-size:11px !important;
+    }
+    header.top .header-hours > summary{
+      padding:5px 7px !important;
+      font-size:10.5px !important;
+    }
+    header.top .header-lookup-btn,
+    header.top .join-btn{
+      padding:7px 8px !important;
+      font-size:11px !important;
+    }
+  }
+
+  /* Android／iOS 固定底部操作列：把安全區與瀏覽器手勢區都算進去 */
+  @media (max-width: 639px){
+    .cart-float-bar{
+      padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    main{
+      padding-bottom:calc(110px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+
 </style>
 
 </head>
