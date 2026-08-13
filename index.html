@@ -1681,6 +1681,232 @@
     transform:none !important;
   }
 
+
+  .merchant-ads{
+    margin:12px 0 0;
+    border:2px solid var(--ink);
+    border-radius:14px;
+    background:#fff;
+    box-shadow:0 2px 0 var(--ink);
+    overflow:hidden;
+  }
+  .merchant-ads-head{
+    padding:11px 14px;
+    font-weight:800;
+    font-size:14px;
+    background:var(--gold);
+    color:var(--ink);
+    border-bottom:2px solid var(--ink);
+  }
+  .merchant-ads-list{
+    display:grid;
+    gap:0;
+  }
+  .merchant-ad-card{
+    display:flex;
+    gap:12px;
+    padding:12px 14px;
+    border-bottom:1px solid rgba(34,48,46,.12);
+    align-items:flex-start;
+    text-decoration:none;
+    color:inherit;
+  }
+  .merchant-ad-card:last-child{ border-bottom:none; }
+  .merchant-ad-card:active{ background:rgba(30,91,103,.06); }
+  .merchant-ad-card img{
+    width:64px; height:64px; object-fit:cover;
+    border-radius:10px; border:2px solid var(--ink); flex-shrink:0;
+    background:var(--card);
+  }
+  .merchant-ad-card .ad-text{ min-width:0; flex:1; }
+  .merchant-ad-card .ad-name{
+    font-weight:800; font-size:14px; margin:0 0 4px;
+  }
+  .merchant-ad-card .ad-desc{
+    font-size:12.5px; line-height:1.5; color:var(--ocean-dark);
+    white-space:pre-wrap;
+  }
+  .merchant-ad-card .ad-link{
+    display:inline-block; margin-top:6px; font-size:12px; font-weight:700;
+    color:var(--ocean);
+  }
+
+
+  /* ========== 介面優化（固定結構、只調視覺） ========== */
+  body{
+    background-color: #d4ebf5;
+    background-image:
+      radial-gradient(ellipse 900px 420px at 50% -5%, rgba(255,255,255,.7), transparent 60%),
+      linear-gradient(180deg, #e8f5fb 0%, #d4ebf5 45%, #c5e2ef 100%);
+  }
+  main{
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 10px 14px 110px;
+  }
+
+  /* 公告列更精緻 */
+  .announce-wrap{ margin: 8px 0 0; }
+  .announce-fold{
+    border-radius: 12px;
+    box-shadow: 0 2px 0 var(--ink);
+  }
+  .announce-fold > summary{
+    min-height: 44px;
+    padding: 11px 14px;
+    font-size: 13.5px;
+  }
+  .announce-fold .announce-body{
+    font-size: 13px;
+    line-height: 1.65;
+    padding: 0 14px 12px;
+  }
+
+  /* 商家廣告 */
+  .merchant-ads{
+    margin-top: 10px;
+    border-radius: 12px;
+  }
+  .merchant-ads-head{
+    font-size: 13.5px;
+    padding: 10px 14px;
+  }
+  .merchant-ad-card{
+    padding: 12px 14px;
+    transition: background .12s ease;
+  }
+  .merchant-ad-card img{
+    width: 56px;
+    height: 56px;
+  }
+
+  /* 標題區 */
+  .hero{
+    padding: 16px 0 8px;
+  }
+  .hero h1{
+    font-size: clamp(24px, 6.5vw, 32px);
+    margin: 0 0 4px;
+    letter-spacing: .02em;
+  }
+  .hero p{
+    margin: 0 0 12px;
+    font-size: 13.5px;
+    color: var(--ocean-dark);
+    opacity: .85;
+  }
+  .hero-cta .cta-order{
+    min-height: 46px;
+    padding: 11px 20px;
+    font-size: 14.5px;
+    border-radius: 999px;
+  }
+
+  /* 資訊折疊（額外服務／外送費／付款） */
+  .info-blocks{
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .info-block{
+    border-radius: 12px;
+    background: #fff;
+  }
+  .info-block > summary{
+    min-height: 44px;
+    font-size: 13.5px;
+    padding: 11px 14px;
+  }
+  .info-block-body{
+    padding: 12px 14px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .info-block-body .fee-card{
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 12px;
+    background: #fff;
+  }
+  .info-block-body .fee-card .price{
+    font-size: 26px;
+    font-weight: 900;
+  }
+
+  /* 下單表單 */
+  .section-title{
+    margin: 18px 0 8px;
+  }
+  .section-title h2{
+    font-size: 17px;
+    margin: 0;
+  }
+  .composer{
+    border-radius: 14px;
+    padding: 14px 12px 16px;
+    background: #fff;
+  }
+  .composer label{
+    font-size: 12.5px;
+    letter-spacing: .02em;
+  }
+  .composer input,
+  .composer select,
+  .composer textarea{
+    border-radius: 10px;
+    border: 2px solid rgba(34,48,46,.28);
+    background: #fbfdff;
+  }
+  .composer input:focus,
+  .composer select:focus,
+  .composer textarea:focus{
+    border-color: var(--ocean);
+    background: #fff;
+  }
+  .stop-row{
+    border-radius: 12px;
+    background: #f3f9fc;
+    border: 2px solid rgba(34,48,46,.18);
+  }
+  .copy-btn{
+    min-height: 48px;
+    border-radius: 999px;
+    font-size: 15px;
+  }
+  .form-actions{
+    margin-top: 4px;
+  }
+
+  /* 狀態列 */
+  .status-banner, .progress-banner{
+    border-radius: 12px;
+    margin: 10px 0;
+  }
+
+  /* 頂部列：輕薄不搶戲 */
+  header.top{
+    background: rgba(220,238,247,.62) !important;
+    backdrop-filter: saturate(150%) blur(12px) !important;
+    -webkit-backdrop-filter: saturate(150%) blur(12px) !important;
+    border-bottom: 1px solid rgba(34,48,46,.14) !important;
+    box-shadow: none !important;
+  }
+  .top-inner{
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  footer{
+    opacity: .7;
+    font-size: 11px;
+    padding: 18px 14px 28px;
+  }
+
+  @media (min-width: 720px){
+    main{ padding: 14px 20px 100px; }
+    .composer{ padding: 18px 16px 20px; }
+    .hero h1{ font-size: 30px; }
+  }
+
 </style>
 
 </head>
@@ -1727,6 +1953,16 @@
 
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
+  <div class="announce-wrap" id="hoursAnnouncementWrap" style="display:none;">
+    <details class="announce-fold hours" id="hoursAnnouncementDetails">
+      <summary>
+        <span>🕒 營業調整公告</span>
+        <span class="announce-new-badge" id="hoursAnnouncementNewBadge" style="display:none;">新</span>
+        <span class="fold-arrow">▸</span>
+      </summary>
+      <div class="announce-body" id="hoursAnnouncementBanner"></div>
+    </details>
+  </div>
   <div class="announce-wrap" id="announcementWrap" style="display:none;">
     <details class="announce-fold" id="announcementDetails">
       <summary>
@@ -1735,16 +1971,6 @@
         <span class="fold-arrow">▸</span>
       </summary>
       <div class="announce-body" id="announcementBanner"></div>
-    </details>
-  </div>
-  <div class="announce-wrap" id="hoursAnnouncementWrap" style="display:none;">
-    <details class="announce-fold hours" id="hoursAnnouncementDetails">
-      <summary>
-        <span>🕒 營業時間公告</span>
-        <span class="announce-new-badge" id="hoursAnnouncementNewBadge" style="display:none;">新</span>
-        <span class="fold-arrow">▸</span>
-      </summary>
-      <div class="announce-body" id="hoursAnnouncementBanner"></div>
     </details>
   </div>
   <div class="announce-wrap" id="delayWarningWrap" style="display:none;">
@@ -1756,6 +1982,11 @@
       </summary>
       <div class="announce-body" id="delayWarningBanner"></div>
     </details>
+  </div>
+
+  <div class="merchant-ads" id="merchantAdsSection" style="display:none;">
+    <div class="merchant-ads-head">📣 商家廣告</div>
+    <div class="merchant-ads-list" id="merchantAdsList"></div>
   </div>
 
   <div class="hero">
@@ -2921,7 +3152,34 @@
   let businessOpenTime = '08:00';
   let businessCloseTime = '20:00';
 
-  function renderSettings(settings){
+  
+  function renderMerchantAds(ads){
+    const section = document.getElementById('merchantAdsSection');
+    const list = document.getElementById('merchantAdsList');
+    if(!section || !list) return;
+    const items = Array.isArray(ads) ? ads.filter(a => a && (a.merchant || a.desc || a.image)) : [];
+    if(!items.length){
+      section.style.display = 'none';
+      list.innerHTML = '';
+      return;
+    }
+    list.innerHTML = items.map(ad => {
+      const name = escapeHtml(ad.merchant || '商家優惠');
+      const desc = escapeHtml(ad.desc || '');
+      const img = (ad.image || '').trim();
+      const link = (ad.link || '').trim();
+      const imgHtml = img ? `<img src="${escapeHtml(img)}" alt="${name}" loading="lazy">` : '';
+      const linkHtml = link ? `<span class="ad-link">查看詳情 →</span>` : '';
+      const inner = `${imgHtml}<div class="ad-text"><div class="ad-name">${name}</div>${desc ? `<div class="ad-desc">${desc}</div>` : ''}${linkHtml}</div>`;
+      if(link){
+        return `<a class="merchant-ad-card" href="${escapeHtml(link)}" target="_blank" rel="noopener">${inner}</a>`;
+      }
+      return `<div class="merchant-ad-card">${inner}</div>`;
+    }).join('');
+    section.style.display = 'block';
+  }
+
+function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
 
@@ -3634,6 +3892,7 @@
       .then(data => {
         renderRules(data.rules);
         renderSettings(data.settings);
+        renderMerchantAds(data.merchantAds);
         renderServices(data.services);
         renderMerchants(data.merchants);
         renderMenus(data.menus);
