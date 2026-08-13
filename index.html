@@ -60,6 +60,7 @@
     background:var(--ink); color:var(--gold); border-color:var(--ink);
   }
   .header-rules > summary:active{ transform:translateY(1px); }
+  .header-hours > summary{ padding:6px 9px; }
   .header-rules-panel{
     position:fixed; top:calc(100% + 10px); left:0; z-index:80;
     width:min(92vw, 360px); max-height:min(70vh, 420px); overflow:auto;
@@ -91,6 +92,15 @@
     -webkit-backdrop-filter:saturate(160%) blur(14px);
     border-bottom:1px solid rgba(34,48,46,.18);
     box-shadow:none;
+  }
+  /* 右側淡出漸層：提示這排按鈕可以橫向滑動查看更多（例如加入LINE按鈕），避免看起來像被截斷 */
+  header.top::after{
+    content:''; position:absolute; top:0; right:0; bottom:0; width:26px;
+    background:linear-gradient(to right, rgba(220,238,247,0), rgba(220,238,247,.92));
+    pointer-events:none; z-index:2;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+    header.top::after{ background:linear-gradient(to right, rgba(220,238,247,0), rgba(220,238,247,.98)); }
   }
   /* 不支援 backdrop-filter 時退回較淡底色 */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
@@ -330,6 +340,13 @@
     display:flex; flex-wrap:nowrap; align-items:center; gap:8px; margin-top:4px;
     justify-content:flex-start; overflow-x:auto; -webkit-overflow-scrolling:touch;
     max-width:100%; padding-bottom:2px;
+  }
+  .hero-cta-wrap{ position:relative; }
+  /* 右側淡出漸層：提示這排按鈕（開始下單／額外服務／外送費／付款方式）可以橫向滑動查看更多 */
+  .hero-cta-wrap::after{
+    content:''; position:absolute; top:0; right:0; bottom:2px; width:26px;
+    background:linear-gradient(to right, rgba(220,238,247,0), var(--paper));
+    pointer-events:none;
   }
   .hero-cta a, .hero-cta button{
     border:2px solid var(--ink); border-radius:999px; padding:10px 14px; font-weight:700;
@@ -1156,9 +1173,9 @@
         </div>
       </details>
     <details class="header-rules header-hours" id="headerHours">
-        <summary title="營業時間"><span class="hours-ico">🕒</span> <span id="hoursTimeText">08:00–20:00</span><span class="provisional" id="provisionalBadge" style="display:none;margin-left:4px;">暫定</span></summary>
+        <summary title="營業時間"><span class="hours-ico">🕒</span><span class="provisional" id="provisionalBadge" style="display:none;margin-left:4px;">暫定</span></summary>
         <div class="header-rules-panel">
-          <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">依人力調整，異動會公告</div>
+          <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">營業時間：<span id="hoursTimeText">08:00–20:00</span></div>
           <div class="note" style="font-size:12px;opacity:.8;">非營業時間可預約</div>
         </div>
       </details>
@@ -1204,6 +1221,7 @@
   <div class="hero">
     <h1>成功小蜜丰</h1>
     <p>選店、填地址、送出</p>
+    <div class="hero-cta-wrap">
     <div class="hero-cta">
       <a class="cta-order" href="#orderComposer">🛒 開始下單</a>
       <details class="hero-extra" id="heroExtraFold">
@@ -1278,7 +1296,9 @@
         </div>
       </details>
     </div>
+    </div>
   </div>
+
 
   <div class="status-banner" id="statusBanner"></div>
   <div class="progress-banner" id="progressBanner"></div>
