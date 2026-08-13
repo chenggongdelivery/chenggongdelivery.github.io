@@ -627,11 +627,11 @@
   }
   .stop-hours-hint{font-size:11.5px; color:var(--ocean-dark); font-weight:600;}
   .stop-preorder-check{
-    display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 10px;
+    display:flex; align-items:flex-start; gap:8px; margin-top:8px; padding:10px 12px;
     background:var(--paper); border:1.5px dashed var(--ocean); border-radius:8px;
     font-size:12px; font-weight:600; color:var(--ocean-dark); line-height:1.5; cursor:pointer;
   }
-  .stop-preorder-check input{width:auto !important; flex-shrink:0; accent-color:var(--ocean);}
+  .stop-preorder-check input{width:auto !important; flex-shrink:0; accent-color:var(--ocean); margin-top:2px;}
   .extra-service-option{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     background:var(--paper); border:2px solid var(--ink); border-radius:8px; padding:10px 12px; cursor:pointer;
@@ -1962,16 +1962,6 @@
 <main>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
   <div class="announce-stack" id="announceStack">
-  <div class="announce-wrap" id="hoursAnnouncementWrap" style="display:none;">
-    <details class="announce-fold hours" id="hoursAnnouncementDetails">
-      <summary>
-        <span>🕒 營業時間調整公告</span>
-        <span class="announce-new-badge" id="hoursAnnouncementNewBadge" style="display:none;">新</span>
-        <span class="fold-arrow">▸</span>
-      </summary>
-      <div class="announce-body" id="hoursAnnouncementBanner"></div>
-    </details>
-  </div>
   <div class="announce-wrap" id="announcementWrap" style="display:none;">
     <details class="announce-fold" id="announcementDetails">
       <summary>
@@ -2004,6 +1994,16 @@
     <p>選店、填地址、送出</p>
     <div class="hero-cta">
       <a class="cta-order" href="#orderComposer">🛒 開始下單</a>
+    </div>
+    <div class="announce-wrap" id="hoursAnnouncementWrap" style="display:none;">
+      <details class="announce-fold hours" id="hoursAnnouncementDetails">
+        <summary>
+          <span>🕒 營業時間調整公告</span>
+          <span class="announce-new-badge" id="hoursAnnouncementNewBadge" style="display:none;">新</span>
+          <span class="fold-arrow">▸</span>
+        </summary>
+        <div class="announce-body" id="hoursAnnouncementBanner"></div>
+      </details>
     </div>
     <div class="info-blocks">
       <details class="info-block" id="heroExtraFold">
