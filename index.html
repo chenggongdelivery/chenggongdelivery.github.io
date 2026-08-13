@@ -597,6 +597,22 @@
   .composer{background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px;}
   .composer label{font-size:12px; font-weight:700; color:var(--ocean-dark); display:block; margin-bottom:5px;}
   .composer .field{margin-bottom:14px;}
+  /* 預約日期／時段：避免 iOS / Android 原生控制項撐破表單寬度 */
+  .schedule-row{
+    display:flex;
+    gap:8px;
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  .schedule-row > #cScheduleDate,
+  .schedule-row > #cScheduleTime{
+    flex:1 1 0;
+    width:0;
+    min-width:0;
+    max-width:100%;
+    box-sizing:border-box;
+  }
   .composer input, .composer select, .composer textarea{
     width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:8px; background:var(--paper);
     font-family:inherit; font-size:14px;
@@ -771,6 +787,23 @@
     .menu-category-body{ grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
     .composer{ padding: 16px 14px; }
     .composer .field{ margin-bottom: 16px; }
+  /* 預約日期／時段：避免手機原生 date/select 控制項因內建最小寬度溢出 */
+  .schedule-row{
+    display:flex;
+    gap:8px;
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  .schedule-row > #cScheduleDate,
+  .schedule-row > #cScheduleTime{
+    flex:1 1 0 !important;
+    width:0 !important;
+    min-width:0 !important;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
     .composer label{ font-size: 13px; margin-bottom: 6px; }
 
     .stop-row{ padding: 12px; }
@@ -835,6 +868,20 @@
   .announcement-banner{ font-size: 14px; padding: 16px 14px; }
 
     footer{ padding: 20px 14px 28px; }
+  }
+
+  @media (max-width: 720px){
+    .schedule-row{
+      flex-direction:column;
+      gap:8px;
+    }
+    .schedule-row > #cScheduleDate,
+    .schedule-row > #cScheduleTime{
+      width:100% !important;
+      min-width:0 !important;
+      max-width:100% !important;
+      flex:0 1 auto !important;
+    }
   }
 
   @media (max-width: 480px){
@@ -1735,9 +1782,9 @@
     </div>
     <div class="field">
       <label>預約（選填）</label>
-      <div style="display:flex; gap:8px;">
-        <input id="cScheduleDate" type="date" style="flex:1;">
-        <select id="cScheduleTime" style="flex:1;">
+      <div class="schedule-row">
+        <input id="cScheduleDate" type="date">
+        <select id="cScheduleTime">
           <option value="">請選擇時段</option>
         </select>
       </div>
