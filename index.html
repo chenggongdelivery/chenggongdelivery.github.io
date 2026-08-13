@@ -1133,6 +1133,228 @@
     box-shadow:none !important;
   }
 
+
+
+  /* ========== 修復手機版「快速操作面板被截斷」Bug ========== */
+  /*
+     原因：.hero-cta 同時使用 overflow-x:auto 與 nowrap，
+     而「額外服務／外送費／付款方式」的面板又是它裡面的 position:absolute 子元素。
+     iOS Safari 會把 overflow 容器的垂直溢出一起裁切，因此只會看到面板的一小部分。
+  */
+  @media (max-width: 520px){
+    .hero-cta{
+      overflow: visible !important;
+      flex-wrap: wrap !important;
+      width: 100%;
+      max-width: none;
+      padding-bottom: 4px;
+      row-gap: 10px;
+    }
+
+    .hero-cta-wrap{
+      width: 100%;
+      overflow: visible !important;
+    }
+
+    .hero-extra-panel{
+      z-index: 100;
+      max-width: calc(100vw - 24px);
+      box-sizing: border-box;
+    }
+
+    /* 窄螢幕時面板改成靠右，避免超出畫面 */
+    .hero-extra-panel.hero-fee-panel,
+    #heroExtraFold .hero-extra-panel,
+    #heroPayFold .hero-extra-panel{
+      left: auto;
+      right: 0;
+    }
+  }
+
+  /* 更窄的手機：讓按鈕自然換行，不再被橫向捲動容器截斷 */
+  @media (max-width: 380px){
+    .hero-cta{
+      gap: 8px;
+      row-gap: 10px;
+    }
+    .hero-cta .cta-order,
+    .hero-extra > summary{
+      padding-left: 11px;
+      padding-right: 11px;
+      font-size: 12.5px;
+    }
+  }
+
+
+
+  /* ==========================================================
+     📱 手機優先版面（主要使用者為手機）
+     重點：避免 iOS Safari 裁切、浮動面板遮住內容、底部按鈕蓋住表單
+     ========================================================== */
+  @media (max-width: 600px){
+    html, body{
+      width:100%;
+      max-width:100%;
+      overflow-x:hidden;
+      -webkit-text-size-adjust:100%;
+    }
+
+    body{
+      min-width:0;
+    }
+
+    main{
+      width:100%;
+      max-width:none;
+      box-sizing:border-box;
+      padding-left:12px;
+      padding-right:12px;
+      /* 預留給可能出現的固定購物列 + iPhone 安全區 */
+      padding-bottom:calc(150px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* 所有可點擊元件至少保留舒適的手機觸控高度 */
+    button, a, summary, select, input, textarea{
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    input, select, textarea{
+      font-size:16px !important;
+    }
+
+    /* 快速操作：手機不要硬塞成單行 */
+    .hero-cta-wrap,
+    .hero-cta{
+      width:100%;
+      max-width:100%;
+      overflow:visible !important;
+      box-sizing:border-box;
+    }
+
+    .hero-cta{
+      display:flex;
+      flex-wrap:wrap !important;
+      gap:10px;
+      align-items:stretch;
+    }
+
+    .hero-cta .cta-order,
+    .hero-cta .hero-extra{
+      flex:1 1 calc(50% - 5px);
+      min-width:0;
+    }
+
+    .hero-cta .cta-order,
+    .hero-extra > summary{
+      width:100%;
+      min-height:46px;
+      box-sizing:border-box;
+      justify-content:center;
+      text-align:center;
+      padding:10px 12px;
+      white-space:nowrap;
+    }
+
+    /* 第三個快速操作在手機獨占一列 */
+    .hero-cta .hero-extra:last-child{
+      flex-basis:100%;
+    }
+
+    /* ★ 關鍵修復：手機面板改成正常文件流，不再用 absolute 疊在下面 */
+    .hero-extra{
+      position:relative;
+      overflow:visible !important;
+    }
+
+    .hero-extra-panel,
+    .hero-extra-panel.hero-fee-panel,
+    #heroExtraFold .hero-extra-panel,
+    #heroPayFold .hero-extra-panel{
+      position:relative !important;
+      top:auto !important;
+      left:auto !important;
+      right:auto !important;
+      width:100% !important;
+      max-width:none !important;
+      max-height:55vh;
+      margin-top:8px;
+      box-sizing:border-box;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      z-index:20;
+    }
+
+    /* 公告、菜單、下單卡片都不要超出手機畫面 */
+    .announce-fold,
+    .info-fold,
+    .menu-category,
+    .composer,
+    .rules-box,
+    .range-map,
+    .fee-card{
+      max-width:100%;
+      box-sizing:border-box;
+    }
+
+    /* 表單內的站點卡片避免固定寬度造成水平溢出 */
+    .stop-row,
+    .stop-row-header,
+    .pinned-addr-item,
+    .pinned-addr-bar,
+    .payment-box{
+      max-width:100%;
+      box-sizing:border-box;
+    }
+
+    .stop-row input,
+    .stop-row textarea,
+    .stop-row select,
+    .composer input,
+    .composer textarea,
+    .composer select{
+      max-width:100%;
+      box-sizing:border-box;
+    }
+
+    /* 固定購物列不遮住最下面的站點／送出按鈕 */
+    .cart-float-bar{
+      left:0;
+      right:0;
+      bottom:0;
+      padding:8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+      box-sizing:border-box;
+    }
+
+    .cart-float-bar button{
+      min-height:48px;
+      font-size:15px;
+    }
+  }
+
+  @media (max-width:390px){
+    main{
+      padding-left:10px;
+      padding-right:10px;
+    }
+
+    .hero-cta{
+      gap:8px;
+    }
+
+    .hero-cta .cta-order,
+    .hero-cta .hero-extra{
+      flex-basis:100%;
+    }
+
+    .hero h1{
+      font-size:23px;
+    }
+
+    .hero p{
+      font-size:13.5px;
+    }
+  }
+
 </style>
 
 </head>
