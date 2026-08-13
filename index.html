@@ -318,11 +318,16 @@
   .hero{padding:12px 0 6px;}
   .hero h1{font-size:clamp(24px,4vw,34px); margin-bottom:8px;}
   .hero p{font-size:14px; margin-bottom:14px; max-width:480px;}
-  .hero-cta{display:flex; flex-wrap:wrap; gap:10px; margin-top:4px;}
+  .hero-cta{
+    display:flex; flex-wrap:nowrap; align-items:center; gap:8px; margin-top:4px;
+    justify-content:flex-start; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    max-width:100%; padding-bottom:2px;
+  }
   .hero-cta a, .hero-cta button{
-    border:2px solid var(--ink); border-radius:999px; padding:11px 18px; font-weight:700;
-    font-size:14px; font-family:inherit; cursor:pointer; text-decoration:none;
+    border:2px solid var(--ink); border-radius:999px; padding:10px 14px; font-weight:700;
+    font-size:13.5px; font-family:inherit; cursor:pointer; text-decoration:none;
     box-shadow:0 3px 0 var(--ink); display:inline-flex; align-items:center; gap:6px;
+    flex:0 0 auto; white-space:nowrap;
   }
   .hero-cta a:active, .hero-cta button:active{transform:translateY(2px); box-shadow:none;}
   .hero-cta .cta-order{background:#06C755; color:#fff;}
@@ -356,7 +361,9 @@
 
   .hero h1{font-size:clamp(22px,5vw,30px); margin:0 0 6px;}
   .hero p{margin:0 0 12px; font-size:13.5px;}
-  .hero-cta{margin-top:0;}
+  .hero-cta{margin-top:0; flex-wrap:nowrap;}
+  .hero-cta::-webkit-scrollbar{height:3px;}
+  .hero-cta::-webkit-scrollbar-thumb{background:rgba(34,48,46,.25); border-radius:99px;}
   .info-fold{margin:10px 0;}
   .rules-box{margin:12px 0 24px;}
   details.info-fold .fee-grid{margin-top:4px;}
@@ -723,8 +730,8 @@
     .hero{ padding: 10px 0 4px; }
     .hero h1{ font-size: clamp(22px, 7vw, 30px); line-height: 1.25; }
     .hero p{ font-size: 13.5px; margin-bottom: 12px; }
-    .hero-cta{ flex-direction: column; gap: 8px; }
-    .hero-cta a, .hero-cta button{ width: 100%; justify-content: center; }
+    .hero-cta{ flex-direction: row; flex-wrap: nowrap; gap: 6px; }
+    .hero-cta a, .hero-cta button{ width: auto; justify-content: center; }
     .quick-chip-row{ gap: 6px; }
     .quick-chip{ padding: 7px 12px; font-size: 12px; }
 
@@ -872,15 +879,13 @@
 
 
 
-  .hero-cta{ display:flex; flex-wrap:wrap; align-items:stretch; gap:10px; }
-  .hero-cta .cta-order{ flex:0 0 auto; }
   .hero-extra{ position:relative; flex:0 0 auto; }
   .hero-extra > summary{
     list-style:none; cursor:pointer; user-select:none;
     border:2px solid var(--ink); background:var(--card); color:var(--ink);
-    border-radius:999px; padding:11px 18px; font-weight:700; font-size:14px;
+    border-radius:999px; padding:10px 14px; font-weight:700; font-size:13.5px;
     font-family:inherit; box-shadow:0 3px 0 var(--ink);
-    display:inline-flex; align-items:center; min-height:44px;
+    display:inline-flex; align-items:center; min-height:40px; white-space:nowrap;
   }
   .hero-extra > summary::-webkit-details-marker{ display:none; }
   .hero-extra > summary:active{ transform:translateY(2px); box-shadow:none; }
@@ -895,14 +900,14 @@
   .hero-extra-panel .ask-btn{ display:inline-flex; margin-bottom:10px; }
   .hero-extra-panel .extra-services{ display:grid; gap:8px; }
   @media (max-width:480px){
-    .hero-cta{ flex-direction:row; width:100%; }
-    .hero-cta .cta-order, .hero-extra{ flex:1 1 auto; }
-    .hero-extra > summary{ width:100%; justify-content:center; }
+    .hero-cta{ flex-direction:row; flex-wrap:nowrap; width:100%; }
+    .hero-cta .cta-order, .hero-extra{ flex:0 0 auto; }
+    .hero-extra > summary{ width:auto; justify-content:center; }
     .hero-extra-panel{ left:auto; right:0; }
   }
 
-  .hero-cta{justify-content:flex-start;}
-  .hero-cta .cta-order{min-width:160px;}
+  .hero-cta{justify-content:flex-start; flex-wrap:nowrap;}
+  .hero-cta .cta-order{min-width:auto;}
 
 
   @media (max-width:520px){
@@ -913,6 +918,16 @@
     .header-rules > summary{ padding:6px 8px; font-size:11.5px; min-height:30px; }
     .header-rules-panel{ left:50%; transform:translateX(-50%); width:min(94vw, 340px); }
     .header-rules-panel::before{ left:50%; margin-left:-5px; }
+  }
+
+
+  .header-hours > summary{ max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  .hero-fee-panel .fee-grid{ grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
+  .hero-fee-panel .fee-card{ padding: 12px; }
+  .hero-fee-panel .range-map{ margin-top: 8px; box-shadow: none; }
+  .hero-extra-panel{ max-height: min(70vh, 480px); }
+  @media (max-width:520px){
+    .header-hours > summary{ max-width: 28vw; font-size: 11px; padding: 5px 7px; }
   }
 
 </style>
@@ -942,6 +957,13 @@
         <li><span class="mark">08</span>依法禁止代購或限制販售之物品恕不提供代購服務。</li>
         <li><span class="mark">09</span>本服務僅提供代購,委託內容須具體明確;委託人應對委託內容之合法性負完全責任,如因提供不實資訊或違法物品而生之法律責任,概由委託人自行承擔,與代購者無涉。</li>
       </ul>
+        </div>
+      </details>
+      <details class="header-rules header-hours" id="headerHours">
+        <summary>🕒 <span id="hoursTimeText">08:00 – 20:00</span><span class="provisional" id="provisionalBadge" style="display:none;margin-left:4px;">暫定</span></summary>
+        <div class="header-rules-panel">
+          <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">依人力調整，異動會公告</div>
+          <div class="note" style="font-size:12px;opacity:.8;">非營業時間可預約</div>
         </div>
       </details>
     </div>
@@ -997,6 +1019,68 @@
           <div class="extra-services" id="extraServices">
             <div class="empty">目前無額外服務。</div>
           </div>
+        </div>
+      </details>
+      <details class="hero-extra" id="heroFeeFold">
+        <summary>💰 外送費</summary>
+        <div class="hero-extra-panel hero-fee-panel">
+          <div class="fee-grid">
+        <div class="fee-card">
+          <span class="zone">鎮內</span>
+          <div class="price">$30 <span>／單</span></div>
+          <div class="range">三仙台加油站 ↔ 全滿加油站</div>
+        </div>
+        <div class="fee-card">
+          <span class="zone">鎮外</span>
+          <div class="price">$60 <span>／單</span></div>
+          <div class="range">北至小港天后宮 · 南至和平國小</div>
+        </div>
+      </div>
+      <div class="range-map">
+    <div class="label">服務範圍示意 · 沿海岸線　南 → 北</div>
+    <div class="range-map-scroll">
+    <svg viewBox="0 0 640 110" width="100%" height="auto" role="img" aria-label="服務範圍：左側南界和平國小、全滿加油站，中間成功鎮，右側三仙台加油站、小港天后宮">
+      <line x1="40" y1="55" x2="600" y2="55" stroke="#22302E" stroke-width="2" stroke-linecap="round" opacity=".2"/>
+      <!-- 鎮外全段 -->
+      <line x1="60" y1="55" x2="580" y2="55" stroke="#7FADA9" stroke-width="5" stroke-linecap="round"/>
+      <!-- 鎮內段（成功鎮居中） -->
+      <line x1="200" y1="55" x2="440" y2="55" stroke="#1E5B67" stroke-width="7" stroke-linecap="round"/>
+      <g font-family="system-ui,-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif" font-size="11" fill="#153F48" font-weight="600" text-anchor="middle">
+        <!-- 左外：和平國小（鎮外南界） -->
+        <circle cx="60" cy="55" r="6" fill="#E3A94B" stroke="#22302E" stroke-width="2"/>
+        <text x="60" y="32">和平國小</text>
+        <text x="60" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮外南界</text>
+
+        <!-- 左內：全滿加油站（鎮內南界） -->
+        <circle cx="200" cy="55" r="7" fill="#E2532F" stroke="#22302E" stroke-width="2"/>
+        <text x="200" y="32" font-weight="700">全滿加油站</text>
+        <text x="200" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮內南界</text>
+
+        <!-- 正中：成功鎮 -->
+        <circle cx="320" cy="55" r="9" fill="#E2532F" stroke="#22302E" stroke-width="2.5"/>
+        <text x="320" y="28" font-size="13" font-weight="900">成功鎮</text>
+        <text x="320" y="84" font-size="9.5" fill="#22302E" opacity=".55">服務中心</text>
+
+        <!-- 右內：三仙台加油站（鎮內北界） -->
+        <circle cx="440" cy="55" r="7" fill="#E2532F" stroke="#22302E" stroke-width="2"/>
+        <text x="440" y="32" font-weight="700">三仙台加油站</text>
+        <text x="440" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮內北界</text>
+
+        <!-- 右外：小港天后宮（鎮外北界） -->
+        <circle cx="580" cy="55" r="6" fill="#E3A94B" stroke="#22302E" stroke-width="2"/>
+        <text x="580" y="32">小港天后宮</text>
+        <text x="580" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮外北界</text>
+      </g>
+    </svg>
+    </div>
+  </div>
+        </div>
+      </details>
+      <details class="hero-extra" id="heroPayFold">
+        <summary>💳 付款方式</summary>
+        <div class="hero-extra-panel">
+          <div class="payment-box" id="paymentBox" style="margin:0;">現場付款或匯款（商品費 + 外送費）</div>
+      <div class="payment-accounts" id="paymentAccounts"></div>
         </div>
       </details>
     </div>
@@ -1147,85 +1231,6 @@
     </div>
     <div style="font-size:11.5px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;">電話與地址僅供配送，不會公開</div>
   </div>
-
-  
-
-  <details class="info-fold" id="feeSection">
-    <summary>💰 外送費：鎮內 $30　鎮外 $60 <span class="fold-arrow">▸</span></summary>
-    <div class="fold-body">
-      <div class="fee-grid">
-        <div class="fee-card">
-          <span class="zone">鎮內</span>
-          <div class="price">$30 <span>／單</span></div>
-          <div class="range">三仙台加油站 ↔ 全滿加油站</div>
-        </div>
-        <div class="fee-card">
-          <span class="zone">鎮外</span>
-          <div class="price">$60 <span>／單</span></div>
-          <div class="range">北至小港天后宮 · 南至和平國小</div>
-        </div>
-      </div>
-      <div class="range-map">
-    <div class="label">服務範圍示意 · 沿海岸線　南 → 北</div>
-    <div class="range-map-scroll">
-    <svg viewBox="0 0 640 110" width="100%" height="auto" role="img" aria-label="服務範圍：左側南界和平國小、全滿加油站，中間成功鎮，右側三仙台加油站、小港天后宮">
-      <line x1="40" y1="55" x2="600" y2="55" stroke="#22302E" stroke-width="2" stroke-linecap="round" opacity=".2"/>
-      <!-- 鎮外全段 -->
-      <line x1="60" y1="55" x2="580" y2="55" stroke="#7FADA9" stroke-width="5" stroke-linecap="round"/>
-      <!-- 鎮內段（成功鎮居中） -->
-      <line x1="200" y1="55" x2="440" y2="55" stroke="#1E5B67" stroke-width="7" stroke-linecap="round"/>
-      <g font-family="system-ui,-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif" font-size="11" fill="#153F48" font-weight="600" text-anchor="middle">
-        <!-- 左外：和平國小（鎮外南界） -->
-        <circle cx="60" cy="55" r="6" fill="#E3A94B" stroke="#22302E" stroke-width="2"/>
-        <text x="60" y="32">和平國小</text>
-        <text x="60" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮外南界</text>
-
-        <!-- 左內：全滿加油站（鎮內南界） -->
-        <circle cx="200" cy="55" r="7" fill="#E2532F" stroke="#22302E" stroke-width="2"/>
-        <text x="200" y="32" font-weight="700">全滿加油站</text>
-        <text x="200" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮內南界</text>
-
-        <!-- 正中：成功鎮 -->
-        <circle cx="320" cy="55" r="9" fill="#E2532F" stroke="#22302E" stroke-width="2.5"/>
-        <text x="320" y="28" font-size="13" font-weight="900">成功鎮</text>
-        <text x="320" y="84" font-size="9.5" fill="#22302E" opacity=".55">服務中心</text>
-
-        <!-- 右內：三仙台加油站（鎮內北界） -->
-        <circle cx="440" cy="55" r="7" fill="#E2532F" stroke="#22302E" stroke-width="2"/>
-        <text x="440" y="32" font-weight="700">三仙台加油站</text>
-        <text x="440" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮內北界</text>
-
-        <!-- 右外：小港天后宮（鎮外北界） -->
-        <circle cx="580" cy="55" r="6" fill="#E3A94B" stroke="#22302E" stroke-width="2"/>
-        <text x="580" y="32">小港天后宮</text>
-        <text x="580" y="82" font-size="9.5" fill="#22302E" opacity=".55">鎮外北界</text>
-      </g>
-    </svg>
-    </div>
-  </div>
-    </div>
-  </details>
-
-  <details class="info-fold" id="hoursSection">
-    <summary>🕒 營業時間 <span id="hoursTimeText">08:00 – 20:00</span><span class="provisional" id="provisionalBadge" style="margin-left:8px;">暫定</span> <span class="fold-arrow">▸</span></summary>
-    <div class="fold-body">
-      <div class="hours-card" style="box-shadow:none;margin:0;">
-        <div class="clock" aria-hidden="true"></div>
-        <div>
-          <div class="time" id="hoursTime">依人力調整，異動會公告</div>
-          <div class="note">非營業時間可預約</div>
-        </div>
-      </div>
-    </div>
-  </details>
-
-  <details class="info-fold">
-    <summary>💳 付款方式 <span class="fold-arrow">▸</span></summary>
-    <div class="fold-body">
-      <div class="payment-box" id="paymentBox" style="margin:0;">現場付款或匯款（商品費 + 外送費）</div>
-      <div class="payment-accounts" id="paymentAccounts"></div>
-    </div>
-  </details>
 
 
 </main>
@@ -2375,8 +2380,10 @@
   }
   document.getElementById('progressBanner').addEventListener('click', ()=> openLookup());
   document.addEventListener('click', (e)=>{
-    const he = document.getElementById('heroExtraFold');
-    if(he && he.open && !he.contains(e.target)) he.open = false;
+    ['heroExtraFold','heroFeeFold','heroPayFold','headerHours'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el && el.open && !el.contains(e.target)) el.open = false;
+    });
   });
 
   // 點擊外部時關閉頂部社群守則
