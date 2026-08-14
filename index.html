@@ -397,7 +397,7 @@
   .section-title .eyebrow{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:11px; letter-spacing:.16em; border:1.5px solid var(--coral-dark); color:var(--coral-dark); padding:2px 8px; border-radius:999px;}
   .section-title h2{font-size:20px; margin:0;}
 
-  .fee-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .fee-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:16px;}
   @media (max-width:600px){ .fee-grid{grid-template-columns:1fr;} }
   .fee-card{background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px;}
   .fee-card .zone{font-size:12px; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; background:var(--seafoam); color:var(--ocean-dark); padding:2px 10px; border-radius:999px; display:inline-block; font-weight:700; margin-bottom:10px;}
@@ -1935,7 +1935,7 @@
           <ul id="rulesList">
         <li class="warn"><span class="mark">禁止</span>切勿在群內打廣告！！本群只提供代購外送服務，其餘一律禁止。</li>
         <li><span class="mark">01</span>下單時請清楚告知：商家名稱、品項、地址、聯絡方式。</li>
-        <li><span class="mark">02</span>外送費依鎮內／鎮外分級計算，商品費用另計。</li>
+        <li><span class="mark">02</span>外送費依鎮內／鎮外／超出範圍分級計算，商品費用另計。</li>
         <li><span class="mark">03</span>下單恕不接受取消，請確認購買後再下單以免造成雙方困擾及損失。</li>
         <li><span class="mark">04</span>收到商品時請當場核對品項與金額，事後恕不負責。</li>
         <li><span class="mark">05</span>颱風、豪雨等特殊天候將視情況暫停外送，另於群內公告。</li>
@@ -2031,13 +2031,18 @@
 <div class="fee-grid">
         <div class="fee-card">
           <span class="zone">鎮內</span>
-          <div class="price">$30 <span>／單</span></div>
+          <div class="price" id="feePriceInner">$30 <span>／單</span></div>
           <div class="range">三仙台加油站 ↔ 全滿加油站</div>
         </div>
         <div class="fee-card">
           <span class="zone">鎮外</span>
-          <div class="price">$60 <span>／單</span></div>
+          <div class="price" id="feePriceOuter">$60 <span>／單</span></div>
           <div class="range">北至小港天后宮 · 南至和平國小</div>
+        </div>
+        <div class="fee-card">
+          <span class="zone">超出範圍</span>
+          <div class="price" id="feePriceOutside" style="font-size:20px;">分級計算</div>
+          <div class="range">超出鎮外服務範圍之地址，請至社群詢問確認</div>
         </div>
       </div>
       <div class="range-map">
@@ -2139,9 +2144,11 @@
     <div class="field">
       <label>範圍</label>
       <div class="zone-toggle">
-        <button type="button" class="zone-btn active" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-fee="60">鎮外（$60）</button>
+        <button type="button" class="zone-btn active" data-zone="inner" data-fee="30">鎮內（$30）</button>
+        <button type="button" class="zone-btn" data-zone="outer" data-fee="60">鎮外（$60）</button>
+        <button type="button" class="zone-btn" data-zone="outside" data-fee="70">超出範圍（分級計算，請至社群詢問）</button>
       </div>
+      <div id="zoneOutsideHint" style="display:none; font-size:12px; margin-top:8px; font-weight:700; line-height:1.6; color:var(--coral-dark);"></div>
     </div>
     <div class="field" id="extraServiceField" style="display:none;">
       <label>加購服務（選填）</label>
@@ -2309,6 +2316,30 @@
   let merchantGroups = {};
   let merchantGroupOrder = [];
   let transferFeePerStop = 15;
+  let zoneFees = { inner: 30, outer: 60, outside: 70 };
+
+  // 依 zoneFees 更新範圍按鈕文字/data-fee，以及首頁外送費卡片價格；並同步目前已選取按鈕的 fee 變數
+  function applyZoneFeesToUI(){
+    const labelMap = { inner: '鎮內', outer: '鎮外', outside: '超出範圍' };
+    Object.keys(zoneFees).forEach(key=>{
+      const price = zoneFees[key];
+      const btn = document.querySelector(`.zone-btn[data-zone="${key}"]`);
+      if(btn){
+        btn.dataset.fee = price;
+        btn.textContent = key === 'outside'
+          ? `${labelMap[key]}（分級計算，請至社群詢問）`
+          : `${labelMap[key]}（$${price}）`;
+      }
+    });
+    const priceElInner = document.getElementById('feePriceInner');
+    const priceElOuter = document.getElementById('feePriceOuter');
+    if(priceElInner) priceElInner.innerHTML = `$${zoneFees.inner} <span>／單</span>`;
+    if(priceElOuter) priceElOuter.innerHTML = `$${zoneFees.outer} <span>／單</span>`;
+    // 超出範圍卡片固定顯示「分級計算」，不對外顯示金額
+    // 若目前已有選取中的範圍按鈕，同步更新送單用的 fee 變數
+    const activeBtn = document.querySelector('.zone-btn.active');
+    if(activeBtn) fee = parseInt(activeBtn.dataset.fee, 10);
+  }
   let stopCount = 0;
 
   function renderMerchants(merchants){
@@ -2905,27 +2936,34 @@
   function applyZoneResult(zone, hintEl, isPrecise){
     const precisionNote = isPrecise ? '（依路名座標判斷）' : '';
     if(zone === '鎮內'){
-      fee = 30;
+      fee = zoneFees.inner;
       document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
+      document.querySelector('.zone-btn[data-zone="inner"]').classList.add('active');
       hintEl.textContent = `✓ 已自動判斷為「鎮內」範圍${precisionNote}`;
       hintEl.style.color = 'var(--ocean-dark)';
       hintEl.style.display = 'block';
+      updateZoneOutsideHint('inner');
       updatePreview();
     } else if(zone === '鎮外'){
-      fee = 60;
+      fee = zoneFees.outer;
       document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.zone-btn[data-fee="60"]').classList.add('active');
+      document.querySelector('.zone-btn[data-zone="outer"]').classList.add('active');
       hintEl.textContent = `✓ 已自動判斷為「鎮外」範圍${precisionNote}`;
       hintEl.style.color = 'var(--ocean-dark)';
       hintEl.style.display = 'block';
+      updateZoneOutsideHint('outer');
       updatePreview();
     } else {
-      // 超出範圍：不自動選範圍，改用醒目提示，並提供可直接點擊的私訊連結
+      // 超出範圍：自動選取超出範圍費用，並提示可私訊確認
+      fee = zoneFees.outside;
+      document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.zone-btn[data-zone="outside"]').classList.add('active');
       const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
+      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，已自動選取「超出範圍（分級計算）」，如需確認請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
       hintEl.style.color = 'var(--coral-dark)';
       hintEl.style.display = 'block';
+      updateZoneOutsideHint('outside');
+      updatePreview();
     }
   }
 
@@ -3191,6 +3229,13 @@
 function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
+
+    // 三段外送費：試算表有填才覆寫，沒填就維持預設 30／60／70
+    const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
+    zoneFees.inner = parseFee(settings['鎮內運費'], 30);
+    zoneFees.outer = parseFee(settings['鎮外運費'], 60);
+    zoneFees.outside = parseFee(settings['超出範圍運費'], 70);
+    applyZoneFeesToUI();
 
     // 範圍判斷用的界線緯度：後台有填才啟用精準座標判斷，沒填就自動退回關鍵字比對
     const parseLat = v => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : null; };
@@ -4010,11 +4055,23 @@ function renderSettings(settings){
   }
 
   let fee = 30;
+  const zoneOutsideHintEl = document.getElementById('zoneOutsideHint');
+  function updateZoneOutsideHint(zoneKey){
+    if(!zoneOutsideHintEl) return;
+    if(zoneKey === 'outside'){
+      const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+      zoneOutsideHintEl.innerHTML = `⚠️ 超出範圍地址請先<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">私訊／於群組詢問</a>確認可配送與實際費用後，再送出委託。`;
+      zoneOutsideHintEl.style.display = 'block';
+    } else {
+      zoneOutsideHintEl.style.display = 'none';
+    }
+  }
   document.querySelectorAll('.zone-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       fee = parseInt(btn.dataset.fee, 10);
+      updateZoneOutsideHint(btn.dataset.zone);
       updatePreview();
     });
   });
@@ -4270,14 +4327,14 @@ ${stopsText}
     document.getElementById('cAddrDetail').value = '';
     document.getElementById('cAddrNote').value = '';
     syncAddressField();
-    fee = 30;
+    fee = zoneFees.inner;
     clearPhoto();
     rebuildStops([{ merchant: '', items: '' }]);
     document.querySelectorAll('#extraServicePicker input').forEach(cb => { cb.checked = false; });
     document.getElementById('cLegalConfirm').checked = false;
     applyScheduleValue('');
     document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('.zone-btn[data-fee="30"]').classList.add('active');
+    document.querySelector('.zone-btn[data-zone="inner"]').classList.add('active');
     paymentMethod = '現場付款';
     document.querySelectorAll('.pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === '現場付款'));
     document.getElementById('remitFields').style.display = 'none';
