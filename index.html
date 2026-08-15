@@ -1962,6 +1962,38 @@
 
 
 
+
+  /* 電話預購勾選：避免被 .composer input{min-height:44px} 撐出大片空白 */
+  .composer label.stop-preorder-check,
+  .stop-preorder-check{
+    display:flex !important;
+    align-items:flex-start;
+    gap:8px;
+    margin-top:4px !important;
+    margin-bottom:0 !important;
+    padding:8px 10px;
+    background:var(--paper);
+    border:1.5px dashed var(--ocean);
+    border-radius:8px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ocean-dark);
+    line-height:1.45;
+    cursor:pointer;
+  }
+  .stop-preorder-check input[type="checkbox"],
+  .composer .stop-preorder-check input[type="checkbox"]{
+    width:18px !important;
+    height:18px !important;
+    min-height:0 !important;
+    min-width:0 !important;
+    margin:2px 0 0 0 !important;
+    padding:0 !important;
+    flex-shrink:0;
+    accent-color:var(--ocean);
+    box-shadow:none !important;
+  }
+
 </style>
 
 </head>
