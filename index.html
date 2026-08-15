@@ -2319,7 +2319,7 @@
       <b>利用期間、地區、對象及方式：</b>僅於台灣地區、由本服務及受指派之外送人員，以電子與人工方式處理，不作與執行本服務無關之利用，不會轉售。<br>
       <b>保存期限：</b>訂單完成（狀態為「已送達」）後原則保存 <b>180 天</b>，其後將刪除或去識別化敏感個資；對帳所需之非識別統計資料得依營運需要保留較久。<br>
       <b>當事人權利：</b>您得依個資法請求查詢、閱覽、製給複製本、補充更正、請求停止蒐集／處理／利用或刪除。請透過「加入 LINE 社群」或私訊小蜜丰提出，我們將於合理期間內處理。<br>
-      本站僅使用瀏覽器「本地儲存（localStorage）」供必要功能（例如已讀公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie。</strong>
+      本站僅使用瀏覽器「本地儲存（localStorage）」供必要功能（例如已讀公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie</strong>。
     </div>
     <div class="consent-box">
       <label>
@@ -2409,10 +2409,14 @@
   <div class="lookup-box">
     <button class="close-btn" id="lookupClose" aria-label="關閉">✕</button>
     <h3>🔍 查詢我的訂單</h3>
-    <div class="hint">輸入下單時的聯絡電話，查詢最近一筆訂單狀態。為保護個資，地址僅顯示部分內容。</div>
+    <div class="hint">請同時輸入下單時的「聯絡電話」與「社群暱稱」，兩者皆相符才能查詢。為保護個資，地址僅顯示部分內容。</div>
     <div class="field">
       <label>聯絡電話</label>
       <input id="lookupPhone" type="tel" inputmode="numeric" placeholder="0912-345-678">
+    </div>
+    <div class="field">
+      <label>社群暱稱</label>
+      <input id="lookupContact" type="text" placeholder="下單時填寫的群組暱稱" autocomplete="nickname">
     </div>
     <button class="copy-btn" id="lookupSubmit" style="width:100%; background:var(--ocean); display:block;">查詢</button>
     <div class="lookup-result" id="lookupResult"></div>
@@ -3608,8 +3612,9 @@ function renderSettings(settings){
     stopLookupPolling();
     teardownDriverMap_();
   }
-  function openLookup(prefillPhone){
+  function openLookup(prefillPhone, prefillContact){
     document.getElementById('lookupPhone').value = prefillPhone || '';
+    document.getElementById('lookupContact').value = prefillContact || '';
     const resultEl = document.getElementById('lookupResult');
     resultEl.style.display = 'none';
     resultEl.textContent = '';
@@ -3623,6 +3628,8 @@ function renderSettings(settings){
     ensureLeaflet_().catch(()=>{});
     if(!prefillPhone){
       document.getElementById('lookupPhone').focus();
+    } else if(!prefillContact){
+      document.getElementById('lookupContact').focus();
     }
   }
   function closeLookup(){
@@ -3915,7 +3922,7 @@ function renderSettings(settings){
   // 查詢訂單狀態；isFirst=true 是使用者按查詢按鈕的那一次，之後每 15 秒會自動用 isFirst=false 重打一次，
   // 不管目前訂單是不是「取餐中／運送中」都會持續輪詢，這樣狀態一變（例如從待處理變成取餐中）畫面就會自動反映，
   // 直到訂單變成「已送達」或查無資料才停止
-  async function performLookup(digits, isFirst){
+  async function performLookup(digits, contact, isFirst){
     const resultEl = document.getElementById('lookupResult');
     const mapBox = document.getElementById('lookupMapBox');
 
@@ -3926,7 +3933,7 @@ function renderSettings(settings){
     }
 
     try{
-      const url = `${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(digits)}&t=${Date.now()}`;
+      const url = `${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(digits)}&contact=${encodeURIComponent(contact)}&t=${Date.now()}`;
       const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
 
@@ -4096,13 +4103,13 @@ function renderSettings(settings){
         // 訂單還沒送達就持續每 15 秒自動查詢一次；已送達就沒有再更新的必要，自動停止
         if(st !== '已送達'){
           if(!lookupPollTimer){
-            lookupPollTimer = setInterval(()=> performLookup(digits, false), 15000);
+            lookupPollTimer = setInterval(()=> performLookup(digits, contact, false), 15000);
           }
         } else {
           stopLookupPolling();
         }
       } else {
-        if(isFirst) resultEl.textContent = '❌ 查無資料，請確認電話是否正確，或稍後再試。';
+        if(isFirst) resultEl.textContent = '❌ 查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。';
         stopLookupPolling();
       }
     }catch(err){
@@ -4112,6 +4119,7 @@ function renderSettings(settings){
 
   document.getElementById('lookupSubmit').addEventListener('click', ()=>{
     const phone = document.getElementById('lookupPhone').value.trim();
+    const contact = document.getElementById('lookupContact').value.trim();
     if(!phone){
       toast('請填寫聯絡電話');
       return;
@@ -4121,9 +4129,14 @@ function renderSettings(settings){
       toast('請輸入完整電話號碼');
       return;
     }
+    if(!contact){
+      toast('請填寫下單時的社群暱稱');
+      document.getElementById('lookupContact').focus();
+      return;
+    }
     resetLookupMapState();
     ensureLeaflet_().catch(()=>{});
-    performLookup(digits, true);
+    performLookup(digits, contact, true);
   });
 
   function loadContent(){
@@ -4567,6 +4580,7 @@ ${stopsText}
   }
 
   let lastOrderPhone = '';
+  let lastOrderContact = '';
 
   function showQueueBadge(n){
     document.getElementById('queueNum').textContent = '#' + n;
@@ -4601,7 +4615,7 @@ ${stopsText}
   }
   document.getElementById('queueClose').addEventListener('click', hideQueueBadge);
   document.getElementById('queueQueryBtn').addEventListener('click', ()=>{
-    openLookup(lastOrderPhone);
+    openLookup(lastOrderPhone, lastOrderContact);
   });
 
   function validateRequired(data){
@@ -4674,6 +4688,7 @@ ${stopsText}
     if(!validateRequired(data)) return;
     const btn = e.currentTarget;
     lastOrderPhone = data.phone;
+    lastOrderContact = data.contact || '';
 
     // 先立刻顯示「處理中」狀態，讓客戶知道已經有反應，接著等後台確認寫入成功
     if(data.schedule){
