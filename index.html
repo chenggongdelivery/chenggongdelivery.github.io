@@ -1935,20 +1935,43 @@
 
 
   .privacy-notice{
-    margin: 12px 0 10px;
-    padding: 12px 14px;
+    margin: 8px 0 6px;
+    padding: 10px 12px;
     border: 2px dashed rgba(34,48,46,.35);
     border-radius: 12px;
     background: rgba(255,255,255,.65);
     font-size: 12px;
-    line-height: 1.7;
+    line-height: 1.55;
     color: var(--ocean-dark);
   }
   .privacy-notice strong{
     display: block;
     font-size: 12.5px;
     color: var(--ink);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+  }
+  .consent-box{
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 6px 10px;
+    margin: 0 0 6px;
+  }
+  .consent-box label{
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-weight: 600;
+    margin: 0;
+  }
+  .consent-box input[type="checkbox"]{
+    width: auto;
+    margin: 2px 0 0;
+    flex-shrink: 0;
+    accent-color: var(--ocean);
   }
   footer .privacy-footer{
     max-width: 520px;
@@ -2277,7 +2300,6 @@
         <img id="photoPreviewImg" src="" alt="照片預覽" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:2px solid var(--ink);">
         <button type="button" class="utility-btn" id="photoRemoveBtn" style="padding:5px 12px;">移除照片</button>
       </div>
-      <div style="font-size:11px; color:var(--ocean-dark); opacity:.75; margin-top:4px;"></div>
     </div>
     <div class="privacy-notice" id="privacyNotice">
       <strong>個人資料蒐集告知</strong>（依《個人資料保護法》第 8 條）<br>
@@ -2287,17 +2309,17 @@
       <b>利用期間、地區、對象及方式：</b>僅於台灣地區、由本服務及受指派之外送人員，以電子與人工方式處理，不作與執行本服務無關之利用，不會轉售。<br>
       <b>保存期限：</b>訂單完成（狀態為「已送達」）後原則保存 <b>180 天</b>，其後將刪除或去識別化敏感個資；對帳所需之非識別統計資料得依營運需要保留較久。<br>
       <b>當事人權利：</b>您得依個資法請求查詢、閱覽、製給複製本、補充更正、請求停止蒐集／處理／利用或刪除。請透過「加入 LINE 社群」或私訊小蜜丰提出，我們將於合理期間內處理。<br>
-      本站僅使用瀏覽器「本地儲存（localStorage）」供必要功能（例如已讀公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie。</strong>
+      本站僅使用瀏覽器「本地儲存（localStorage）」供必要功能（例如已讀公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie</strong>。
     </div>
-    <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px; margin-bottom:10px;">
-      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
-        <input type="checkbox" id="cPrivacyConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
+    <div class="consent-box">
+      <label>
+        <input type="checkbox" id="cPrivacyConfirm">
         <span>我已閱讀並同意上述「個人資料蒐集告知」，同意貴服務依告知內容蒐集、處理及利用本人資料。</span>
       </label>
     </div>
-    <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px;">
-      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
-        <input type="checkbox" id="cLegalConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
+    <div class="consent-box" style="margin-bottom:8px;">
+      <label>
+        <input type="checkbox" id="cLegalConfirm">
         <span>本人確認已年滿 18 歲，委託內容合法、如實填寫，不含毒品、槍砲彈藥或其他依法禁止／限制販售之物品；如有不實，願自行承擔相關法律責任。本服務僅依委託內容執行代購，委託人應對委託合法性負完全責任。</span>
       </label>
     </div>
