@@ -2280,14 +2280,25 @@
       <div style="font-size:11px; color:var(--ocean-dark); opacity:.75; margin-top:4px;"></div>
     </div>
     <div class="privacy-notice" id="privacyNotice">
-      <strong>個人資料蒐集告知</strong>
-      為處理代購外送服務，本站將蒐集您填寫的聯絡電話、送達地址、社群暱稱、訂單內容及（若選擇匯款）匯款戶名與帳號末五碼。資料僅用於配送、聯繫與售後處理，不會轉售或提供予與執行本服務無關之第三人。資料將依營運需要保存，完成服務後於合理期間內刪除或去識別化。<br>
-      本站可能使用瀏覽器「本地儲存（localStorage）」僅供必要功能（例如記住您已讀的公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie</strong>。如需查詢、更正或刪除個人資料，請透過「加入 LINE 社群」或私訊小蜜丰與我們聯繫。送出訂單即表示您知悉並同意上述說明。
+      <strong>個人資料蒐集告知</strong>（依《個人資料保護法》第 8 條）<br>
+      <b>蒐集者：</b>成功小蜜丰（代購外送服務經營者）。<br>
+      <b>蒐集目的：</b>處理代購／外送委託、配送聯繫、款項核對、售後服務及客服聯繫（特定目的與業務執行有關）。<br>
+      <b>蒐集項目：</b>聯絡電話、送達地址、社群暱稱、訂單內容（商家／品項）、加購服務、備註、預約時間；若選擇匯款則另含匯款戶名與帳號末五碼；外送進行中可能暫時處理外送員回報之位置座標以便客戶查詢進度；若您上傳照片則含該影像。<br>
+      <b>利用期間、地區、對象及方式：</b>僅於台灣地區、由本服務及受指派之外送人員，以電子與人工方式處理，不作與執行本服務無關之利用，不會轉售。<br>
+      <b>保存期限：</b>訂單完成（狀態為「已送達」）後原則保存 <b>180 天</b>，其後將刪除或去識別化敏感個資；對帳所需之非識別統計資料得依營運需要保留較久。<br>
+      <b>當事人權利：</b>您得依個資法請求查詢、閱覽、製給複製本、補充更正、請求停止蒐集／處理／利用或刪除。請透過「加入 LINE 社群」或私訊小蜜丰提出，我們將於合理期間內處理。<br>
+      本站僅使用瀏覽器「本地儲存（localStorage）」供必要功能（例如已讀公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie</strong>。
+    </div>
+    <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px; margin-bottom:10px;">
+      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
+        <input type="checkbox" id="cPrivacyConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
+        <span>我已閱讀並同意上述「個人資料蒐集告知」，同意貴服務依告知內容蒐集、處理及利用本人資料。</span>
+      </label>
     </div>
     <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px;">
       <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
         <input type="checkbox" id="cLegalConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
-        <span>本人確認已年滿 18 歲，委託內容合法、如實填寫，不含毒品、槍砲彈藥或其他依法禁止／限制販售之物品；如有不實，願自行承擔相關法律責任。</span>
+        <span>本人確認已年滿 18 歲，委託內容合法、如實填寫，不含毒品、槍砲彈藥或其他依法禁止／限制販售之物品；如有不實，願自行承擔相關法律責任。本服務僅依委託內容執行代購，委託人應對委託合法性負完全責任。</span>
       </label>
     </div>
     <div class="honeypot-field" aria-hidden="true">
@@ -2323,7 +2334,7 @@
   成功小蜜丰 · 本頁僅供社群公告與下單參考使用
   <div class="privacy-footer">
     <strong style="color:var(--ink);">個人資料保護</strong><br>
-    本服務蒐集之電話、地址、暱稱與訂單資料，僅供代購外送與聯繫使用，不作無關目的利用。本站僅使用必要之本地儲存，不使用第三方廣告追蹤。若您對個人資料有任何請求或疑問，請私訊小蜜丰。
+    本服務蒐集之電話、地址、暱稱、訂單及（若適用）匯款與位置資料，僅供代購外送與聯繫使用，不作無關目的利用。訂單完成後個資原則保存 180 天，其後刪除或去識別化。本站僅使用必要之本地儲存，不使用第三方廣告追蹤。若需行使個資權利或有疑問，請私訊小蜜丰。
   </div>
 </footer>
 
@@ -4438,6 +4449,7 @@ ${stopsText}
     data.extraIdx = Array.from(document.querySelectorAll('#extraServicePicker input:checked')).map(cb => cb.dataset.idx);
     data.stops = collectStops();
     data.legalConfirm = document.getElementById('cLegalConfirm').checked;
+    data.privacyConfirm = document.getElementById('cPrivacyConfirm').checked;
     data.schedule = document.getElementById('cSchedule').value;
     data.paymentMethod = paymentMethod;
     return data;
@@ -4461,6 +4473,7 @@ ${stopsText}
       cb.checked = (snapshot.extraIdx || []).includes(cb.dataset.idx);
     });
     document.getElementById('cLegalConfirm').checked = !!snapshot.legalConfirm;
+    document.getElementById('cPrivacyConfirm').checked = !!snapshot.privacyConfirm;
     applyScheduleValue(snapshot.schedule || '');
     paymentMethod = snapshot.paymentMethod || '現場付款';
     document.querySelectorAll('.pay-btn').forEach(b => b.classList.toggle('active', b.dataset.pay === paymentMethod));
@@ -4484,6 +4497,7 @@ ${stopsText}
     rebuildStops([{ merchant: '', items: '' }]);
     document.querySelectorAll('#extraServicePicker input').forEach(cb => { cb.checked = false; });
     document.getElementById('cLegalConfirm').checked = false;
+    document.getElementById('cPrivacyConfirm').checked = false;
     applyScheduleValue('');
     document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.zone-btn[data-zone="inner"]').classList.add('active');
@@ -4594,6 +4608,11 @@ ${stopsText}
         document.getElementById('cScheduleTime').focus();
         return false;
       }
+    }
+    if(!document.getElementById('cPrivacyConfirm').checked){
+      toast('請先勾選同意「個人資料蒐集告知」');
+      document.getElementById('cPrivacyConfirm').focus();
+      return false;
     }
     if(!document.getElementById('cLegalConfirm').checked){
       toast('請先勾選最下方的年齡與合法性確認');
