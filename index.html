@@ -653,11 +653,14 @@
   footer{max-width:920px; margin:0 auto; padding:24px 20px; font-size:11.5px; color:var(--ocean-dark); text-align:center; font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace;}
 
   .toast{
-    position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(12px);
-    background:var(--ink); color:var(--paper); border:2px solid var(--ink); border-radius:999px;
-    padding:10px 18px; max-width:min(92vw, 420px); text-align:center;
-    font-size:13.5px; font-weight:600; opacity:0; pointer-events:none; transition:.25s;
-    z-index:10050;
+    position:fixed !important; left:50% !important; bottom:max(24px, env(safe-area-inset-bottom, 0px)) !important;
+    transform:translateX(-50%) translateY(12px);
+    background:var(--ink) !important; color:var(--paper) !important;
+    border:2px solid var(--ink); border-radius:999px;
+    padding:12px 20px; max-width:min(92vw, 400px); text-align:center;
+    font-size:14px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+    z-index:2147483000 !important;
+    box-shadow:0 10px 28px rgba(0,0,0,.35);
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
   @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
@@ -1916,6 +1919,20 @@
     margin-top:8px;
   }
   .announce-stack .announce-wrap{ margin:0; }
+
+  .menu-switch-hint{
+    margin:0 0 10px;
+    padding:8px 12px;
+    border-radius:10px;
+    background:var(--gold);
+    color:var(--ink);
+    border:2px solid var(--ink);
+    font-size:13px;
+    font-weight:800;
+    line-height:1.4;
+    animation:fadeSlideIn .25s ease;
+  }
+
 </style>
 
 </head>
@@ -2266,6 +2283,7 @@
     </div>
     <div class="menu-lightbox-body">
       <div class="menu-lightbox-merchant" id="menuLightboxMerchant"></div>
+      <div class="menu-switch-hint" id="menuSwitchHint" style="display:none;"></div>
       <textarea id="menuLightboxItemsInput" placeholder="邊看邊打想買的品項..."></textarea>
       <button type="button" class="menu-lightbox-add-btn" id="menuLightboxAddBtn">✅ 加入訂單</button>
     </div>
@@ -2854,6 +2872,20 @@
   }
 
   // 切換到同分類的上一間／下一間商家（direction: 1=下一間, -1=上一間），並提示切換到哪一間店
+  let switchHintTimer = null;
+  function showMerchantSwitchHint(msg){
+    const hint = document.getElementById('menuSwitchHint');
+    if(hint){
+      hint.textContent = msg;
+      hint.style.display = 'block';
+      if(switchHintTimer) clearTimeout(switchHintTimer);
+      switchHintTimer = setTimeout(()=>{
+        hint.style.display = 'none';
+        switchHintTimer = null;
+      }, 3200);
+    }
+    toast(msg, 3200);
+  }
   function goToAdjacentMerchant(direction){
     const catList = menuCategoryMerchants[merchantCategoryLookup[lightboxMerchant]] || [];
     const idx = catList.findIndex(x => x.merchant === lightboxMerchant);
@@ -2863,9 +2895,10 @@
     const target = catList[targetIdx];
     lightboxMerchant = target.merchant;
     lightboxPhotos = target.photos;
-    lightboxIndex = direction > 0 ? 0 : target.photos.length - 1;
+    lightboxIndex = direction > 0 ? 0 : Math.max(0, target.photos.length - 1);
     renderLightboxPhoto();
-    toast(`${direction > 0 ? '已切換到下一間店' : '已切換到上一間店'}：${target.merchant}`);
+    const msg = `${direction > 0 ? '➡️ 已切換到下一間店' : '⬅️ 已切換到上一間店'}：${target.merchant}`;
+    showMerchantSwitchHint(msg);
   }
 
   document.getElementById('menuLightboxPrevBtn').addEventListener('click', ()=>{
@@ -2879,6 +2912,8 @@
 
   function closeMenuLightbox(){
     menuLightboxEl.style.display = 'none';
+    const hint = document.getElementById('menuSwitchHint');
+    if(hint){ hint.style.display = 'none'; hint.textContent = ''; }
   }
   document.getElementById('menuLightboxClose').addEventListener('click', closeMenuLightbox);
   menuLightboxEl.addEventListener('click', (e)=>{
@@ -4072,11 +4107,17 @@ function renderSettings(settings){
   document.getElementById('cScheduleTime').addEventListener('change', syncScheduleValue);
   populateScheduleTimeOptions();
 
-  const toastEl = document.getElementById('toast');
-  function toast(msg){
+  let toastTimer = null;
+  function toast(msg, durationMs){
+    const toastEl = document.getElementById('toast');
+    if(!toastEl) return;
     toastEl.textContent = msg;
     toastEl.classList.add('show');
-    setTimeout(()=>toastEl.classList.remove('show'), 2200);
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{
+      toastEl.classList.remove('show');
+      toastTimer = null;
+    }, durationMs || 2800);
   }
 
   async function logOrder(orderData){
