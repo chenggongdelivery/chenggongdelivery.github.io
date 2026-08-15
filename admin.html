@@ -350,6 +350,41 @@
     font-size:11px; opacity:.7; margin-top:6px; line-height:1.4;
   }
 
+
+  /* 商品金額欄位：防止手機寬度溢位 */
+  .order-card{ overflow:hidden; max-width:100%; }
+  .goods-amount-picker{ max-width:100%; min-width:0; }
+  .goods-amount-stops{ max-width:100%; min-width:0; }
+  .goods-amount-stop-row{
+    display:flex; align-items:center; gap:8px;
+    max-width:100%; min-width:0;
+  }
+  .goods-amount-stop-row .gas-label{
+    flex:0 1 auto; max-width:34%; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .goods-amount-stop-row input,
+  .goods-amount-stop-row .stop-amount-input{
+    flex:1 1 0 !important;
+    min-width:0 !important;
+    width:0 !important;
+    max-width:100% !important;
+    box-sizing:border-box;
+  }
+  .goods-amount-total-row{
+    display:flex; gap:8px; max-width:100%; min-width:0;
+  }
+  .goods-amount-input{
+    flex:1 1 0 !important;
+    min-width:0 !important;
+    width:0 !important;
+    max-width:100% !important;
+    box-sizing:border-box;
+  }
+  .calc-trigger-btn{
+    flex:0 0 42px; width:42px; max-width:42px;
+  }
+
 </style>
 </head>
 <body>
