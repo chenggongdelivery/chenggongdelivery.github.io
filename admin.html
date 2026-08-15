@@ -255,7 +255,7 @@
   .toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
     background:var(--ink); color:var(--paper); padding:11px 20px; border-radius:999px;
-    font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:.25s; z-index:10050;
+    font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:.25s; z-index:300;
     max-width:min(90vw,360px); text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
@@ -330,60 +330,17 @@
 
   .refresh-hint{text-align:center; font-size:11px; color:var(--ocean-dark); opacity:.6; margin:10px 0 4px;}
 
-  /* 個資防護：預設遮罩、需點擊才顯示 */
-  .privacy-banner{
-    background:var(--gold); border:2px solid var(--ink); border-radius:12px;
-    padding:10px 12px; font-size:12px; font-weight:700; line-height:1.55;
-    margin-bottom:14px; color:var(--ink);
-  }
-  .pii-mask{
-    filter:blur(5px); user-select:none; cursor:pointer;
-    transition:filter .15s ease;
-  }
-  .pii-mask.revealed{ filter:none; user-select:text; }
-  .pii-toggle{
-    margin-left:6px; border:1.5px solid var(--ink); background:var(--paper);
-    border-radius:999px; padding:1px 8px; font-size:11px; font-weight:700;
-    cursor:pointer; font-family:inherit; vertical-align:middle;
-  }
-  .session-hint{
-    font-size:11px; opacity:.7; margin-top:6px; line-height:1.4;
-  }
-
-
-  /* 商品金額欄位：防止手機寬度溢位 */
+  .header-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;}
+  #logoutBtn{background:var(--coral) !important; color:var(--paper) !important;}
+  /* 商品金額欄位防溢位 */
   .order-card{ overflow:hidden; max-width:100%; }
-  .goods-amount-picker{ max-width:100%; min-width:0; }
-  .goods-amount-stops{ max-width:100%; min-width:0; }
-  .goods-amount-stop-row{
-    display:flex; align-items:center; gap:8px;
-    max-width:100%; min-width:0;
+  .goods-amount-picker, .goods-amount-stops, .goods-amount-total-row{ max-width:100%; min-width:0; }
+  .goods-amount-stop-row{ display:flex; align-items:center; gap:8px; max-width:100%; min-width:0; }
+  .goods-amount-stop-row .gas-label{ flex:0 1 auto; max-width:34%; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .goods-amount-stop-row input, .goods-amount-input{
+    flex:1 1 0 !important; min-width:0 !important; width:0 !important; max-width:100% !important; box-sizing:border-box;
   }
-  .goods-amount-stop-row .gas-label{
-    flex:0 1 auto; max-width:34%; min-width:0;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  .goods-amount-stop-row input,
-  .goods-amount-stop-row .stop-amount-input{
-    flex:1 1 0 !important;
-    min-width:0 !important;
-    width:0 !important;
-    max-width:100% !important;
-    box-sizing:border-box;
-  }
-  .goods-amount-total-row{
-    display:flex; gap:8px; max-width:100%; min-width:0;
-  }
-  .goods-amount-input{
-    flex:1 1 0 !important;
-    min-width:0 !important;
-    width:0 !important;
-    max-width:100% !important;
-    box-sizing:border-box;
-  }
-  .calc-trigger-btn{
-    flex:0 0 42px; width:42px; max-width:42px;
-  }
+  .calc-trigger-btn{ flex:0 0 42px; width:42px; max-width:42px; }
 
 </style>
 </head>
@@ -394,21 +351,20 @@
     <h1>🐝 成功小蜜丰・後台管理</h1>
     <div class="sub" id="dateLabel"></div>
   </div>
-  <div style="display:flex; gap:8px;">
+  <div class="header-actions">
     <button id="notifyBtn" title="開啟新訂單通知">🔔</button>
     <button id="refreshBtn">🔄 重新整理</button>
+    <button id="logoutBtn" style="display:none; background:var(--coral);">🚪 登出</button>
   </div>
 </header>
 
 <main>
-  <div class="privacy-banner" id="privacyBanner" style="display:none;">
-    🔒 個資使用提醒：客戶電話、地址僅供配送與聯繫。請勿截圖傳至外部群組、勿私自存檔或轉售。使用完畢請登出。
-  </div>
-
   <div class="login-box" id="loginBox">
     <h2>🔒 後台登入</h2>
-    <p>請輸入後台管理密碼<br>（在試算表「基本設定」分頁的「後台管理密碼」可查看或修改）</p>
-    <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" maxlength="12" autofocus>
+    <p>請輸入後台管理密碼<br>
+    請至試算表「基本設定」→「後台管理密碼」設定<br>
+    <span style="font-size:12px; opacity:.85;">建議格式：大小寫＋數字＋符號（例如 Aa123456+）</span></p>
+    <input id="pinInput" type="password" placeholder="輸入後台密碼" maxlength="64" autofocus autocomplete="current-password">
     <button id="loginBtn">登入</button>
     <div class="err" id="loginErr">密碼錯誤，請確認後重新輸入</div>
   </div>
@@ -572,8 +528,6 @@
 
 
   const PIN_STORAGE_KEY = 'mifeng_admin_pin';
-  const PIN_EXPIRE_KEY = 'mifeng_admin_pin_exp';
-  const PIN_MAX_AGE_MS = 4 * 60 * 60 * 1000; // 登入狀態最長 4 小時
 
   const toastEl = document.getElementById('toast');
   function toast(msg){
@@ -598,40 +552,6 @@
     div.textContent = str;
     return div.innerHTML;
   }
-
-  function maskRemitNameDisplay(name){
-    name = String(name || '').trim();
-    if(!name) return '—';
-    if(name.length <= 1) return '*';
-    if(name.length === 2) return name[0] + '○';
-    return name[0] + '○'.repeat(Math.min(name.length - 1, 3));
-  }
-  function maskRemitLast5Display(last5){
-    const s = String(last5 || '').replace(/\D/g, '');
-    if(s.length < 2) return '*****';
-    return '***' + s.slice(-2);
-  }
-  function maskPhoneDisplay(phone){
-    const d = String(phone || '').replace(/\D/g, '');
-    if(d.length < 7) return '****';
-    return d.slice(0, 3) + '****' + d.slice(-3);
-  }
-  function maskAddressDisplay(addr){
-    addr = String(addr || '').trim();
-    if(!addr) return '—';
-    if(addr.length <= 8) return addr.slice(0, 2) + '****';
-    const keep = Math.min(12, Math.floor(addr.length * 0.55));
-    return addr.slice(0, keep) + '…';
-  }
-  function piiSpan(fullText, maskedText, kind){
-    const full = escapeHtml(fullText || '—');
-    const masked = escapeHtml(maskedText || '—');
-    // 預設顯示遮罩；點「顯示」才看全文（僅本機畫面，不影響試算表）
-    return `<span class="pii-wrap" data-kind="${kind}">` +
-      `<span class="pii-mask" data-full="${full}" data-masked="${masked}">${masked}</span>` +
-      `<button type="button" class="pii-toggle" data-state="hidden">顯示</button></span>`;
-  }
-
 
   // ---------- 新訂單通知：聲音 + 畫面提示 + 瀏覽器系統通知（選用） ----------
   const originalTitle = document.title;
@@ -744,8 +664,24 @@
   function showDashboard(){
     loginBox.style.display = 'none';
     dashboard.style.display = 'block';
+    const logoutBtn = document.getElementById('logoutBtn');
+    if(logoutBtn) logoutBtn.style.display = 'inline-block';
     loadOrders();
     if(!pollTimer) pollTimer = setInterval(()=>{ if(currentPin) loadOrders(); }, 25000);
+  }
+
+  function doLogout(){
+    currentPin = '';
+    try{ localStorage.removeItem(PIN_STORAGE_KEY); }catch(e){}
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+    try{ stopLocationTracking(true); }catch(e){}
+    dashboard.style.display = 'none';
+    loginBox.style.display = 'block';
+    const logoutBtn = document.getElementById('logoutBtn');
+    if(logoutBtn) logoutBtn.style.display = 'none';
+    const pinInput = document.getElementById('pinInput');
+    if(pinInput){ pinInput.value = ''; pinInput.focus(); }
+    toast('已登出');
   }
 
   function tryLogin(pin){
@@ -756,15 +692,9 @@
           loginErr.style.display = 'block';
           currentPin = '';
           localStorage.removeItem(PIN_STORAGE_KEY);
-    try{ localStorage.removeItem(PIN_EXPIRE_KEY); }catch(e){}
-    const pb = document.getElementById('privacyBanner');
-    if(pb) pb.style.display = 'none';
         } else {
           currentPin = pin;
-          const pb = document.getElementById('privacyBanner');
-          if(pb) pb.style.display = 'block';
           localStorage.setItem(PIN_STORAGE_KEY, pin);
-          localStorage.setItem(PIN_EXPIRE_KEY, String(Date.now() + PIN_MAX_AGE_MS));
           loginErr.style.display = 'none';
           currentOrders = applyPendingUpdates(data.orders || []);
           currentDeliverers = data.deliverers || [];
@@ -783,6 +713,9 @@
   });
   document.getElementById('pinInput').addEventListener('keydown', (e)=>{
     if(e.key === 'Enter') document.getElementById('loginBtn').click();
+  });
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    if(confirm('確定要登出後台嗎？')) doLogout();
   });
 
   // 網址帶了 ?key= 或瀏覽器之前記住過密碼，就自動嘗試登入，不用手動打字
@@ -819,6 +752,8 @@
           currentPin = '';
           dashboard.style.display = 'none';
           loginBox.style.display = 'block';
+          const lb = document.getElementById('logoutBtn');
+          if(lb) lb.style.display = 'none';
           if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
           return;
         }
@@ -971,8 +906,8 @@
         const fullDetailEl = row.querySelector('.sd-full-detail');
         const isRemitOrder = o.paymentMethod === '匯款';
         fullDetailEl.innerHTML = `
-          <div class="sfd-row"><b>地址</b>${piiSpan(o.address || '—', maskAddressDisplay(o.address), 'address')}（${escapeHtml(o.zone || '—')}）</div>
-          <div class="sfd-row"><b>電話</b>${piiSpan(o.phone || '—', maskPhoneDisplay(o.phone), 'phone')}</div>
+          <div class="sfd-row"><b>地址</b>${escapeHtml(o.address || '—')}（${escapeHtml(o.zone || '—')}）</div>
+          <div class="sfd-row"><b>電話</b><a href="tel:${escapeHtml((o.phone||'').replace(/\D/g,''))}">${escapeHtml(o.phone || '—')}</a></div>
           <div class="sfd-row"><b>暱稱</b>${escapeHtml(o.contact || '—')}</div>
           ${o.extraServices ? `<div class="sfd-row"><b>加購</b>${escapeHtml(o.extraServices)}</div>` : ''}
           ${o.goodsAmount ? `<div class="sfd-row"><b>商品</b>$${escapeHtml(String(o.goodsAmount))}</div>` : ''}
@@ -1061,8 +996,8 @@
         <div class="row"><span class="label">單號</span><span>${escapeHtml(numLabel)}　${escapeHtml(o.date)} ${escapeHtml(o.time)}${o.orderType === '商家外送委託' ? '　🏪 商家委託' : ''}</span></div>
         <div class="row"><span class="label">商家</span><span>${escapeHtml(o.merchant || '—')}</span></div>
         <div class="row"><span class="label">品項</span><span>${escapeHtml(o.items || '—')}</span></div>
-        <div class="row"><span class="label">地址</span><span>${piiSpan(o.address || '—', maskAddressDisplay(o.address), 'address')}</span></div>
-        <div class="row"><span class="label">電話</span><span>${piiSpan(o.phone || '—', maskPhoneDisplay(o.phone), 'phone')}</span></div>
+        <div class="row"><span class="label">地址</span><span>${escapeHtml(o.address || '—')}</span></div>
+        <div class="row"><span class="label">電話</span><span>${escapeHtml(o.phone || '—')}</span></div>
         <div class="row"><span class="label">費用</span><span>外送費 $${escapeHtml(String(o.fee || '—'))}${o.goodsAmount ? `　商品 $${escapeHtml(String(o.goodsAmount))}` : ''}</span></div>
         <div class="row"><span class="label">狀態</span><span>${escapeHtml(o.status || '待處理')}${o.deliverer ? `　外送員：${escapeHtml(o.deliverer)}` : ''}</span></div>
         ${o.note ? `<div class="row"><span class="label">備註</span><span>${escapeHtml(o.note)}</span></div>` : ''}
@@ -1188,9 +1123,9 @@
     infoHtml += `
       <div class="row"><span class="label">商家</span><span>${escapeHtml(order.merchant || '—')}</span></div>
       <div class="row"><span class="label">品項</span><span class="items-block">${escapeHtml(order.items || '—')}</span></div>
-      <div class="row"><span class="label">地址</span><span>${piiSpan(order.address || '—', maskAddressDisplay(order.address), 'address')}</span></div>
+      <div class="row"><span class="label">地址</span><span>${escapeHtml(order.address || '—')}</span></div>
       <div class="row"><span class="label">範圍</span><span>${escapeHtml(order.zone || '—')}　外送費 $${escapeHtml(String(order.fee || '—'))}</span></div>
-      <div class="row"><span class="label">電話</span><span>${piiSpan(order.phone || '—', maskPhoneDisplay(order.phone), 'phone')}</span></div>
+      <div class="row"><span class="label">電話</span><span><a href="tel:${escapeHtml((order.phone||'').replace(/\D/g,''))}">${escapeHtml(order.phone || '—')}</a></span></div>
       <div class="row"><span class="label">暱稱</span><span>${escapeHtml(order.contact || '—')}</span></div>
     `;
     if(order.extraServices) infoHtml += `<div class="row"><span class="label">加購</span><span>${escapeHtml(order.extraServices)}</span></div>`;
@@ -1202,7 +1137,7 @@
     const isRemit = order.paymentMethod === '匯款';
     infoHtml += `<div class="row"><span class="label">付款</span><span>${isRemit ? '💳 匯款轉帳' : '💵 現場付款'}</span></div>`;
     if(isRemit){
-      infoHtml += `<div class="remit-check">🔍 請核對匯款：${piiSpan(order.remitName || '—', maskRemitNameDisplay(order.remitName), 'remit')}　末五碼 ${piiSpan(order.remitLast5 || '—', maskRemitLast5Display(order.remitLast5), 'remit5')}</div>`;
+      infoHtml += `<div class="remit-check">🔍 請核對匯款：<strong>${escapeHtml(order.remitName || '—')}</strong>　末五碼 <strong>${escapeHtml(order.remitLast5 || '—')}</strong></div>`;
     }
 
     let paymentActionHtml = '';
@@ -1558,36 +1493,6 @@
       reservations.forEach(order => list.appendChild(createOrderCard(order)));
     }
   }
-
-
-  // 個資顯示／隱藏（僅影響畫面）
-  document.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.pii-toggle');
-    if(!btn) return;
-    const wrap = btn.closest('.pii-wrap');
-    if(!wrap) return;
-    const maskEl = wrap.querySelector('.pii-mask');
-    if(!maskEl) return;
-    const revealed = btn.dataset.state === 'shown';
-    if(revealed){
-      maskEl.textContent = maskEl.dataset.masked || '';
-      maskEl.classList.remove('revealed');
-      btn.dataset.state = 'hidden';
-      btn.textContent = '顯示';
-    } else {
-      maskEl.textContent = maskEl.dataset.full || '';
-      maskEl.classList.add('revealed');
-      btn.dataset.state = 'shown';
-      btn.textContent = '隱藏';
-      // 電話顯示後可點擊撥打
-      if(wrap.dataset.kind === 'phone'){
-        const digits = (maskEl.dataset.full || '').replace(/\D/g, '');
-        if(digits){
-          maskEl.innerHTML = `<a href="tel:${digits}">${maskEl.dataset.full}</a>`;
-        }
-      }
-    }
-  });
 
   document.getElementById('lightbox').addEventListener('click', ()=>{
     document.getElementById('lightbox').style.display = 'none';
