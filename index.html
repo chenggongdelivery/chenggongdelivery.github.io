@@ -2259,8 +2259,8 @@
     <button class="menu-lightbox-close" id="menuLightboxClose" aria-label="關閉">✕</button>
     <div class="menu-lightbox-img-wrap">
       <img id="menuLightboxImg" src="" alt="菜單放大圖">
-      <button type="button" class="menu-lightbox-nav prev" id="menuLightboxPrevBtn" aria-label="上一張" style="display:none;">‹</button>
-      <button type="button" class="menu-lightbox-nav next" id="menuLightboxNextBtn" aria-label="下一張" style="display:none;">›</button>
+      <button type="button" class="menu-lightbox-nav prev" id="menuLightboxPrevBtn" aria-label="上一張／上一間店" style="display:none;">‹</button>
+      <button type="button" class="menu-lightbox-nav next" id="menuLightboxNextBtn" aria-label="下一張／下一間店" style="display:none;">›</button>
       <div class="menu-lightbox-page-indicator" id="menuLightboxPageIndicator" style="display:none;"></div>
     </div>
     <div class="menu-lightbox-body">
@@ -2730,6 +2730,10 @@
     if(lastRow) lastRow.scrollIntoView({ behavior:'smooth', block:'center' });
   });
 
+  // 分類 -> 該分類內商家清單（含各自照片），供菜單放大檢視「上一間店／下一間店」翻頁使用
+  let menuCategoryMerchants = {};
+  let merchantCategoryLookup = {};
+
   function renderMenus(menus){
     const box = document.getElementById('menuGallery');
     if(!menus || !menus.length){
@@ -2755,6 +2759,13 @@
     });
 
     box.innerHTML = '';
+    menuCategoryMerchants = {};
+    merchantCategoryLookup = {};
+    catOrder.forEach(cat => {
+      const g = catGroups[cat];
+      menuCategoryMerchants[cat] = g.order.map(name => ({ merchant: name, photos: g.merchants[name] }));
+      g.order.forEach(name => { merchantCategoryLookup[name] = cat; });
+    });
     catOrder.forEach(cat => {
       const g = catGroups[cat];
       const totalPhotos = g.order.reduce((sum, name) => sum + g.merchants[name].length, 0);
@@ -2817,13 +2828,23 @@
     const pageIndicator = document.getElementById('menuLightboxPageIndicator');
     const prevBtn = document.getElementById('menuLightboxPrevBtn');
     const nextBtn = document.getElementById('menuLightboxNextBtn');
-    if(lightboxPhotos.length > 1){
-      pageIndicator.textContent = `${lightboxIndex + 1} / ${lightboxPhotos.length}`;
-      pageIndicator.style.display = 'block';
+
+    const catList = menuCategoryMerchants[merchantCategoryLookup[lightboxMerchant]] || [];
+    const merchantIdx = catList.findIndex(x => x.merchant === lightboxMerchant);
+    const hasPrevMerchant = merchantIdx > 0;
+    const hasNextMerchant = merchantIdx !== -1 && merchantIdx < catList.length - 1;
+
+    if(lightboxPhotos.length > 1 || hasPrevMerchant || hasNextMerchant){
+      if(lightboxPhotos.length > 1){
+        pageIndicator.textContent = `${lightboxIndex + 1} / ${lightboxPhotos.length}`;
+        pageIndicator.style.display = 'block';
+      } else {
+        pageIndicator.style.display = 'none';
+      }
       prevBtn.style.display = 'flex';
       nextBtn.style.display = 'flex';
-      prevBtn.disabled = (lightboxIndex === 0);
-      nextBtn.disabled = (lightboxIndex === lightboxPhotos.length - 1);
+      prevBtn.disabled = (lightboxIndex === 0) && !hasPrevMerchant;
+      nextBtn.disabled = (lightboxIndex === lightboxPhotos.length - 1) && !hasNextMerchant;
     } else {
       pageIndicator.style.display = 'none';
       prevBtn.style.display = 'none';
@@ -2831,11 +2852,28 @@
     }
   }
 
+  // 切換到同分類的上一間／下一間商家（direction: 1=下一間, -1=上一間），並提示切換到哪一間店
+  function goToAdjacentMerchant(direction){
+    const catList = menuCategoryMerchants[merchantCategoryLookup[lightboxMerchant]] || [];
+    const idx = catList.findIndex(x => x.merchant === lightboxMerchant);
+    if(idx === -1) return;
+    const targetIdx = idx + direction;
+    if(targetIdx < 0 || targetIdx >= catList.length) return;
+    const target = catList[targetIdx];
+    lightboxMerchant = target.merchant;
+    lightboxPhotos = target.photos;
+    lightboxIndex = direction > 0 ? 0 : target.photos.length - 1;
+    renderLightboxPhoto();
+    toast(`${direction > 0 ? '已切換到下一間店' : '已切換到上一間店'}：${target.merchant}`);
+  }
+
   document.getElementById('menuLightboxPrevBtn').addEventListener('click', ()=>{
     if(lightboxIndex > 0){ lightboxIndex--; renderLightboxPhoto(); }
+    else { goToAdjacentMerchant(-1); }
   });
   document.getElementById('menuLightboxNextBtn').addEventListener('click', ()=>{
     if(lightboxIndex < lightboxPhotos.length - 1){ lightboxIndex++; renderLightboxPhoto(); }
+    else { goToAdjacentMerchant(1); }
   });
 
   function closeMenuLightbox(){
