@@ -1957,19 +1957,29 @@
     padding: 6px 10px;
     margin: 0 0 6px;
   }
+  .composer .consent-box label,
   .consent-box label{
-    display: flex;
+    display: flex !important;
     align-items: flex-start;
     gap: 8px;
     cursor: pointer;
     font-size: 12.5px;
     line-height: 1.45;
     font-weight: 600;
-    margin: 0;
+    margin: 0 !important;
+    color: var(--ink);
   }
+  /* 避免被 .composer input{min-height:44px; width:100%} 撐出框內大片空白 */
+  .composer .consent-box input[type="checkbox"],
   .consent-box input[type="checkbox"]{
-    width: auto;
-    margin: 2px 0 0;
+    width: 18px !important;
+    height: 18px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    margin: 2px 0 0 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
     flex-shrink: 0;
     accent-color: var(--ocean);
   }
