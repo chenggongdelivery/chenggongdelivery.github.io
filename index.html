@@ -1933,6 +1933,35 @@
     animation:fadeSlideIn .25s ease;
   }
 
+
+  .privacy-notice{
+    margin: 12px 0 10px;
+    padding: 12px 14px;
+    border: 2px dashed rgba(34,48,46,.35);
+    border-radius: 12px;
+    background: rgba(255,255,255,.65);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--ocean-dark);
+  }
+  .privacy-notice strong{
+    display: block;
+    font-size: 12.5px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  footer .privacy-footer{
+    max-width: 520px;
+    margin: 8px auto 0;
+    font-size: 11px;
+    line-height: 1.65;
+    opacity: .9;
+    font-family: system-ui, -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    text-align: left;
+  }
+
+
+
 </style>
 
 </head>
@@ -2218,6 +2247,11 @@
       </div>
       <div style="font-size:11px; color:var(--ocean-dark); opacity:.75; margin-top:4px;"></div>
     </div>
+    <div class="privacy-notice" id="privacyNotice">
+      <strong>個人資料蒐集告知</strong>
+      為處理代購外送服務，本站將蒐集您填寫的聯絡電話、送達地址、社群暱稱、訂單內容及（若選擇匯款）匯款戶名與帳號末五碼。資料僅用於配送、聯繫與售後處理，不會轉售或提供予與執行本服務無關之第三人。資料將依營運需要保存，完成服務後於合理期間內刪除或去識別化。<br>
+      本站可能使用瀏覽器「本地儲存（localStorage）」僅供必要功能（例如記住您已讀的公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie</strong>。如需查詢、更正或刪除個人資料，請透過「加入 LINE 社群」或私訊小蜜丰與我們聯繫。送出訂單即表示您知悉並同意上述說明。
+    </div>
     <div class="field" style="background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:12px 14px;">
       <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:12.5px; line-height:1.7; font-weight:600;">
         <input type="checkbox" id="cLegalConfirm" style="width:auto; margin-top:2px; flex-shrink:0; accent-color:var(--ocean);">
@@ -2247,13 +2281,19 @@
       <button type="button" class="utility-btn" id="clearBtn">🗑️ 清除表單</button>
       <button type="button" class="utility-btn" id="undoBtn" disabled>↩️ 返回上一步</button>
     </div>
-    <div style="font-size:11.5px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;">電話與地址僅供配送，不會公開</div>
+    <div style="font-size:11.5px; color:var(--ocean-dark); margin-top:10px; line-height:1.6;">電話與地址僅供配送聯繫，詳見上方「個人資料蒐集告知」。</div>
   </div>
 
 
 </main>
 
-<footer>成功小蜜丰 · 本頁僅供社群公告與下單參考使用</footer>
+<footer>
+  成功小蜜丰 · 本頁僅供社群公告與下單參考使用
+  <div class="privacy-footer">
+    <strong style="color:var(--ink);">個人資料保護</strong><br>
+    本服務蒐集之電話、地址、暱稱與訂單資料，僅供代購外送與聯繫使用，不作無關目的利用。本站僅使用必要之本地儲存，不使用第三方廣告追蹤。若您對個人資料有任何請求或疑問，請私訊小蜜丰。
+  </div>
+</footer>
 
 
 <div class="cart-float-bar" id="cartFloatBar" style="display:none;">
@@ -4584,7 +4624,11 @@ ${stopsText}
   });
 
 })();
+
+
 </script>
+
+
 <div class="toast" id="toast"></div>
 </body>
 </html>
