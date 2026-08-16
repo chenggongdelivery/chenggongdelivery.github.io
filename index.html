@@ -2527,30 +2527,6 @@
     </div>
     <button class="copy-btn" id="lookupSubmit" style="width:100%; background:var(--ocean); display:block;">查詢</button>
     <div class="lookup-result" id="lookupResult"></div>
-    <div id="lookupEditPanel" style="display:none; margin-top:14px; text-align:left;">
-      <div id="lookupEditStatusMsg" style="font-size:12.5px; font-weight:700; line-height:1.6; margin-bottom:10px; padding:10px 12px; border-radius:10px; border:2px solid var(--ink);"></div>
-      <div id="lookupEditForm" style="display:none;">
-        <div class="field">
-          <label>商家</label>
-          <input id="editMerchant" type="text" placeholder="商家名稱">
-        </div>
-        <div class="field">
-          <label>品項</label>
-          <textarea id="editItems" rows="3" placeholder="品項內容" style="width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:8px; background:var(--paper); font-family:inherit; font-size:14px;"></textarea>
-        </div>
-        <div class="field">
-          <label>送達地址</label>
-          <input id="editAddress" type="text" placeholder="完整地址">
-        </div>
-        <div class="field">
-          <label>備註</label>
-          <input id="editNote" type="text" placeholder="選填">
-        </div>
-        <button type="button" class="copy-btn" id="lookupEditSaveBtn" style="width:100%; background:#06C755; display:block; margin-top:6px;">💾 儲存修改</button>
-        <button type="button" class="utility-btn" id="lookupEditCancelBtn" style="width:100%; margin-top:8px;">取消</button>
-      </div>
-      <button type="button" class="copy-btn" id="lookupEditOpenBtn" style="width:100%; background:var(--gold); color:var(--ink); display:none; margin-top:8px;">✏️ 修改此訂單</button>
-    </div>
     <div id="lookupMapBox" style="display:none;"></div>
   </div>
 </div>
@@ -3750,7 +3726,6 @@ function renderSettings(settings){
     resultEl.style.display = 'none';
     resultEl.textContent = '';
     resetLookupMapState();
-    if(typeof resetLookupEditPanel === 'function') resetLookupEditPanel();
     const mapBox = document.getElementById('lookupMapBox');
     if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
     lookupOverlay.style.display = 'block';
@@ -4054,47 +4029,6 @@ function renderSettings(settings){
   // 查詢訂單狀態；isFirst=true 是使用者按查詢按鈕的那一次，之後每 15 秒會自動用 isFirst=false 重打一次，
   // 不管目前訂單是不是「取餐中／運送中」都會持續輪詢，這樣狀態一變（例如從待處理變成取餐中）畫面就會自動反映，
   // 直到訂單變成「已送達」或查無資料才停止
-  let lastLookupMeta = null; // { digits, contact, data }
-
-  function resetLookupEditPanel(){
-    const panel = document.getElementById('lookupEditPanel');
-    const form = document.getElementById('lookupEditForm');
-    const openBtn = document.getElementById('lookupEditOpenBtn');
-    const statusMsg = document.getElementById('lookupEditStatusMsg');
-    if(panel) panel.style.display = 'none';
-    if(form) form.style.display = 'none';
-    if(openBtn) openBtn.style.display = 'none';
-    if(statusMsg){ statusMsg.textContent = ''; statusMsg.style.display = 'none'; }
-  }
-
-  function showLookupEditUi(data){
-    const panel = document.getElementById('lookupEditPanel');
-    const form = document.getElementById('lookupEditForm');
-    const openBtn = document.getElementById('lookupEditOpenBtn');
-    const statusMsg = document.getElementById('lookupEditStatusMsg');
-    if(!panel || !statusMsg) return;
-    panel.style.display = 'block';
-    form.style.display = 'none';
-
-    if(data.canEdit){
-      statusMsg.style.display = 'block';
-      statusMsg.style.background = 'rgba(6,199,85,.12)';
-      statusMsg.style.color = 'var(--ink)';
-      statusMsg.textContent = '✅ 訂單尚在「待處理」，您可以直接修改內容。';
-      openBtn.style.display = 'block';
-      document.getElementById('editMerchant').value = data.merchant || '';
-      document.getElementById('editItems').value = data.items || '';
-      document.getElementById('editAddress').value = data.addressFull || '';
-      document.getElementById('editNote').value = data.note || '';
-    } else {
-      statusMsg.style.display = 'block';
-      statusMsg.style.background = 'rgba(226,83,47,.12)';
-      statusMsg.style.color = 'var(--coral-dark)';
-      statusMsg.textContent = '🔒 ' + (data.editHint || ('訂單目前為「' + (data.status || '處理中') + '」，已進入處理流程，無法再自行修改。'));
-      openBtn.style.display = 'none';
-    }
-  }
-
   async function performLookup(digits, contact, isFirst){
     const resultEl = document.getElementById('lookupResult');
     const mapBox = document.getElementById('lookupMapBox');
@@ -4103,7 +4037,6 @@ function renderSettings(settings){
       resultEl.style.display = 'block';
       resultEl.textContent = '查詢中...';
       if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
-      resetLookupEditPanel();
     }
 
     try{
@@ -4112,7 +4045,6 @@ function renderSettings(settings){
       const data = await res.json();
 
       if(data.found){
-        lastLookupMeta = { digits, contact, data };
         const numLabel = String(data.queueNumber || '').startsWith('R') ? data.queueNumber : `#${data.queueNumber}`;
         let msg =
 `✅ 查詢成功（顯示最近一筆訂單）
@@ -4141,7 +4073,6 @@ function renderSettings(settings){
 目前狀態：${data.status || '待處理'}`;
         if(data.deliverer) msg += `\n外送員：${data.deliverer}`;
         resultEl.textContent = msg;
-        if(isFirst) showLookupEditUi(data);
 
         const st = String(data.status || '');
         const isPickupPhase = st === '取餐中';
@@ -4285,17 +4216,11 @@ function renderSettings(settings){
           stopLookupPolling();
         }
       } else {
-        if(isFirst){
-          resultEl.textContent = '❌ 查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。';
-          resetLookupEditPanel();
-        }
+        if(isFirst) resultEl.textContent = '❌ 查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。';
         stopLookupPolling();
       }
     }catch(err){
-      if(isFirst){
-        resultEl.textContent = '查詢失敗，請稍後再試一次。';
-        resetLookupEditPanel();
-      }
+      if(isFirst) resultEl.textContent = '查詢失敗，請稍後再試一次。';
     }
   }
 
@@ -4319,86 +4244,6 @@ function renderSettings(settings){
     resetLookupMapState();
     ensureLeaflet_().catch(()=>{});
     performLookup(digits, contact, true);
-  });
-
-  document.getElementById('lookupEditOpenBtn').addEventListener('click', ()=>{
-    if(!lastLookupMeta || !lastLookupMeta.data || !lastLookupMeta.data.canEdit){
-      toast('目前無法修改此訂單');
-      return;
-    }
-    document.getElementById('lookupEditForm').style.display = 'block';
-    document.getElementById('lookupEditOpenBtn').style.display = 'none';
-  });
-  document.getElementById('lookupEditCancelBtn').addEventListener('click', ()=>{
-    document.getElementById('lookupEditForm').style.display = 'none';
-    if(lastLookupMeta && lastLookupMeta.data && lastLookupMeta.data.canEdit){
-      document.getElementById('lookupEditOpenBtn').style.display = 'block';
-    }
-  });
-  document.getElementById('lookupEditSaveBtn').addEventListener('click', async ()=>{
-    if(!lastLookupMeta || !lastLookupMeta.data){
-      toast('請先查詢訂單');
-      return;
-    }
-    const meta = lastLookupMeta;
-    const d = meta.data;
-    if(!d.canEdit){
-      toast('訂單已進入處理中，無法修改');
-      showLookupEditUi(d);
-      return;
-    }
-    const merchant = document.getElementById('editMerchant').value.trim();
-    const items = document.getElementById('editItems').value.trim();
-    const address = document.getElementById('editAddress').value.trim();
-    const note = document.getElementById('editNote').value.trim();
-    if(!address){ toast('請填寫送達地址'); return; }
-    if(!merchant && !items){ toast('請至少填寫商家或品項'); return; }
-
-    const btn = document.getElementById('lookupEditSaveBtn');
-    btn.disabled = true;
-    btn.textContent = '儲存中...';
-    try{
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          action: 'customerEditOrder',
-          phone: meta.digits,
-          contact: meta.contact,
-          sheetName: d.sheetName,
-          rowKey: d.rowKey,
-          queueNumber: d.queueNumber,
-          merchant: merchant,
-          items: items,
-          address: address,
-          note: note,
-          zone: d.zone,
-          fee: d.fee,
-          schedule: d.schedule || '',
-          extraServices: d.extraServices || '',
-          paymentMethod: d.paymentMethod || '現場付款'
-        })
-      });
-      const result = await res.json();
-      if(result && result.result === 'success'){
-        toast('✅ 訂單已更新');
-        document.getElementById('lookupEditForm').style.display = 'none';
-        performLookup(meta.digits, meta.contact, true);
-      } else {
-        toast((result && result.message) || '儲存失敗，請稍後再試');
-        if(result && result.code === 'not_editable'){
-          d.canEdit = false;
-          d.status = d.status || '處理中';
-          d.editHint = result.message;
-          showLookupEditUi(d);
-        }
-      }
-    }catch(err){
-      toast('儲存失敗，請檢查網路連線');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '💾 儲存修改';
-    }
   });
 
   function loadContent(){
@@ -4714,7 +4559,6 @@ ${stopsText}
       remitName: paymentMethod === '匯款' ? document.getElementById('cRemitName').value.trim() : '',
       remitLast5: paymentMethod === '匯款' ? document.getElementById('cRemitLast5').value.trim() : '',
       legalConfirm: document.getElementById('cLegalConfirm').checked,
-      privacyConfirm: document.getElementById('cPrivacyConfirm').checked,
       photoBase64,
       photoMime
     };
@@ -4948,9 +4792,6 @@ ${stopsText}
     if(isBot()) return; // 疑似機器人，靜默略過
     formatPhoneOnBlur(); // 確保送出前電話已經是排版好的格式
     const data = getFormData();
-    // 再讀一次勾選狀態，確保送出時一定帶上（避免快取／草稿還原造成 false）
-    data.legalConfirm = !!document.getElementById('cLegalConfirm').checked;
-    data.privacyConfirm = !!document.getElementById('cPrivacyConfirm').checked;
     if(!validateRequired(data)) return;
     const btn = e.currentTarget;
     lastOrderPhone = data.phone;
@@ -4981,7 +4822,7 @@ ${stopsText}
       if(result && result.queueNumber){
         showQueueBadge(result.queueNumber);
       } else {
-        document.getElementById('queueLabel').innerHTML = '訂單已記錄，請至「訂單查詢」查看狀態';
+        document.getElementById('queueLabel').innerHTML = '訂單已記錄，單號查詢逾時<br>請截圖此畫面作為下單憑證';
       }
     }
     resetForm();
