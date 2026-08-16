@@ -4714,6 +4714,7 @@ ${stopsText}
       remitName: paymentMethod === '匯款' ? document.getElementById('cRemitName').value.trim() : '',
       remitLast5: paymentMethod === '匯款' ? document.getElementById('cRemitLast5').value.trim() : '',
       legalConfirm: document.getElementById('cLegalConfirm').checked,
+      privacyConfirm: document.getElementById('cPrivacyConfirm').checked,
       photoBase64,
       photoMime
     };
@@ -4947,6 +4948,9 @@ ${stopsText}
     if(isBot()) return; // 疑似機器人，靜默略過
     formatPhoneOnBlur(); // 確保送出前電話已經是排版好的格式
     const data = getFormData();
+    // 再讀一次勾選狀態，確保送出時一定帶上（避免快取／草稿還原造成 false）
+    data.legalConfirm = !!document.getElementById('cLegalConfirm').checked;
+    data.privacyConfirm = !!document.getElementById('cPrivacyConfirm').checked;
     if(!validateRequired(data)) return;
     const btn = e.currentTarget;
     lastOrderPhone = data.phone;
