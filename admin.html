@@ -134,6 +134,11 @@
   .order-card{
     background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
     padding:16px; margin-bottom:14px;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    overflow:hidden;
   }
   .order-card.status-已送達{opacity:.6;}
   .order-card.merchant-order{border-left:6px solid var(--gold);}
@@ -155,12 +160,54 @@
   .status-badge.運送中{background:var(--ocean); color:var(--paper);}
   .status-badge.已送達{background:var(--seafoam); color:var(--ink);}
 
-  .order-info{font-size:13.5px; line-height:1.9;}
+  .order-info{
+    font-size:13.5px;
+    line-height:1.9;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
   .order-info b{font-weight:700;}
-  .order-info .row{display:flex; gap:6px;}
-  .order-info .label{flex-shrink:0; color:var(--ocean-dark); opacity:.75; width:60px;}
-  .order-info a{color:var(--ocean-dark); text-decoration:underline;}
-  .order-info .items-block{white-space:pre-wrap;}
+  .order-info .row{
+    display:flex;
+    gap:6px;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
+  .order-info .row > *:not(.label){
+    min-width:0;
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+  .order-info .label{
+    flex-shrink:0;
+    color:var(--ocean-dark);
+    opacity:.75;
+    width:60px;
+  }
+  .order-info a{
+    color:var(--ocean-dark);
+    text-decoration:underline;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+  .order-info .items-block{
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    min-width:0;
+    max-width:100%;
+  }
+  .order-top{
+    min-width:0;
+    max-width:100%;
+  }
+  .order-top > *{
+    min-width:0;
+    max-width:100%;
+  }
   .remit-check{
     background:var(--gold); border:2px solid var(--ink); border-radius:8px; padding:8px 10px;
     font-size:12.5px; font-weight:700; margin-top:8px; line-height:1.6;
