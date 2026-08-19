@@ -4786,30 +4786,78 @@ function renderSettings(settings){
     }
   });
 
+  // 首頁載入：本機快取先顯示 + 背景更新（第二次開站幾乎不用等）
+  const BOOTSTRAP_CACHE_KEY = 'mifeng_bootstrap_v2';
+  const BOOTSTRAP_CACHE_TTL_MS = 10 * 60 * 1000; // 10 分鐘內視為夠新
+
+  function applyBootstrapData_(data){
+    if(!data) return;
+    try{
+      if(data.rules) renderRules(data.rules);
+      if(data.settings) renderSettings(data.settings);
+      if(data.merchantAds) renderMerchantAds(data.merchantAds);
+      if(data.services) renderServices(data.services);
+      if(data.merchants) renderMerchants(data.merchants);
+      if(data.menus) renderMenus(data.menus);
+      if(data.addressZones) renderAddressZones(data.addressZones);
+      if(data.deliverableTownships) renderDeliverableTownships(data.deliverableTownships);
+      if(data.deliverableRoads) renderDeliverableRoads(data.deliverableRoads);
+      if(data.paymentAccounts) renderPaymentAccounts(data.paymentAccounts);
+    }catch(err){ console.warn('applyBootstrapData_', err); }
+  }
+
+  function readBootstrapCache_(){
+    try{
+      const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
+      if(!raw) return null;
+      const packed = JSON.parse(raw);
+      if(!packed || !packed.data || !packed.ts) return null;
+      return packed;
+    }catch(e){ return null; }
+  }
+
+  function writeBootstrapCache_(data){
+    try{
+      localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+    }catch(e){ /* quota 滿了就略過 */ }
+  }
+
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
-    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
+    const cached = readBootstrapCache_();
+    let paintedFromCache = false;
+
+    // 1) 有快取 → 立刻畫畫面，使用者不用乾等 Apps Script
+    if(cached && cached.data){
+      applyBootstrapData_(cached.data);
+      paintedFromCache = true;
+      if(Date.now() - cached.ts < BOOTSTRAP_CACHE_TTL_MS){
+        loadingEl.classList.add('hide');
+      } else {
+        loadingEl.textContent = '🔄 更新最新資料中…';
+      }
+    }
+
+    // 2) 背景拉最新；即使有快取也更新（營業狀態／商家名單）
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
     fetch(freshUrl, { cache: 'no-store' })
-      .then(r => r.json())
+      .then(r => {
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
       .then(data => {
-        renderRules(data.rules);
-        renderSettings(data.settings);
-        renderMerchantAds(data.merchantAds);
-        renderServices(data.services);
-        renderMerchants(data.merchants);
-        renderMenus(data.menus);
-        renderAddressZones(data.addressZones);
-        renderDeliverableTownships(data.deliverableTownships);
-        renderDeliverableRoads(data.deliverableRoads);
-        renderPaymentAccounts(data.paymentAccounts);
+        applyBootstrapData_(data);
+        writeBootstrapCache_(data);
         loadingEl.classList.add('hide');
       })
       .catch(()=>{
-        // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
-        loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
-        loadingEl.style.borderColor = 'var(--coral-dark)';
-        loadingEl.style.color = 'var(--coral-dark)';
+        if(paintedFromCache){
+          loadingEl.classList.add('hide');
+        } else {
+          loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
+          loadingEl.style.borderColor = 'var(--coral-dark)';
+          loadingEl.style.color = 'var(--coral-dark)';
+        }
       });
   }
   loadContent();
