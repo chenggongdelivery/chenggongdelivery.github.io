@@ -321,22 +321,13 @@
   .search-result-card .label{flex-shrink:0; color:var(--ocean-dark); opacity:.75; width:56px;}
 
 
-  .location-panel{
-    margin-top:12px; padding:12px; border:2px dashed var(--ocean); border-radius:10px;
-    background:rgba(30,91,103,.06);
+  .location-auto-hint{
+    margin-top:12px; padding:10px 12px; border:2px dashed var(--ocean); border-radius:10px;
+    background:rgba(30,91,103,.06); font-size:12px; font-weight:700; color:var(--ocean-dark); line-height:1.5;
   }
-  .location-panel.tracking{border-style:solid; border-color:#06C755; background:rgba(6,199,85,.08);}
-  .location-panel .lp-title{font-size:12px; font-weight:700; color:var(--ocean-dark); margin-bottom:8px;}
-  .location-panel .lp-coords{font-family:'JetBrains Mono',monospace; font-size:12px; margin-bottom:8px; line-height:1.5;}
-  .location-panel .lp-actions{display:flex; gap:8px;}
-  .location-panel .lp-actions button{
-    flex:1; padding:10px 8px; border:2px solid var(--ink); border-radius:10px;
-    font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;
+  .location-auto-hint.tracking{
+    border-style:solid; border-color:#06C755; background:rgba(6,199,85,.1); color:#0a6b3c;
   }
-  .location-panel .lp-start{background:#06C755; color:#fff;}
-  .location-panel .lp-stop{background:var(--coral); color:#fff;}
-  .location-panel .lp-start:disabled, .location-panel .lp-stop:disabled{opacity:.4; cursor:not-allowed;}
-  .location-panel .lp-hint{font-size:11px; color:var(--ocean-dark); opacity:.8; margin-top:8px; line-height:1.5;}
   .nav-actions{margin-top:12px;}
   .nav-btn{
     width:100%; padding:12px; border:2px solid var(--ink); border-radius:10px;
@@ -472,9 +463,10 @@
     }
     trackingRowKey = null;
     trackingLastSent = 0;
-    document.querySelectorAll('.location-panel.tracking').forEach(el => el.classList.remove('tracking'));
-    document.querySelectorAll('.lp-start').forEach(b => { b.disabled = false; b.textContent = '📍 開始回報位置'; });
-    document.querySelectorAll('.lp-stop').forEach(b => { b.disabled = true; });
+    document.querySelectorAll('.location-auto-hint.tracking').forEach(el => {
+      el.classList.remove('tracking');
+      el.textContent = '📍 點選「取餐中／運送中」會自動開始回報位置給客戶地圖';
+    });
     if(!silent) toast('已停止位置回報');
   }
 
@@ -496,13 +488,6 @@
         order.lat = lat;
         order.lng = lng;
         order.locationUpdatedAt = data.updatedAt || '';
-        document.querySelectorAll(`.location-panel`).forEach(panel => {
-          if(panel.dataset.rowkey !== order.rowKey) return;
-          const coordsEl = panel.querySelector('.lp-coords');
-          if(coordsEl){
-            coordsEl.textContent = `目前：${lat.toFixed(5)}, ${lng.toFixed(5)}` + (order.locationUpdatedAt ? `　更新 ${order.locationUpdatedAt}` : '');
-          }
-        });
       } else {
         toast(data.message || '位置更新失敗');
       }
@@ -516,13 +501,10 @@
     if(trackingRowKey && trackingRowKey !== order.rowKey) stopLocationTracking(true);
     trackingRowKey = order.rowKey;
     toast('開始回報位置（請允許定位權限）');
-    document.querySelectorAll('.location-panel').forEach(el => {
+    document.querySelectorAll('.location-auto-hint').forEach(el => {
       const on = el.dataset.rowkey === order.rowKey;
       el.classList.toggle('tracking', on);
-      const startBtn = el.querySelector('.lp-start');
-      const stopBtn = el.querySelector('.lp-stop');
-      if(startBtn){ startBtn.disabled = on; startBtn.textContent = on ? '📍 回報中…' : '📍 開始回報位置'; }
-      if(stopBtn){ stopBtn.disabled = !on; }
+      if(on) el.textContent = '📍 位置回報中（點「已送達」會自動停止）';
     });
     const onPos = (pos) => {
       if(trackingRowKey !== order.rowKey) return;
@@ -1204,16 +1186,10 @@
         <div class="nav-hint"></div>
       </div>
       ${(order.status === '取餐中' || order.status === '運送中') ? `
-      <div class="location-panel${trackingRowKey === order.rowKey ? ' tracking' : ''}" data-rowkey="${escapeHtml(order.rowKey)}">
-        <div class="lp-title">🛵 客戶地圖位置回報（取餐中／運送中）</div>
-        <div class="lp-coords">${order.lat != null && order.lng != null
-          ? `目前：${Number(order.lat).toFixed(5)}, ${Number(order.lng).toFixed(5)}${order.locationUpdatedAt ? '　更新 ' + escapeHtml(String(order.locationUpdatedAt)) : ''}`
-          : '尚未回報座標（按下方開始後，客戶查詢即可看到地圖）'}</div>
-        <div class="lp-actions">
-          <button type="button" class="lp-start" ${trackingRowKey === order.rowKey ? 'disabled' : ''}>${trackingRowKey === order.rowKey ? '📍 回報中…' : '📍 開始回報位置'}</button>
-          <button type="button" class="lp-stop" ${trackingRowKey === order.rowKey ? '' : 'disabled'}>停止回報</button>
-        </div>
-        <div class="lp-hint">點選上方「取餐中」或「運送中」會自動開始回報，不用手動按這裡；如果剛剛沒允許定位權限，可以再按一次「開始回報位置」重試。同時只能回報一張單。</div>
+      <div class="location-auto-hint${trackingRowKey === order.rowKey ? ' tracking' : ''}" data-rowkey="${escapeHtml(order.rowKey)}">
+        📍 ${trackingRowKey === order.rowKey
+          ? '位置回報中（點「已送達」會自動停止）'
+          : '點選「取餐中／運送中」會自動開始回報位置給客戶地圖'}
       </div>` : ''}
     `;
 
@@ -1329,11 +1305,6 @@
         if(navHint) navHint.textContent = '請確認訂單有商家或送達地址';
       }
     }
-
-    const lpStart = card.querySelector('.lp-start');
-    const lpStop = card.querySelector('.lp-stop');
-    if(lpStart) lpStart.addEventListener('click', ()=> startLocationTracking(order));
-    if(lpStop) lpStop.addEventListener('click', ()=> stopLocationTracking(false));
 
     return card;
   }
