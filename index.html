@@ -4695,14 +4695,22 @@ function renderSettings(settings){
         }
       } else {
         if(isFirst){
-          resultEl.textContent = '❌ 查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。';
+          const serverMsg = (data && data.message) ? String(data.message) : '';
+          if(data && data.error === 'too_many'){
+            resultEl.textContent = '❌ ' + (serverMsg || '查詢次數過於頻繁，請稍後再試');
+          } else if(data && data.error === 'lookup_error'){
+            resultEl.textContent = '❌ ' + (serverMsg || '查詢暫時失敗，請稍後再試');
+          } else {
+            resultEl.textContent = '❌ ' + (serverMsg || '查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。');
+          }
           resetLookupEditPanel();
         }
         stopLookupPolling();
       }
     }catch(err){
+      console.warn('performLookup error:', err);
       if(isFirst){
-        resultEl.textContent = '查詢失敗，請稍後再試一次。';
+        resultEl.textContent = '查詢失敗，請檢查網路連線後再試一次。';
         resetLookupEditPanel();
       }
     }
