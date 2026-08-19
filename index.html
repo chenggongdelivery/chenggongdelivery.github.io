@@ -2547,9 +2547,10 @@
           <input id="editNote" type="text" placeholder="選填">
         </div>
         <button type="button" class="copy-btn" id="lookupEditSaveBtn" style="width:100%; background:#06C755; display:block; margin-top:6px;">💾 儲存修改</button>
-        <button type="button" class="utility-btn" id="lookupEditCancelBtn" style="width:100%; margin-top:8px;">取消</button>
+        <button type="button" class="utility-btn" id="lookupEditCancelBtn" style="width:100%; margin-top:8px;">返回</button>
       </div>
       <button type="button" class="copy-btn" id="lookupEditOpenBtn" style="width:100%; background:var(--gold); color:var(--ink); display:none; margin-top:8px;">✏️ 修改此訂單</button>
+      <button type="button" class="copy-btn" id="lookupCancelOrderBtn" style="width:100%; background:var(--coral); color:#fff; display:none; margin-top:8px;">🗑️ 取消此訂單</button>
     </div>
     <div id="lookupMapBox" style="display:none;"></div>
   </div>
@@ -4060,10 +4061,12 @@ function renderSettings(settings){
     const panel = document.getElementById('lookupEditPanel');
     const form = document.getElementById('lookupEditForm');
     const openBtn = document.getElementById('lookupEditOpenBtn');
+    const cancelBtn = document.getElementById('lookupCancelOrderBtn');
     const statusMsg = document.getElementById('lookupEditStatusMsg');
     if(panel) panel.style.display = 'none';
     if(form) form.style.display = 'none';
     if(openBtn) openBtn.style.display = 'none';
+    if(cancelBtn) cancelBtn.style.display = 'none';
     if(statusMsg){ statusMsg.textContent = ''; statusMsg.style.display = 'none'; }
   }
 
@@ -4071,17 +4074,19 @@ function renderSettings(settings){
     const panel = document.getElementById('lookupEditPanel');
     const form = document.getElementById('lookupEditForm');
     const openBtn = document.getElementById('lookupEditOpenBtn');
+    const cancelBtn = document.getElementById('lookupCancelOrderBtn');
     const statusMsg = document.getElementById('lookupEditStatusMsg');
     if(!panel || !statusMsg) return;
     panel.style.display = 'block';
     form.style.display = 'none';
 
-    if(data.canEdit){
+    if(data.canEdit || data.canCancel){
       statusMsg.style.display = 'block';
       statusMsg.style.background = 'rgba(6,199,85,.12)';
       statusMsg.style.color = 'var(--ink)';
-      statusMsg.textContent = '✅ 訂單尚在「待處理」，您可以直接修改內容。';
-      openBtn.style.display = 'block';
+      statusMsg.textContent = '✅ 訂單尚在「待處理」，您可修改內容或取消訂單。';
+      openBtn.style.display = data.canEdit ? 'block' : 'none';
+      if(cancelBtn) cancelBtn.style.display = data.canCancel !== false && data.canEdit ? 'block' : 'none';
       document.getElementById('editMerchant').value = data.merchant || '';
       document.getElementById('editItems').value = data.items || '';
       document.getElementById('editAddress').value = data.addressFull || '';
@@ -4090,8 +4095,9 @@ function renderSettings(settings){
       statusMsg.style.display = 'block';
       statusMsg.style.background = 'rgba(226,83,47,.12)';
       statusMsg.style.color = 'var(--coral-dark)';
-      statusMsg.textContent = '🔒 ' + (data.editHint || ('訂單目前為「' + (data.status || '處理中') + '」，已進入處理流程，無法再自行修改。'));
+      statusMsg.textContent = '🔒 ' + (data.editHint || ('訂單目前為「' + (data.status || '處理中') + '」，已進入處理流程，無法再自行修改或取消。'));
       openBtn.style.display = 'none';
+      if(cancelBtn) cancelBtn.style.display = 'none';
     }
   }
 
@@ -4286,7 +4292,13 @@ function renderSettings(settings){
         }
       } else {
         if(isFirst){
-          resultEl.textContent = '❌ 查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。';
+          if(data && data.error === 'too_many'){
+            resultEl.textContent = '⏳ ' + (data.message || '查詢次數過於頻繁，請稍後再試');
+          } else if(data && data.message){
+            resultEl.textContent = '❌ ' + data.message;
+          } else {
+            resultEl.textContent = '❌ 查無資料，請確認電話與社群暱稱是否皆與下單時相同（須與下單當下完全一致），或稍後再試。';
+          }
           resetLookupEditPanel();
         }
         stopLookupPolling();
@@ -4328,11 +4340,69 @@ function renderSettings(settings){
     }
     document.getElementById('lookupEditForm').style.display = 'block';
     document.getElementById('lookupEditOpenBtn').style.display = 'none';
+    const cancelOrderBtn = document.getElementById('lookupCancelOrderBtn');
+    if(cancelOrderBtn) cancelOrderBtn.style.display = 'none';
   });
   document.getElementById('lookupEditCancelBtn').addEventListener('click', ()=>{
     document.getElementById('lookupEditForm').style.display = 'none';
     if(lastLookupMeta && lastLookupMeta.data && lastLookupMeta.data.canEdit){
       document.getElementById('lookupEditOpenBtn').style.display = 'block';
+      const cancelOrderBtn = document.getElementById('lookupCancelOrderBtn');
+      if(cancelOrderBtn) cancelOrderBtn.style.display = 'block';
+    }
+  });
+  document.getElementById('lookupCancelOrderBtn').addEventListener('click', async ()=>{
+    if(!lastLookupMeta || !lastLookupMeta.data){
+      toast('請先查詢訂單');
+      return;
+    }
+    const meta = lastLookupMeta;
+    const d = meta.data;
+    if(!d.canEdit && !d.canCancel){
+      toast('訂單已進入處理中，無法取消');
+      showLookupEditUi(d);
+      return;
+    }
+    if(!confirm('確定要取消此訂單嗎？取消後無法復原。')) return;
+
+    const btn = document.getElementById('lookupCancelOrderBtn');
+    btn.disabled = true;
+    btn.textContent = '取消中...';
+    try{
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: 'customerCancelOrder',
+          phone: meta.digits,
+          contact: meta.contact,
+          sheetName: d.sheetName,
+          rowKey: d.rowKey,
+          queueNumber: d.queueNumber
+        })
+      });
+      const result = await res.json();
+      if(result && result.result === 'success'){
+        toast('✅ 訂單已取消');
+        d.canEdit = false;
+        d.canCancel = false;
+        d.status = '已取消';
+        d.editHint = '此訂單已取消';
+        performLookup(meta.digits, meta.contact, true);
+      } else {
+        toast((result && result.message) || '取消失敗，請稍後再試');
+        if(result && result.code === 'not_cancellable'){
+          d.canEdit = false;
+          d.canCancel = false;
+          d.editHint = result.message;
+          showLookupEditUi(d);
+        }
+      }
+    }catch(err){
+      toast('取消失敗，請檢查網路連線');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🗑️ 取消此訂單';
     }
   });
   document.getElementById('lookupEditSaveBtn').addEventListener('click', async ()=>{
