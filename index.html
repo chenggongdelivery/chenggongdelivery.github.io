@@ -3931,6 +3931,9 @@ function renderSettings(settings){
   let lookupDriverMarker = null;
   let lookupDestMarker = null;
   let lookupRouteLine = null;
+  // 剛下單時已知的訂單內容快取，查詢視窗一開就能立刻顯示，不用等後台查詢回應
+  // （後台狀態仍會用即時查詢覆蓋更新，這裡只是先讓客戶不用空等）
+  let lastOrderSnapshot = null;
   // 多站路線：快取各站點座標、圖示與路線鍵（站點變更時重算）
   let lookupWaypointCoords = {}; // addr -> {lat,lng,precise}
   let lookupWaypointMarkers = [];
@@ -3999,10 +4002,30 @@ function renderSettings(settings){
     lookupOverlay.scrollTop = 0;
     // 一打開查詢就預載地圖庫，結果回來時可立刻顯示地圖
     ensureLeaflet_().catch(()=>{});
+    // 同時把後端叫醒（見函式註解），減少實際查詢時的等待
+    warmUpLookupBackend_();
+
     if(!prefillPhone){
       document.getElementById('lookupPhone').focus();
-    } else if(!prefillContact){
+      return;
+    }
+    if(!prefillContact){
       document.getElementById('lookupContact').focus();
+      return;
+    }
+
+    // 電話跟暱稱都已知（例如剛下單完點「查看進度」）：
+    // 如果剛好是剛送出的那筆訂單，先用手上已有的內容立刻顯示，不必空等後台，
+    // 然後在背景直接幫使用者打一次查詢，把「目前狀態」換成後台最新資料。
+    const digits = prefillPhone.replace(/\D/g, '');
+    const snapshot = lastOrderSnapshot;
+    const snapshotFresh = snapshot && snapshot.digits === digits && snapshot.contact === prefillContact
+      && (Date.now() - snapshot.ts) < 15 * 60 * 1000; // 15 分鐘內視為「剛剛那筆」
+    if(snapshotFresh){
+      renderOptimisticSnapshot_(snapshot);
+      performLookup(digits, prefillContact, true, /* quiet */ true);
+    } else if(digits.length >= 8){
+      performLookup(digits, prefillContact, true);
     }
   }
   function closeLookup(){
@@ -4341,11 +4364,46 @@ function renderSettings(settings){
     }
   }
 
-  async function performLookup(digits, contact, isFirst){
+  // 用剛下單時已經知道的內容，先組一則「暫時結果」立刻顯示，
+  // 不用等後台（Google Apps Script）回應——後台回來後 performLookup 會直接覆蓋掉這段文字。
+  function renderOptimisticSnapshot_(snapshot){
+    const resultEl = document.getElementById('lookupResult');
+    const numLabel = String(snapshot.queueNumber || '').startsWith('R') ? snapshot.queueNumber : `#${snapshot.queueNumber}`;
+    let msg =
+`🕐 訂單剛送出，正在同步後台最新狀態...（畫面稍後會自動更新）
+
+單號：${numLabel}
+商家：${snapshot.merchant || '—'}
+品項：${snapshot.items || '—'}
+範圍：${snapshot.zone || '—'}`;
+    if(snapshot.schedule) msg += `\n預約時間：${formatSchedule(snapshot.schedule)}`;
+    if(snapshot.extraServices) msg += `\n加購服務：${snapshot.extraServices}`;
+    msg += `
+外送費：$${snapshot.fee || '—'}
+備註：${snapshot.note || '—'}
+下單時間：剛剛`;
+    if(snapshot.paymentMethod === '匯款'){
+      msg += `\n付款方式：💳 匯款轉帳（⏳ 款項確認中）`;
+    }
+    msg += `
+
+目前狀態：待處理（同步中...）`;
+    resultEl.style.display = 'block';
+    resultEl.textContent = msg;
+  }
+
+  // 查詢視窗一開就先送一個很輕量的請求把 Apps Script 後端「叫醒」，
+  // 搶在使用者輸入完電話號碼、按下查詢之前先暖機，實際查詢時能回得快一點。
+  // Google Apps Script 冷啟動（許久沒人呼叫）常常是查詢感覺很慢的主因之一。
+  function warmUpLookupBackend_(){
+    fetch(`${SCRIPT_URL}?action=lookup&phone=&contact=&t=${Date.now()}`, { cache: 'no-store' }).catch(()=>{});
+  }
+
+  async function performLookup(digits, contact, isFirst, quiet){
     const resultEl = document.getElementById('lookupResult');
     const mapBox = document.getElementById('lookupMapBox');
 
-    if(isFirst){
+    if(isFirst && !quiet){
       resultEl.style.display = 'block';
       resultEl.textContent = '查詢中...';
       if(mapBox){ mapBox.style.display = 'none'; mapBox.innerHTML = ''; }
@@ -5276,6 +5334,25 @@ ${stopsText}
     }
 
     flashSuccess(btn, '✓ 已送出');
+
+    // 送出成功就先把這筆訂單的內容存起來，之後打開「訂單查詢」若剛好查這筆，
+    // 可以立刻顯示，不用等後台（Google Apps Script）查詢回應
+    if(result && result.queueNumber){
+      lastOrderSnapshot = {
+        digits: (data.phone || '').replace(/\D/g, ''),
+        contact: data.contact || '',
+        queueNumber: result.queueNumber,
+        merchant: data.merchant,
+        items: data.items,
+        zone: data.zone,
+        fee: data.fee,
+        note: data.note,
+        schedule: data.schedule,
+        extraServices: data.extraServices,
+        paymentMethod: data.paymentMethod,
+        ts: Date.now()
+      };
+    }
 
     if(data.schedule){
       toast('預約已送出，感謝您的委託');
