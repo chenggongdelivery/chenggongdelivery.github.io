@@ -4032,6 +4032,7 @@ function renderSettings(settings){
   function ensureLeaflet_(){
     if(window.L) return Promise.resolve();
     if(_leafletLoading) return _leafletLoading;
+
     _leafletLoading = new Promise((resolve, reject) => {
       const css = document.createElement('link');
       css.rel = 'stylesheet';
@@ -4039,14 +4040,20 @@ function renderSettings(settings){
       css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
       css.crossOrigin = '';
       document.head.appendChild(css);
+
       const s = document.createElement('script');
       s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       s.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
       s.crossOrigin = '';
       s.onload = () => resolve();
-      s.onerror = () => reject(new Error('Leaflet load failed'));
+      s.onerror = () => {
+        _leafletLoading = null;
+        try{ s.remove(); }catch(e){}
+        reject(new Error('Leaflet load failed'));
+      };
       document.head.appendChild(s);
     });
+
     return _leafletLoading;
   }
 
@@ -4088,7 +4095,9 @@ function renderSettings(settings){
     lookupOverlay.style.display = 'block';
     document.body.style.overflow = 'hidden';
     lookupOverlay.scrollTop = 0;
-    // 不在開啟查詢時載入 Leaflet；只有真的進入「取餐中／運送中」且需要地圖時才載入。
+    // 查詢視窗一開就預先載入 Leaflet，避免查詢結果出來後才開始下載地圖套件，
+    // 造成第一次看到「地圖載入失敗／等很久」，第二次重新整理才正常。
+    ensureLeaflet_().catch(()=>{});
     // 同時暖機 Apps Script 後端，不阻塞查詢視窗。
     warmUpLookupBackend_();
 
@@ -4646,12 +4655,19 @@ function renderSettings(settings){
               window._driverMap = map;
               setTimeout(()=> map.invalidateSize(), 100);
 
-              await drawDriverRoute(lat, lng, routeWaypoints, mapBox);
+              // 地圖本體先顯示，不要等待 Nominatim / OSRM 路線服務。
+              // 路線慢或暫時失敗時，不能把整張地圖誤判成「載入失敗」。
               mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
+              drawDriverRoute(lat, lng, routeWaypoints, mapBox).catch(err=>{
+                console.warn('route draw failed:', err);
+                const hint = document.getElementById('routeHint');
+                if(hint) hint.textContent = '已顯示地圖，路線規劃服務暫時較慢，稍後會再更新。';
+              });
             }catch(err){
               console.warn(err);
               const hint = document.getElementById('routeHint');
               if(hint) hint.textContent = '地圖載入失敗，請稍後再試';
+              if(!window.L) _leafletLoading = null;
             }
           } else {
             // 之後每次輪詢：更新文字／外送員圖示／路線
