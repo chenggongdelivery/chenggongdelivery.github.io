@@ -149,7 +149,7 @@
   }
   .header-lookup-btn:active{transform:translateY(2px); box-shadow:none;}
   .header-edit-btn{
-    border:2px solid var(--ink); background:var(--card); color:var(--ocean-dark);
+    border:2px solid var(--ink); background:var(--gold); color:var(--ink);
     padding:8px 11px; border-radius:999px; font-weight:700; font-size:12px;
     box-shadow:0 2px 0 var(--ink); white-space:nowrap; cursor:pointer; font-family:inherit;
     line-height:1.2; min-height:36px;
@@ -284,6 +284,55 @@
     color:var(--coral-dark); font-size:16px; cursor:pointer; font-family:inherit;
   }
   .pinned-addr-empty{font-size:11.5px; color:var(--ocean-dark); opacity:.75; line-height:1.5;}
+
+  /* ---- 訂單查詢／修改／取消：統一 UI ---- */
+  .lookup-actions{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;
+  }
+  .lookup-action-btn{
+    width:100%; min-height:42px; padding:10px 12px; border:2px solid var(--ink);
+    border-radius:10px; box-shadow:0 2px 0 var(--ink); font-family:inherit;
+    font-size:13px; font-weight:800; cursor:pointer; transition:transform .12s, filter .12s, opacity .12s;
+  }
+  .lookup-action-btn:active{transform:translateY(2px); box-shadow:none;}
+  .lookup-action-btn:disabled{opacity:.5; cursor:not-allowed; transform:none; box-shadow:0 2px 0 var(--ink);}
+  .lookup-action-edit{background:var(--gold); color:var(--ink);}
+  .lookup-action-cancel{background:var(--coral); color:#fff;}
+  .lookup-action-back{background:var(--paper); color:var(--ink);}
+  .lookup-edit-card{
+    margin-top:12px; padding:14px; background:var(--paper);
+    border:2px solid var(--ink); border-radius:12px;
+  }
+  .lookup-edit-head{
+    display:flex; align-items:center; gap:8px; margin-bottom:12px;
+    font-size:14px; font-weight:900; color:var(--ocean-dark);
+  }
+  .lookup-edit-head .tag{
+    margin-left:auto; font-size:10.5px; padding:3px 8px; border:1.5px solid var(--ink);
+    border-radius:999px; background:rgba(127,173,169,.25); color:var(--ocean-dark);
+  }
+  .lookup-edit-card .field{margin-bottom:10px;}
+  .lookup-edit-card .field label{font-size:12px; font-weight:800; color:var(--ocean-dark); display:block; margin-bottom:5px;}
+  .lookup-edit-card input,.lookup-edit-card textarea{
+    width:100%; padding:10px 11px; border:2px solid var(--ink); border-radius:9px;
+    background:#fff; color:var(--ink); font-family:inherit; font-size:14px; outline:none;
+  }
+  .lookup-edit-card input:focus,.lookup-edit-card textarea:focus{
+    border-color:var(--ocean); box-shadow:0 0 0 3px rgba(30,91,103,.12);
+  }
+  .lookup-edit-footer{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px;}
+  .lookup-status-note{
+    font-size:12px; line-height:1.6; padding:10px 12px; border-radius:10px;
+    border:2px solid var(--ink); margin-bottom:10px; font-weight:700;
+  }
+  .lookup-result{
+    margin-top:14px; padding:14px 16px; background:var(--ink); color:var(--paper); border-radius:10px;
+    font-size:13px; line-height:1.85; white-space:pre-wrap; display:none;
+    font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace;
+  }
+  @media (max-width:430px){
+    .lookup-actions,.lookup-edit-footer{grid-template-columns:1fr;}
+  }
   .lookup-box h3{margin:0 0 6px; font-size:17px;}
   .lookup-box .hint{font-size:12px; color:var(--ocean-dark); opacity:.8; margin-bottom:16px; line-height:1.6;}
   .lookup-box .field{margin-bottom:12px;}
@@ -2583,15 +2632,23 @@
     <button class="copy-btn" id="lookupSubmit" style="width:100%; background:var(--ocean); display:block;">查詢</button>
     <div class="lookup-result" id="lookupResult"></div>
     <div id="lookupEditPanel" style="display:none; margin-top:14px; text-align:left;">
-      <div id="lookupEditStatusMsg" style="font-size:12.5px; font-weight:700; line-height:1.6; margin-bottom:10px; padding:10px 12px; border-radius:10px; border:2px solid var(--ink);"></div>
-      <div id="lookupEditForm" style="display:none;">
+      <div id="lookupEditStatusMsg" class="lookup-status-note" style="display:none;"></div>
+      <div id="lookupActionButtons" class="lookup-actions" style="display:none;">
+        <button type="button" class="lookup-action-btn lookup-action-edit" id="lookupEditOpenBtn">✏️ 修改訂單</button>
+        <button type="button" class="lookup-action-btn lookup-action-cancel" id="lookupCancelOrderBtn">🗑️ 取消訂單</button>
+      </div>
+      <div id="lookupEditForm" class="lookup-edit-card" style="display:none;">
+        <div class="lookup-edit-head">
+          <span>✏️ 修改訂單內容</span>
+          <span class="tag">僅限待處理</span>
+        </div>
         <div class="field">
           <label>商家</label>
           <input id="editMerchant" type="text" placeholder="商家名稱">
         </div>
         <div class="field">
           <label>品項</label>
-          <textarea id="editItems" rows="3" placeholder="品項內容" style="width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:8px; background:var(--paper); font-family:inherit; font-size:14px;"></textarea>
+          <textarea id="editItems" rows="3" placeholder="品項內容"></textarea>
         </div>
         <div class="field">
           <label>送達地址</label>
@@ -2601,11 +2658,11 @@
           <label>備註</label>
           <input id="editNote" type="text" placeholder="選填">
         </div>
-        <button type="button" class="copy-btn" id="lookupEditSaveBtn" style="width:100%; background:#06C755; display:block; margin-top:6px;">💾 儲存修改</button>
-        <button type="button" class="utility-btn" id="lookupEditCancelBtn" style="width:100%; margin-top:8px;">返回</button>
+        <div class="lookup-edit-footer">
+          <button type="button" class="lookup-action-btn lookup-action-edit" id="lookupEditSaveBtn">💾 儲存修改</button>
+          <button type="button" class="lookup-action-btn lookup-action-back" id="lookupEditCancelBtn">返回訂單</button>
+        </div>
       </div>
-      <button type="button" class="copy-btn" id="lookupEditOpenBtn" style="width:100%; background:var(--gold); color:var(--ink); display:none; margin-top:8px;">✏️ 修改此訂單</button>
-      <button type="button" class="copy-btn" id="lookupCancelOrderBtn" style="width:100%; background:var(--coral); color:#fff; display:none; margin-top:8px;">🗑️ 取消此訂單</button>
     </div>
     <div id="lookupMapBox" style="display:none;"></div>
   </div>
@@ -4031,9 +4088,8 @@ function renderSettings(settings){
     lookupOverlay.style.display = 'block';
     document.body.style.overflow = 'hidden';
     lookupOverlay.scrollTop = 0;
-    // 一打開查詢就預載地圖庫，結果回來時可立刻顯示地圖
-    ensureLeaflet_().catch(()=>{});
-    // 同時把後端叫醒（見函式註解），減少實際查詢時的等待
+    // 不在開啟查詢時載入 Leaflet；只有真的進入「取餐中／運送中」且需要地圖時才載入。
+    // 同時暖機 Apps Script 後端，不阻塞查詢視窗。
     warmUpLookupBackend_();
 
     if(!prefillPhone){
@@ -4356,33 +4412,40 @@ function renderSettings(settings){
   function resetLookupEditPanel(){
     const panel = document.getElementById('lookupEditPanel');
     const form = document.getElementById('lookupEditForm');
+    const actions = document.getElementById('lookupActionButtons');
     const openBtn = document.getElementById('lookupEditOpenBtn');
     const cancelBtn = document.getElementById('lookupCancelOrderBtn');
     const statusMsg = document.getElementById('lookupEditStatusMsg');
     if(panel) panel.style.display = 'none';
     if(form) form.style.display = 'none';
-    if(openBtn) openBtn.style.display = 'none';
-    if(cancelBtn) cancelBtn.style.display = 'none';
+    if(actions) actions.style.display = 'none';
+    if(openBtn) openBtn.style.display = 'block';
+    if(cancelBtn) cancelBtn.style.display = 'block';
     if(statusMsg){ statusMsg.textContent = ''; statusMsg.style.display = 'none'; }
   }
 
   function showLookupEditUi(data){
     const panel = document.getElementById('lookupEditPanel');
     const form = document.getElementById('lookupEditForm');
+    const actions = document.getElementById('lookupActionButtons');
     const openBtn = document.getElementById('lookupEditOpenBtn');
     const cancelBtn = document.getElementById('lookupCancelOrderBtn');
     const statusMsg = document.getElementById('lookupEditStatusMsg');
     if(!panel || !statusMsg) return;
+
     panel.style.display = 'block';
-    form.style.display = 'none';
+    if(form) form.style.display = 'none';
+    if(actions) actions.style.display = 'none';
 
     if(data.canEdit || data.canCancel){
       statusMsg.style.display = 'block';
       statusMsg.style.background = 'rgba(6,199,85,.12)';
       statusMsg.style.color = 'var(--ink)';
       statusMsg.textContent = '✅ 訂單尚在「待處理」，您可修改內容或取消訂單。';
-      openBtn.style.display = data.canEdit ? 'block' : 'none';
-      if(cancelBtn) cancelBtn.style.display = data.canCancel !== false && data.canEdit ? 'block' : 'none';
+      if(actions) actions.style.display = 'grid';
+      if(openBtn) openBtn.style.display = data.canEdit ? 'block' : 'none';
+      if(cancelBtn) cancelBtn.style.display = data.canCancel !== false ? 'block' : 'none';
+
       document.getElementById('editMerchant').value = data.merchant || '';
       document.getElementById('editItems').value = data.items || '';
       document.getElementById('editAddress').value = data.addressFull || '';
@@ -4392,10 +4455,11 @@ function renderSettings(settings){
       statusMsg.style.background = 'rgba(226,83,47,.12)';
       statusMsg.style.color = 'var(--coral-dark)';
       statusMsg.textContent = '🔒 ' + (data.editHint || ('訂單目前為「' + (data.status || '處理中') + '」，已進入處理流程，無法再自行修改或取消。'));
-      openBtn.style.display = 'none';
+      if(openBtn) openBtn.style.display = 'none';
       if(cancelBtn) cancelBtn.style.display = 'none';
     }
   }
+
 
   // 用剛下單時已經知道的內容，先組一則「暫時結果」立刻顯示，
   // 不用等後台（Google Apps Script）回應——後台回來後 performLookup 會直接覆蓋掉這段文字。
@@ -4429,7 +4493,7 @@ function renderSettings(settings){
   // 搶在使用者輸入完電話號碼、按下查詢之前先暖機，實際查詢時能回得快一點。
   // Google Apps Script 冷啟動（許久沒人呼叫）常常是查詢感覺很慢的主因之一。
   function warmUpLookupBackend_(){
-    fetch(`${SCRIPT_URL}?action=lookup&phone=&contact=&t=${Date.now()}`, { cache: 'no-store' }).catch(()=>{});
+    forceFreshOrderLookup(`${SCRIPT_URL}?action=lookup&phone=&contact=&t=${Date.now()}`, { cache: 'no-store' .catch(()=>{});
   }
 
   async function performLookup(digits, contact, isFirst, quiet){
@@ -4445,7 +4509,7 @@ function renderSettings(settings){
 
     try{
       const url = `${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(digits)}&contact=${encodeURIComponent(contact)}&t=${Date.now()}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch(url, { cache: 'no-store' ;
       const data = await res.json();
 
       if(data.found){
@@ -4654,7 +4718,6 @@ function renderSettings(settings){
       return;
     }
     resetLookupMapState();
-    ensureLeaflet_().catch(()=>{});
     performLookup(digits, contact, true);
   });
 
@@ -4664,16 +4727,12 @@ function renderSettings(settings){
       return;
     }
     document.getElementById('lookupEditForm').style.display = 'block';
-    document.getElementById('lookupEditOpenBtn').style.display = 'none';
-    const cancelOrderBtn = document.getElementById('lookupCancelOrderBtn');
-    if(cancelOrderBtn) cancelOrderBtn.style.display = 'none';
+    document.getElementById('lookupActionButtons').style.display = 'none';
   });
   document.getElementById('lookupEditCancelBtn').addEventListener('click', ()=>{
     document.getElementById('lookupEditForm').style.display = 'none';
-    if(lastLookupMeta && lastLookupMeta.data && lastLookupMeta.data.canEdit){
-      document.getElementById('lookupEditOpenBtn').style.display = 'block';
-      const cancelOrderBtn = document.getElementById('lookupCancelOrderBtn');
-      if(cancelOrderBtn) cancelOrderBtn.style.display = 'block';
+    if(lastLookupMeta && lastLookupMeta.data && (lastLookupMeta.data.canEdit || lastLookupMeta.data.canCancel)){
+      document.getElementById('lookupActionButtons').style.display = 'grid';
     }
   });
   document.getElementById('lookupCancelOrderBtn').addEventListener('click', async ()=>{
@@ -4796,30 +4855,64 @@ function renderSettings(settings){
     }
   });
 
+  const BOOTSTRAP_CACHE_KEY = 'chenggong_public_bootstrap_v2';
+  const BOOTSTRAP_CACHE_TTL = 10 * 60 * 1000;
+
+  function applyBootstrapData_(data){
+    if(!data) return;
+    renderRules(data.rules);
+    renderSettings(data.settings);
+    renderMerchantAds(data.merchantAds);
+    renderServices(data.services);
+    renderMerchants(data.merchants);
+    renderMenus(data.menus);
+    renderAddressZones(data.addressZones);
+    renderDeliverableTownships(data.deliverableTownships);
+    renderDeliverableRoads(data.deliverableRoads);
+    renderPaymentAccounts(data.paymentAccounts);
+  }
+
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
-    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
+    let cached = null;
+    let cacheAge = Infinity;
+    try{
+      const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
+      if(raw){
+        const obj = JSON.parse(raw);
+        if(obj && obj.data){
+          cached = obj.data;
+          cacheAge = Date.now() - Number(obj.ts || 0);
+        }
+      }
+    }catch(e){}
+
+    // 先使用最近一次成功載入的資料，讓首頁不用每次等待 Apps Script 冷啟動。
+    if(cached){
+      applyBootstrapData_(cached);
+      loadingEl.classList.add('hide');
+    }
+
+    // 背景更新；不阻塞首頁首屏。即使網路失敗，仍保留快取／頁面預設資料。
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
-    fetch(freshUrl, { cache: 'no-store' })
-      .then(r => r.json())
+    fetch(freshUrl, { cache: 'no-store' 
+      .then(r => {
+        if(!r.ok) throw new Error('bootstrap http ' + r.status);
+        return r.json();
+      })
       .then(data => {
-        renderRules(data.rules);
-        renderSettings(data.settings);
-        renderMerchantAds(data.merchantAds);
-        renderServices(data.services);
-        renderMerchants(data.merchants);
-        renderMenus(data.menus);
-        renderAddressZones(data.addressZones);
-        renderDeliverableTownships(data.deliverableTownships);
-        renderDeliverableRoads(data.deliverableRoads);
-        renderPaymentAccounts(data.paymentAccounts);
+        applyBootstrapData_(data);
+        try{
+          localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+        }catch(e){}
         loadingEl.classList.add('hide');
       })
       .catch(()=>{
-        // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
-        loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
-        loadingEl.style.borderColor = 'var(--coral-dark)';
-        loadingEl.style.color = 'var(--coral-dark)';
+        if(!cached){
+          loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
+          loadingEl.style.borderColor = 'var(--coral-dark)';
+          loadingEl.style.color = 'var(--coral-dark)';
+        }
       });
   }
   loadContent();
@@ -5408,5 +5501,23 @@ ${stopsText}
 
 
 <div class="toast" id="toast"></div>
+
+<script>
+/* 修改／取消成功後，強制重新查詢一次，確保畫面狀態與後台一致 */
+async function refreshOrderAfterMutation() {
+  try {
+    if (typeof currentOrder !== 'undefined' && currentOrder) {
+      if (typeof lookupOrder === 'function') {
+        await lookupOrder(true);
+      } else if (typeof queryOrder === 'function') {
+        await queryOrder(true);
+      }
+    }
+  } catch (e) {
+    console.warn('訂單更新後重新同步失敗', e);
+  }
+}
+</script>
+
 </body>
 </html>
