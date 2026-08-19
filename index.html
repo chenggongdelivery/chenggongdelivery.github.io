@@ -626,8 +626,10 @@
     font-family:inherit; font-size:13.5px;
   }
   .stop-hours-hint{font-size:11.5px; color:var(--ocean-dark); font-weight:600;}
+  /* 避免下拉面板被父層裁切 */
+  .stop-row, #stopsContainer, .composer, .composer .field{ overflow:visible; }
 
-  /* 商家下拉：自訂面板，「其他」置頂、分類預設收合 */
+  /* 商家下拉：其他置頂、分類預設收合；面板用 fixed 避免被遮住 */
   .merchant-picker{ position:relative; width:100%; }
   .merchant-picker-trigger{
     width:100%; padding:9px 11px; border:2px solid var(--ink); border-radius:8px; background:var(--card);
@@ -638,12 +640,12 @@
   .merchant-picker-trigger .mp-arrow{ flex-shrink:0; opacity:.65; font-size:12px; }
   .merchant-picker.open .merchant-picker-trigger{ border-color:var(--ocean); box-shadow:0 0 0 2px rgba(30,91,103,.15); }
   .merchant-picker-panel{
-    display:none; position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:40;
+    display:none; position:fixed; z-index:5000;
     max-height:min(52vh, 340px); overflow:auto; -webkit-overflow-scrolling:touch;
     background:var(--card); border:2px solid var(--ink); border-radius:10px;
-    box-shadow:0 10px 28px rgba(34,48,46,.22);
+    box-shadow:0 12px 32px rgba(34,48,46,.28);
   }
-  .merchant-picker.open .merchant-picker-panel{ display:block; }
+  .merchant-picker-panel.open{ display:block; }
   .merchant-picker-panel .mp-item{
     display:block; width:100%; border:none; background:transparent; text-align:left;
     padding:10px 12px; font-family:inherit; font-size:13.5px; color:var(--ink); cursor:pointer;
@@ -653,6 +655,7 @@
   .merchant-picker-panel .mp-item.selected{ background:var(--ocean); color:#fff; font-weight:700; }
   .merchant-picker-panel .mp-other{
     font-weight:800; border-bottom:2px solid var(--ink); color:var(--coral-dark);
+    position:sticky; top:0; background:var(--card); z-index:1;
   }
   .merchant-picker-panel .mp-cat{ border-bottom:1px solid rgba(34,48,46,.12); }
   .merchant-picker-panel .mp-cat > summary{
@@ -2698,19 +2701,66 @@
     trigger.style.opacity = v ? '1' : '.72';
   }
 
-  function closeAllMerchantPickers_(exceptRow){
-    document.querySelectorAll('.merchant-picker.open').forEach(p => {
-      if(exceptRow && p.closest('.stop-row') === exceptRow) return;
+  function closeAllMerchantPickers_(){
+    document.querySelectorAll('.merchant-picker.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.merchant-picker-panel.open').forEach(p => {
       p.classList.remove('open');
+      p.style.display = 'none';
+      if(p._pickerHome && p.parentElement === document.body){
+        p._pickerHome.appendChild(p);
+      }
     });
   }
 
+  /** 用 fixed 定位面板，避免被 composer / stop-row 等父層 overflow 裁切 */
+  function positionMerchantPanel_(picker){
+    const trigger = picker.querySelector('.merchant-picker-trigger');
+    const panel = picker.querySelector('.merchant-picker-panel');
+    if(!trigger || !panel) return;
+    const r = trigger.getBoundingClientRect();
+    const maxH = Math.min(window.innerHeight * 0.52, 340);
+    const gap = 4;
+    const spaceBelow = window.innerHeight - r.bottom - gap - 8;
+    const spaceAbove = r.top - gap - 8;
+    panel.style.left = Math.max(8, r.left) + 'px';
+    panel.style.width = Math.min(r.width, window.innerWidth - 16) + 'px';
+    panel.style.right = 'auto';
+    if(spaceBelow < 160 && spaceAbove > spaceBelow){
+      // 下方空間不足 → 往上展開
+      const h = Math.min(maxH, Math.max(120, spaceAbove));
+      panel.style.top = 'auto';
+      panel.style.bottom = (window.innerHeight - r.top + gap) + 'px';
+      panel.style.maxHeight = h + 'px';
+    } else {
+      const h = Math.min(maxH, Math.max(120, spaceBelow));
+      panel.style.bottom = 'auto';
+      panel.style.top = (r.bottom + gap) + 'px';
+      panel.style.maxHeight = h + 'px';
+    }
+  }
+
+  function openMerchantPicker_(row){
+    closeAllMerchantPickers_();
+    const picker = row.querySelector('.merchant-picker');
+    const panel = row.querySelector('.merchant-picker-panel');
+    if(!picker || !panel) return;
+    populateMerchantSelect(row.querySelector('.stop-merchant'), row.querySelector('.stop-merchant-search').value);
+    picker.classList.add('open');
+    panel.classList.add('open');
+    panel.style.display = 'block';
+    // 掛到 body，徹底避開父層裁切
+    if(panel.parentElement !== document.body){
+      panel._pickerHome = picker;
+      document.body.appendChild(panel);
+    }
+    positionMerchantPanel_(picker);
+  }
+
   function populateMerchantSelect(selectEl, query){
-    const row = selectEl.closest('.stop-row');
+    const row = selectEl.closest('.stop-row') || (selectEl._stopRow || null);
     const currentValue = selectEl.value;
     const q = (query || '').trim().toLowerCase();
     selectEl.innerHTML = '<option value="">請選擇商家</option>';
-    // 「其他」固定最上方
     const otherOpt = document.createElement('option');
     otherOpt.value = '其他';
     otherOpt.textContent = '其他(手動輸入店家)';
@@ -2737,8 +2787,10 @@
       selectEl.value = '其他';
     }
 
-    // 自訂面板：分類預設收合；有搜尋時展開有結果的分類
-    const panel = row && row.querySelector('.merchant-picker-panel');
+    const panel = row && (
+      row.querySelector('.merchant-picker-panel') ||
+      document.querySelector(`.merchant-picker-panel[data-stop-id="${row.dataset.stopId}"]`)
+    );
     if(panel){
       panel.innerHTML = '';
       const otherBtn = document.createElement('button');
@@ -2758,7 +2810,8 @@
       groups.forEach(({ cat, matched }) => {
         const details = document.createElement('details');
         details.className = 'mp-cat';
-        if(q) details.open = true; // 有搜尋才展開；否則預設收合
+        // 預設收合；有搜尋字才展開
+        if(q) details.open = true;
         const summary = document.createElement('summary');
         summary.textContent = `${cat}（${matched.length}）`;
         details.appendChild(summary);
@@ -2844,7 +2897,7 @@
           <span class="mp-label">請選擇商家</span>
           <span class="mp-arrow">▾</span>
         </button>
-        <div class="merchant-picker-panel" role="listbox"></div>
+        <div class="merchant-picker-panel" data-stop-id="${id}" role="listbox"></div>
         <select class="stop-merchant stop-merchant-hidden" tabindex="-1" aria-hidden="true">
           <option value="">請選擇商家</option>
           <option value="其他">其他(手動輸入店家)</option>
@@ -2859,7 +2912,9 @@
       </label>
     `;
     document.getElementById('stopsContainer').appendChild(row);
-    populateMerchantSelect(row.querySelector('.stop-merchant'));
+    const sel = row.querySelector('.stop-merchant');
+    sel._stopRow = row;
+    populateMerchantSelect(sel);
 
     const picker = row.querySelector('.merchant-picker');
     const trigger = row.querySelector('.merchant-picker-trigger');
@@ -2867,20 +2922,26 @@
 
     trigger.addEventListener('click', (e)=>{
       e.preventDefault();
-      const willOpen = !picker.classList.contains('open');
-      closeAllMerchantPickers_();
-      if(willOpen){
-        picker.classList.add('open');
-        populateMerchantSelect(row.querySelector('.stop-merchant'), row.querySelector('.stop-merchant-search').value);
+      e.stopPropagation();
+      if(picker.classList.contains('open')){
+        closeAllMerchantPickers_();
+      } else {
+        openMerchantPicker_(row);
       }
     });
 
     panel.addEventListener('click', (e)=>{
+      // 點 summary 展開分類時不要關閉
+      if(e.target.closest('summary')) return;
       const btn = e.target.closest('.mp-item');
       if(!btn) return;
       e.preventDefault();
       setMerchantValue_(row, btn.dataset.value || '');
-      picker.classList.remove('open');
+      closeAllMerchantPickers_();
+      // 把 panel 放回 picker，方便下次開啟
+      if(panel._pickerHome && panel.parentElement === document.body){
+        panel._pickerHome.appendChild(panel);
+      }
       if(btn.dataset.value === '其他'){
         const otherInput = row.querySelector('.stop-merchant-other');
         if(otherInput) otherInput.focus();
@@ -2888,11 +2949,9 @@
     });
 
     row.querySelector('.stop-merchant-search').addEventListener('input', (e)=>{
-      const sel = row.querySelector('.stop-merchant');
       const matchCount = populateMerchantSelect(sel, e.target.value);
       if(e.target.value.trim()){
-        closeAllMerchantPickers_(row);
-        picker.classList.add('open');
+        openMerchantPicker_(row);
       }
       if(matchCount === 1 && e.target.value.trim()){
         const onlyOption = Array.from(sel.options).find(o => o.value && o.value !== '其他');
@@ -3363,10 +3422,18 @@
     return targetRow;
   }
 
-  // 點選單外關閉商家下拉
+  // 點選單外／捲動／縮放：關閉或重定位，避免被遮住或錯位
   document.addEventListener('click', (e)=>{
-    if(e.target.closest('.merchant-picker')) return;
+    if(e.target.closest('.merchant-picker') || e.target.closest('.merchant-picker-panel')) return;
     closeAllMerchantPickers_();
+  });
+  window.addEventListener('scroll', ()=>{
+    const openPicker = document.querySelector('.merchant-picker.open');
+    if(openPicker) positionMerchantPanel_(openPicker);
+  }, { passive:true });
+  window.addEventListener('resize', ()=>{
+    const openPicker = document.querySelector('.merchant-picker.open');
+    if(openPicker) positionMerchantPanel_(openPicker);
   });
 
   document.getElementById('menuLightboxAddBtn').addEventListener('click', ()=>{
@@ -4631,72 +4698,30 @@ function renderSettings(settings){
     }
   });
 
-  // 首頁資料：本機快取先顯示 + 背景更新
-  const BOOTSTRAP_CACHE_KEY = 'mifeng_bootstrap_v1';
-  const BOOTSTRAP_CACHE_TTL_MS = 5 * 60 * 1000;
-
-  function applyBootstrapData_(data){
-    if(!data) return;
-    try{
-      if(data.rules) renderRules(data.rules);
-      if(data.settings) renderSettings(data.settings);
-      if(data.merchantAds) renderMerchantAds(data.merchantAds);
-      if(data.services) renderServices(data.services);
-      if(data.merchants) renderMerchants(data.merchants);
-      if(data.menus) renderMenus(data.menus);
-      if(data.addressZones) renderAddressZones(data.addressZones);
-      if(data.deliverableTownships) renderDeliverableTownships(data.deliverableTownships);
-      if(data.deliverableRoads) renderDeliverableRoads(data.deliverableRoads);
-      if(data.paymentAccounts) renderPaymentAccounts(data.paymentAccounts);
-    }catch(err){ console.warn('applyBootstrapData_', err); }
-  }
-
-  function readBootstrapCache_(){
-    try{
-      const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
-      if(!raw) return null;
-      const packed = JSON.parse(raw);
-      if(!packed || !packed.data || !packed.ts) return null;
-      return packed;
-    }catch(e){ return null; }
-  }
-
-  function writeBootstrapCache_(data){
-    try{ localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); }catch(e){}
-  }
-
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
-    const cached = readBootstrapCache_();
-    let paintedFromCache = false;
-    if(cached && cached.data){
-      applyBootstrapData_(cached.data);
-      paintedFromCache = true;
-      if(Date.now() - cached.ts < BOOTSTRAP_CACHE_TTL_MS){
-        loadingEl.classList.add('hide');
-      } else {
-        loadingEl.textContent = '🔄 更新最新資料中…';
-      }
-    }
+    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
     fetch(freshUrl, { cache: 'no-store' })
-      .then(r => {
-        if(!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
+      .then(r => r.json())
       .then(data => {
-        applyBootstrapData_(data);
-        writeBootstrapCache_(data);
+        renderRules(data.rules);
+        renderSettings(data.settings);
+        renderMerchantAds(data.merchantAds);
+        renderServices(data.services);
+        renderMerchants(data.merchants);
+        renderMenus(data.menus);
+        renderAddressZones(data.addressZones);
+        renderDeliverableTownships(data.deliverableTownships);
+        renderDeliverableRoads(data.deliverableRoads);
+        renderPaymentAccounts(data.paymentAccounts);
         loadingEl.classList.add('hide');
       })
       .catch(()=>{
-        if(paintedFromCache){
-          loadingEl.classList.add('hide');
-        } else {
-          loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
-          loadingEl.style.borderColor = 'var(--coral-dark)';
-          loadingEl.style.color = 'var(--coral-dark)';
-        }
+        // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
+        loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
+        loadingEl.style.borderColor = 'var(--coral-dark)';
+        loadingEl.style.color = 'var(--coral-dark)';
       });
   }
   loadContent();
