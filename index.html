@@ -4032,7 +4032,6 @@ function renderSettings(settings){
   function ensureLeaflet_(){
     if(window.L) return Promise.resolve();
     if(_leafletLoading) return _leafletLoading;
-
     _leafletLoading = new Promise((resolve, reject) => {
       const css = document.createElement('link');
       css.rel = 'stylesheet';
@@ -4040,20 +4039,14 @@ function renderSettings(settings){
       css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
       css.crossOrigin = '';
       document.head.appendChild(css);
-
       const s = document.createElement('script');
       s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       s.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
       s.crossOrigin = '';
       s.onload = () => resolve();
-      s.onerror = () => {
-        _leafletLoading = null;
-        try{ s.remove(); }catch(e){}
-        reject(new Error('Leaflet load failed'));
-      };
+      s.onerror = () => reject(new Error('Leaflet load failed'));
       document.head.appendChild(s);
     });
-
     return _leafletLoading;
   }
 
@@ -4095,9 +4088,7 @@ function renderSettings(settings){
     lookupOverlay.style.display = 'block';
     document.body.style.overflow = 'hidden';
     lookupOverlay.scrollTop = 0;
-    // 查詢視窗一開就預先載入 Leaflet，避免查詢結果出來後才開始下載地圖套件，
-    // 造成第一次看到「地圖載入失敗／等很久」，第二次重新整理才正常。
-    ensureLeaflet_().catch(()=>{});
+    // 不在開啟查詢時載入 Leaflet；只有真的進入「取餐中／運送中」且需要地圖時才載入。
     // 同時暖機 Apps Script 後端，不阻塞查詢視窗。
     warmUpLookupBackend_();
 
@@ -4655,19 +4646,12 @@ function renderSettings(settings){
               window._driverMap = map;
               setTimeout(()=> map.invalidateSize(), 100);
 
-              // 地圖本體先顯示，不要等待 Nominatim / OSRM 路線服務。
-              // 路線慢或暫時失敗時，不能把整張地圖誤判成「載入失敗」。
+              await drawDriverRoute(lat, lng, routeWaypoints, mapBox);
               mapBox.scrollIntoView({ behavior:'smooth', block:'end' });
-              drawDriverRoute(lat, lng, routeWaypoints, mapBox).catch(err=>{
-                console.warn('route draw failed:', err);
-                const hint = document.getElementById('routeHint');
-                if(hint) hint.textContent = '已顯示地圖，路線規劃服務暫時較慢，稍後會再更新。';
-              });
             }catch(err){
               console.warn(err);
               const hint = document.getElementById('routeHint');
               if(hint) hint.textContent = '地圖載入失敗，請稍後再試';
-              if(!window.L) _leafletLoading = null;
             }
           } else {
             // 之後每次輪詢：更新文字／外送員圖示／路線
@@ -4897,54 +4881,61 @@ function renderSettings(settings){
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
     let cached = null;
-
-    // 只使用「真的有菜單資料」的快取，避免之前失敗的空資料把正常菜單蓋掉。
+    let cacheAge = Infinity;
     try{
       const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
       if(raw){
         const obj = JSON.parse(raw);
-        if(obj && obj.data && Array.isArray(obj.data.menus) && obj.data.menus.length){
+        if(obj && obj.data && obj.data.menus){
           cached = obj.data;
-          applyBootstrapData_(cached);
-          loadingEl.classList.add('hide');
+          cacheAge = Date.now() - Number(obj.ts || 0);
         }
       }
     }catch(e){}
 
-    let finished = false;
-    const loadFromServer = (retry) => {
-      const freshUrl = SCRIPT_URL + '?t=' + Date.now();
-      fetch(freshUrl, { cache: 'no-store' })
+    // 有快取：先畫面立即顯示，完全不等待 Google Apps Script。
+    if(cached){
+      applyBootstrapData_(cached);
+      loadingEl.classList.add('hide');
+    }else{
+      // 沒快取也不要讓載入提示卡住首頁；首頁先顯示，資料在背景補上。
+      loadingEl.classList.add('hide');
+    }
+
+    // 只有「沒有快取」或快取超過 10 分鐘才打後端。
+    // 不再每次開首頁都加 ?t=時間戳，避免強制繞過瀏覽器／CDN 快取。
+    const needFresh = !cached || cacheAge > BOOTSTRAP_CACHE_TTL;
+    if(!needFresh) return;
+
+    const doFetch = () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      fetch(SCRIPT_URL, { cache: 'default', signal: controller.signal })
         .then(r => {
           if(!r.ok) throw new Error('bootstrap http ' + r.status);
           return r.json();
         })
         .then(data => {
-          if(!data) throw new Error('empty bootstrap');
-          finished = true;
+          // 只有真的有完整菜單資料才覆蓋畫面與快取，避免空資料把正常菜單洗掉。
+          if(!data || !Array.isArray(data.menus)) throw new Error('bootstrap menus missing');
           applyBootstrapData_(data);
-          // 只有取得完整菜單資料才寫入快取，避免空菜單污染下一次開站。
-          if(Array.isArray(data.menus) && data.menus.length){
-            try{
-              localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
-            }catch(e){}
-          }
-          loadingEl.classList.add('hide');
+          try{
+            localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+          }catch(e){}
         })
-        .catch(()=>{
-          if(retry && !finished){
-            // Apps Script 偶爾第一次冷啟動較慢，2 秒後自動再試一次，不需要使用者手動重新整理。
-            setTimeout(() => loadFromServer(false), 2000);
-          }else if(!cached){
-            loadingEl.textContent = '正在連線取得最新菜單…';
-            loadingEl.style.borderColor = 'var(--line)';
-            loadingEl.style.color = 'var(--muted)';
-          }
-        });
+        .catch(err => {
+          console.warn('首頁資料背景載入失敗：', err);
+          // 不阻塞首頁，也不要求使用者手動重新整理。
+        })
+        .finally(() => clearTimeout(timeout));
     };
 
-    // 有快取就立即顯示；沒有快取則自動重試一次，避免第一次冷啟動造成「載入失敗」。
-    loadFromServer(true);
+    // 先讓瀏覽器完成首屏繪製，再啟動 Google Apps Script。
+    if('requestIdleCallback' in window){
+      requestIdleCallback(doFetch, { timeout: 800 });
+    }else{
+      setTimeout(doFetch, 60);
+    }
   }
   loadContent();
 
