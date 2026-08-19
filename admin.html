@@ -155,6 +155,7 @@
     padding:16px; margin-bottom:14px;
   }
   .order-card.status-已送達{opacity:.6;}
+  .order-card.status-已取消{opacity:.55;}
   .order-card.merchant-order{border-left:6px solid var(--gold);}
   .order-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px;}
   .order-queue{font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:900; color:var(--coral-dark); line-height:1;}
@@ -173,6 +174,7 @@
   .status-badge.取餐中{background:#c47a12; color:var(--paper);}
   .status-badge.運送中{background:var(--ocean); color:var(--paper);}
   .status-badge.已送達{background:var(--seafoam); color:var(--ink);}
+  .status-badge.已取消{background:#9aa5a4; color:#fff;}
 
   .order-info{font-size:13.5px; line-height:1.9;}
   .order-info b{font-weight:700;}
@@ -400,6 +402,7 @@
         <button data-filter="取餐中">取餐中</button>
         <button data-filter="運送中">運送中</button>
         <button data-filter="已送達">已送達</button>
+        <button data-filter="已取消">已取消</button>
       </div>
       <div id="orderList"></div>
       <div class="refresh-hint">下拉頁面或點右上角重新整理，即可看到最新訂單</div>
@@ -1194,6 +1197,7 @@
         <button data-status="取餐中" class="${order.status === '取餐中' ? 'current' : ''}">取餐中</button>
         <button data-status="運送中" class="${order.status === '運送中' ? 'current' : ''}">運送中</button>
         <button data-status="已送達" class="${order.status === '已送達' ? 'current' : ''}">已送達</button>
+        <button data-status="已取消" class="${order.status === '已取消' ? 'current' : ''}">已取消</button>
       </div>
       <div class="nav-actions">
         <button type="button" class="nav-btn">🗺️ 一鍵導航</button>
