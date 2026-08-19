@@ -641,9 +641,10 @@
   .merchant-picker.open .merchant-picker-trigger{ border-color:var(--ocean); box-shadow:0 0 0 2px rgba(30,91,103,.15); }
   .merchant-picker-panel{
     display:none; position:fixed; z-index:5000;
-    max-height:min(52vh, 340px); overflow:auto; -webkit-overflow-scrolling:touch;
+    max-height:min(62vh, 420px); overflow:auto; -webkit-overflow-scrolling:touch;
     background:var(--card); border:2px solid var(--ink); border-radius:10px;
     box-shadow:0 12px 32px rgba(34,48,46,.28);
+    scroll-behavior:smooth;
   }
   .merchant-picker-panel.open{ display:block; }
   .merchant-picker-panel .mp-item{
@@ -2723,7 +2724,7 @@
     const panel = panelArg || picker.querySelector('.merchant-picker-panel') || document.querySelector('.merchant-picker-panel.open');
     if(!trigger || !panel) return;
     const r = trigger.getBoundingClientRect();
-    const maxH = Math.min(window.innerHeight * 0.52, 340);
+    const maxH = Math.min(window.innerHeight * 0.62, 420);
     const gap = 4;
     const spaceBelow = window.innerHeight - r.bottom - gap - 8;
     const spaceAbove = r.top - gap - 8;
@@ -2827,6 +2828,28 @@
           btn.dataset.value = m.name;
           btn.textContent = m.hours ? `${m.name}（${m.hours}）` : m.name;
           details.appendChild(btn);
+        });
+        // 點開分類後：關閉其他分類（手風琴），並自動捲到此分類，讓商家列表在可視範圍內
+        details.addEventListener('toggle', ()=>{
+          if(!details.open) return;
+          panel.querySelectorAll('details.mp-cat[open]').forEach(d => {
+            if(d !== details) d.open = false;
+          });
+          requestAnimationFrame(()=>{
+            try{
+              const panelRect = panel.getBoundingClientRect();
+              const detRect = details.getBoundingClientRect();
+              // 把 summary 捲到面板上方附近
+              panel.scrollTop += (detRect.top - panelRect.top - 4);
+              requestAnimationFrame(()=>{
+                const after = details.getBoundingClientRect();
+                const overflowBottom = after.bottom - panelRect.bottom;
+                if(overflowBottom > 8){
+                  panel.scrollTop += overflowBottom + 8;
+                }
+              });
+            }catch(err){}
+          });
         });
         panel.appendChild(details);
       });
