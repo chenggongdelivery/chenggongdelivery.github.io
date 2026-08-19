@@ -11,7 +11,7 @@
 <meta name="description" content="成功鎮在地代購外送社群，價格透明、範圍清楚，一鍵下單通知群組。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="成功小蜜丰｜成功鎮在地代購外送">
-<meta property="og:description" content="成功鎮外送新選擇，在地人專屬的外送方式。加入 LINE 社群，想吃什麼、喝什麼、買什麼，輕鬆幫您送到。"> 
+<meta property="og:description" content="成功鎮外送新選擇，在地人專屬的外送方式。加入 LINE 社群，想吃什麼、喝什麼、買什麼，輕鬆幫您送到。">
 <meta property="og:url" content="https://chenggongdelivery.github.io/">
 <!-- 使用系統字體加速首屏，不載入 Google Fonts -->
 <style>
@@ -2671,7 +2671,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcVv7SVcAYfGL6II-4KdCmyEJjO5QYjYo_ikH00aJkR82VlrMCh0oIvA57wFGO4K7GfQ/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsoU2dTmol9_RyAauZOu_268u_QUCWfWkiPn1BpFVtgbW1bAOdTdG_SM6fMMey099Z3w/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -4547,7 +4547,6 @@ function renderSettings(settings){
         msg += `
 
 目前狀態：${data.status || '待處理'}`;
-        if(data.modified) msg += `\n✏️ 最後修改：${data.modifiedAt || '已修改'}`;
         if(data.deliverer) msg += `\n外送員：${data.deliverer}`;
         resultEl.textContent = msg;
         if(isFirst) showLookupEditUi(data);
@@ -4779,7 +4778,6 @@ function renderSettings(settings){
         d.canEdit = false;
         d.canCancel = false;
         d.status = '已取消';
-        d.modified = false;
         d.editHint = '此訂單已取消';
         performLookup(meta.digits, meta.contact, true);
       } else {
@@ -4845,10 +4843,6 @@ function renderSettings(settings){
       const result = await res.json();
       if(result && result.result === 'success'){
         toast('✅ 訂單已更新');
-        if(lastLookupMeta && lastLookupMeta.data){
-          lastLookupMeta.data.modified = true;
-          lastLookupMeta.data.modifiedAt = result.modifiedAt || '剛剛';
-        }
         document.getElementById('lookupEditForm').style.display = 'none';
         performLookup(meta.digits, meta.contact, true);
       } else {
