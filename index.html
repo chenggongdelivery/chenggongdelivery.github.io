@@ -2671,7 +2671,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcVv7SVcAYfGL6II-4KdCmyEJjO5QYjYo_ikH00aJkR82VlrMCh0oIvA57wFGO4K7GfQ/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsoU2dTmol9_RyAauZOu_268u_QUCWfWkiPn1BpFVtgbW1bAOdTdG_SM6fMMey099Z3w/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -4862,6 +4862,11 @@ function renderSettings(settings){
     }
   });
 
+  // 必須在 loadContent() 可能立即套用快取資料前先初始化。
+  // 否則已有首頁快取時，renderSettings() → applyZoneFeesToUI()
+  // 會碰到 TDZ（fee 尚未宣告），造成整支首頁腳本中斷，出現「載入不了／菜單不顯示」。
+  let fee = 30;
+
   const BOOTSTRAP_CACHE_KEY = 'chenggong_public_bootstrap_v2';
   const BOOTSTRAP_CACHE_TTL = 10 * 60 * 1000;
 
@@ -4896,7 +4901,11 @@ function renderSettings(settings){
 
     // 有快取：先畫面立即顯示，完全不等待 Google Apps Script。
     if(cached){
-      applyBootstrapData_(cached);
+      try{
+        applyBootstrapData_(cached);
+      }catch(err){
+        console.warn('首頁快取資料套用失敗，將改用背景資料更新：', err);
+      }
       loadingEl.classList.add('hide');
     }else{
       // 沒快取也不要讓載入提示卡住首頁；首頁先顯示，資料在背景補上。
@@ -4910,7 +4919,7 @@ function renderSettings(settings){
 
     const doFetch = () => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
+      const timeout = setTimeout(() => controller.abort(), 7000);
       fetch(SCRIPT_URL, { cache: 'default', signal: controller.signal })
         .then(r => {
           if(!r.ok) throw new Error('bootstrap http ' + r.status);
@@ -5035,7 +5044,6 @@ function renderSettings(settings){
     }
   }
 
-  let fee = 30;
   const zoneOutsideHintEl = document.getElementById('zoneOutsideHint');
   function updateZoneOutsideHint(zoneKey){
     if(!zoneOutsideHintEl) return;
