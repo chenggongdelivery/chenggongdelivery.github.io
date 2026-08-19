@@ -626,6 +626,49 @@
     font-family:inherit; font-size:13.5px;
   }
   .stop-hours-hint{font-size:11.5px; color:var(--ocean-dark); font-weight:600;}
+
+  /* 商家下拉：自訂面板，「其他」置頂、分類預設收合 */
+  .merchant-picker{ position:relative; width:100%; }
+  .merchant-picker-trigger{
+    width:100%; padding:9px 11px; border:2px solid var(--ink); border-radius:8px; background:var(--card);
+    font-family:inherit; font-size:13.5px; text-align:left; cursor:pointer; color:var(--ink);
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .merchant-picker-trigger .mp-label{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .merchant-picker-trigger .mp-arrow{ flex-shrink:0; opacity:.65; font-size:12px; }
+  .merchant-picker.open .merchant-picker-trigger{ border-color:var(--ocean); box-shadow:0 0 0 2px rgba(30,91,103,.15); }
+  .merchant-picker-panel{
+    display:none; position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:40;
+    max-height:min(52vh, 340px); overflow:auto; -webkit-overflow-scrolling:touch;
+    background:var(--card); border:2px solid var(--ink); border-radius:10px;
+    box-shadow:0 10px 28px rgba(34,48,46,.22);
+  }
+  .merchant-picker.open .merchant-picker-panel{ display:block; }
+  .merchant-picker-panel .mp-item{
+    display:block; width:100%; border:none; background:transparent; text-align:left;
+    padding:10px 12px; font-family:inherit; font-size:13.5px; color:var(--ink); cursor:pointer;
+  }
+  .merchant-picker-panel .mp-item:hover,
+  .merchant-picker-panel .mp-item:focus{ background:rgba(30,91,103,.1); outline:none; }
+  .merchant-picker-panel .mp-item.selected{ background:var(--ocean); color:#fff; font-weight:700; }
+  .merchant-picker-panel .mp-other{
+    font-weight:800; border-bottom:2px solid var(--ink); color:var(--coral-dark);
+  }
+  .merchant-picker-panel .mp-cat{ border-bottom:1px solid rgba(34,48,46,.12); }
+  .merchant-picker-panel .mp-cat > summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:10px 12px; font-weight:800; font-size:13px; color:var(--ocean-dark);
+    background:rgba(30,91,103,.06); display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .merchant-picker-panel .mp-cat > summary::-webkit-details-marker{ display:none; }
+  .merchant-picker-panel .mp-cat > summary::after{ content:'▸'; font-size:11px; opacity:.6; }
+  .merchant-picker-panel .mp-cat[open] > summary::after{ content:'▾'; }
+  .merchant-picker-panel .mp-cat .mp-item{ padding-left:18px; font-size:13px; }
+  .merchant-picker-panel .mp-empty{
+    padding:14px 12px; font-size:12.5px; color:var(--ocean-dark); opacity:.75; text-align:center;
+  }
+  .stop-merchant-hidden{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
   .stop-preorder-check{
     display:flex; align-items:flex-start; gap:8px; margin-top:8px; padding:10px 12px;
     background:var(--paper); border:1.5px dashed var(--ocean); border-radius:8px;
@@ -2639,34 +2682,118 @@
     updatePreview();
   }
 
+  function merchantLabel_(name){
+    if(!name) return '請選擇商家';
+    if(name === '其他') return '其他(手動輸入店家)';
+    const hours = merchantHoursMap[name];
+    return hours ? `${name}（${hours}）` : name;
+  }
+
+  function syncMerchantPickerTrigger_(row){
+    const sel = row.querySelector('.stop-merchant');
+    const trigger = row.querySelector('.merchant-picker-trigger .mp-label');
+    if(!sel || !trigger) return;
+    const v = sel.value;
+    trigger.textContent = v ? merchantLabel_(v) : '請選擇商家';
+    trigger.style.opacity = v ? '1' : '.72';
+  }
+
+  function closeAllMerchantPickers_(exceptRow){
+    document.querySelectorAll('.merchant-picker.open').forEach(p => {
+      if(exceptRow && p.closest('.stop-row') === exceptRow) return;
+      p.classList.remove('open');
+    });
+  }
+
   function populateMerchantSelect(selectEl, query){
+    const row = selectEl.closest('.stop-row');
     const currentValue = selectEl.value;
     const q = (query || '').trim().toLowerCase();
     selectEl.innerHTML = '<option value="">請選擇商家</option>';
+    // 「其他」固定最上方
+    const otherOpt = document.createElement('option');
+    otherOpt.value = '其他';
+    otherOpt.textContent = '其他(手動輸入店家)';
+    selectEl.appendChild(otherOpt);
+
     let matchCount = 0;
+    const groups = [];
     merchantGroupOrder.forEach(cat => {
-      const matched = merchantGroups[cat].filter(m => !q || m.name.toLowerCase().includes(q));
+      const matched = (merchantGroups[cat] || []).filter(m => !q || m.name.toLowerCase().includes(q));
       if(!matched.length) return;
-      const optgroup = document.createElement('optgroup');
-      optgroup.label = cat;
+      groups.push({ cat, matched });
       matched.forEach(m => {
         const opt = document.createElement('option');
         opt.value = m.name;
         opt.textContent = m.hours ? `${m.name}（${m.hours}）` : m.name;
-        optgroup.appendChild(opt);
+        selectEl.appendChild(opt);
         matchCount++;
       });
-      selectEl.appendChild(optgroup);
     });
-    const otherOpt = document.createElement('option');
-    otherOpt.value = '其他';
-    otherOpt.textContent = '其他（自行輸入）';
-    selectEl.appendChild(otherOpt);
 
     if(currentValue && Array.from(selectEl.options).some(o => o.value === currentValue)){
       selectEl.value = currentValue;
+    } else if(currentValue === '其他'){
+      selectEl.value = '其他';
     }
+
+    // 自訂面板：分類預設收合；有搜尋時展開有結果的分類
+    const panel = row && row.querySelector('.merchant-picker-panel');
+    if(panel){
+      panel.innerHTML = '';
+      const otherBtn = document.createElement('button');
+      otherBtn.type = 'button';
+      otherBtn.className = 'mp-item mp-other' + (selectEl.value === '其他' ? ' selected' : '');
+      otherBtn.dataset.value = '其他';
+      otherBtn.textContent = '其他(手動輸入店家)';
+      panel.appendChild(otherBtn);
+
+      if(!groups.length && q){
+        const empty = document.createElement('div');
+        empty.className = 'mp-empty';
+        empty.textContent = '找不到符合的商家，可選上方「其他」手動輸入';
+        panel.appendChild(empty);
+      }
+
+      groups.forEach(({ cat, matched }) => {
+        const details = document.createElement('details');
+        details.className = 'mp-cat';
+        if(q) details.open = true; // 有搜尋才展開；否則預設收合
+        const summary = document.createElement('summary');
+        summary.textContent = `${cat}（${matched.length}）`;
+        details.appendChild(summary);
+        matched.forEach(m => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'mp-item' + (selectEl.value === m.name ? ' selected' : '');
+          btn.dataset.value = m.name;
+          btn.textContent = m.hours ? `${m.name}（${m.hours}）` : m.name;
+          details.appendChild(btn);
+        });
+        panel.appendChild(details);
+      });
+    }
+
+    if(row) syncMerchantPickerTrigger_(row);
     return matchCount;
+  }
+
+  function setMerchantValue_(row, value){
+    const sel = row.querySelector('.stop-merchant');
+    if(!sel) return;
+    if(value && value !== '其他' && !Array.from(sel.options).some(o => o.value === value)){
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value;
+      sel.appendChild(opt);
+    }
+    sel.value = value || '';
+    const otherInput = row.querySelector('.stop-merchant-other');
+    if(otherInput) otherInput.style.display = (value === '其他') ? 'block' : 'none';
+    syncMerchantPickerTrigger_(row);
+    updateStopHoursHint(row);
+    updatePreview();
+    sel.dispatchEvent(new Event('change', { bubbles:true }));
   }
 
   function updateStopHoursHint(row){
@@ -2712,7 +2839,17 @@
         <button type="button" class="stop-remove" style="display:none;">✕ 移除</button>
       </div>
       <input class="stop-merchant-search" type="text" placeholder="🔍 搜尋商家名稱...">
-      <select class="stop-merchant"><option value="">請選擇商家</option><option value="其他">其他（自行輸入）</option></select>
+      <div class="merchant-picker">
+        <button type="button" class="merchant-picker-trigger" aria-haspopup="listbox">
+          <span class="mp-label">請選擇商家</span>
+          <span class="mp-arrow">▾</span>
+        </button>
+        <div class="merchant-picker-panel" role="listbox"></div>
+        <select class="stop-merchant stop-merchant-hidden" tabindex="-1" aria-hidden="true">
+          <option value="">請選擇商家</option>
+          <option value="其他">其他(手動輸入店家)</option>
+        </select>
+      </div>
       <input class="stop-merchant-other" placeholder="請輸入商家名稱" style="display:none;">
       <div class="stop-hours-hint" style="display:none;"></div>
       <textarea class="stop-items" placeholder="購買品項，例如：便當一個、飲料一杯"></textarea>
@@ -2724,17 +2861,42 @@
     document.getElementById('stopsContainer').appendChild(row);
     populateMerchantSelect(row.querySelector('.stop-merchant'));
 
+    const picker = row.querySelector('.merchant-picker');
+    const trigger = row.querySelector('.merchant-picker-trigger');
+    const panel = row.querySelector('.merchant-picker-panel');
+
+    trigger.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const willOpen = !picker.classList.contains('open');
+      closeAllMerchantPickers_();
+      if(willOpen){
+        picker.classList.add('open');
+        populateMerchantSelect(row.querySelector('.stop-merchant'), row.querySelector('.stop-merchant-search').value);
+      }
+    });
+
+    panel.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.mp-item');
+      if(!btn) return;
+      e.preventDefault();
+      setMerchantValue_(row, btn.dataset.value || '');
+      picker.classList.remove('open');
+      if(btn.dataset.value === '其他'){
+        const otherInput = row.querySelector('.stop-merchant-other');
+        if(otherInput) otherInput.focus();
+      }
+    });
+
     row.querySelector('.stop-merchant-search').addEventListener('input', (e)=>{
       const sel = row.querySelector('.stop-merchant');
       const matchCount = populateMerchantSelect(sel, e.target.value);
-      // 只找到一間符合時，自動幫客戶選起來，減少再點一次選單的步驟
+      if(e.target.value.trim()){
+        closeAllMerchantPickers_(row);
+        picker.classList.add('open');
+      }
       if(matchCount === 1 && e.target.value.trim()){
         const onlyOption = Array.from(sel.options).find(o => o.value && o.value !== '其他');
-        if(onlyOption){
-          sel.value = onlyOption.value;
-          updateStopHoursHint(row);
-          updatePreview();
-        }
+        if(onlyOption) setMerchantValue_(row, onlyOption.value);
       }
     });
 
@@ -2800,15 +2962,15 @@
       const sel = row.querySelector('.stop-merchant');
       const matched = s.merchant && Array.from(sel.options).some(o => o.value === s.merchant);
       if(matched){
-        sel.value = s.merchant;
+        setMerchantValue_(row, s.merchant);
       } else if(s.merchant){
-        sel.value = '其他';
-        row.querySelector('.stop-merchant-other').style.display = 'block';
+        setMerchantValue_(row, '其他');
         row.querySelector('.stop-merchant-other').value = s.merchant;
       }
       row.querySelector('.stop-items').value = s.items || '';
       row.querySelector('.stop-preordered').checked = !!s.preordered;
       updateStopHoursHint(row);
+      syncMerchantPickerTrigger_(row);
     });
     updateTransferHint();
   }
@@ -3190,18 +3352,22 @@
     const sel = targetRow.querySelector('.stop-merchant');
     const matched = Array.from(sel.options).some(o => o.value === merchant);
     if(matched){
-      sel.value = merchant;
+      setMerchantValue_(targetRow, merchant);
     } else {
-      sel.value = '其他';
-      targetRow.querySelector('.stop-merchant-other').style.display = 'block';
+      setMerchantValue_(targetRow, '其他');
       targetRow.querySelector('.stop-merchant-other').value = merchant;
     }
-    updateStopHoursHint(targetRow);
 
     const itemsField = targetRow.querySelector('.stop-items');
     itemsField.value = itemsField.value.trim() ? `${itemsField.value.trim()}、${itemsText}` : itemsText;
     return targetRow;
   }
+
+  // 點選單外關閉商家下拉
+  document.addEventListener('click', (e)=>{
+    if(e.target.closest('.merchant-picker')) return;
+    closeAllMerchantPickers_();
+  });
 
   document.getElementById('menuLightboxAddBtn').addEventListener('click', ()=>{
     const merchant = document.getElementById('menuLightboxMerchant').textContent;
@@ -4465,9 +4631,9 @@ function renderSettings(settings){
     }
   });
 
-  // ---------- 首頁資料載入：本機快取先顯示 + 背景更新（大幅縮短「空白等待」） ----------
+  // 首頁資料：本機快取先顯示 + 背景更新
   const BOOTSTRAP_CACHE_KEY = 'mifeng_bootstrap_v1';
-  const BOOTSTRAP_CACHE_TTL_MS = 5 * 60 * 1000; // 5 分鐘內視為夠新，仍會背景更新
+  const BOOTSTRAP_CACHE_TTL_MS = 5 * 60 * 1000;
 
   function applyBootstrapData_(data){
     if(!data) return;
@@ -4482,9 +4648,7 @@ function renderSettings(settings){
       if(data.deliverableTownships) renderDeliverableTownships(data.deliverableTownships);
       if(data.deliverableRoads) renderDeliverableRoads(data.deliverableRoads);
       if(data.paymentAccounts) renderPaymentAccounts(data.paymentAccounts);
-    }catch(err){
-      console.warn('applyBootstrapData_', err);
-    }
+    }catch(err){ console.warn('applyBootstrapData_', err); }
   }
 
   function readBootstrapCache_(){
@@ -4498,29 +4662,22 @@ function renderSettings(settings){
   }
 
   function writeBootstrapCache_(data){
-    try{
-      localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
-    }catch(e){ /* quota 滿了就略過 */ }
+    try{ localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); }catch(e){}
   }
 
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
     const cached = readBootstrapCache_();
     let paintedFromCache = false;
-
-    // 1) 有本機快取 → 立刻畫出來，使用者幾乎不用等
     if(cached && cached.data){
       applyBootstrapData_(cached.data);
       paintedFromCache = true;
-      const age = Date.now() - cached.ts;
-      if(age < BOOTSTRAP_CACHE_TTL_MS){
+      if(Date.now() - cached.ts < BOOTSTRAP_CACHE_TTL_MS){
         loadingEl.classList.add('hide');
       } else {
         loadingEl.textContent = '🔄 更新最新資料中…';
       }
     }
-
-    // 2) 背景向 Apps Script 拉最新（即使有快取也更新，確保營業狀態／商家名單正確）
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
     fetch(freshUrl, { cache: 'no-store' })
       .then(r => {
@@ -4534,7 +4691,6 @@ function renderSettings(settings){
       })
       .catch(()=>{
         if(paintedFromCache){
-          // 已有快取畫面：靜默失敗即可，不打斷使用者
           loadingEl.classList.add('hide');
         } else {
           loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
