@@ -2671,7 +2671,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcVv7SVcAYfGL6II-4KdCmyEJjO5QYjYo_ikH00aJkR82VlrMCh0oIvA57wFGO4K7GfQ/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsoU2dTmol9_RyAauZOu_268u_QUCWfWkiPn1BpFVtgbW1bAOdTdG_SM6fMMey099Z3w/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -4947,7 +4947,7 @@ function renderSettings(settings){
       setTimeout(doFetch, 60);
     }
   }
-  loadContent();
+  // loadContent 改到整支程式初始化完成後再執行，避免 renderSettings() 在 fee 等 let 初始化前被呼叫，導致後續 renderMenus() 無法執行
 
   // 預約日期欄位不能選過去的日期
   (function setScheduleDateMin(){
@@ -5524,6 +5524,9 @@ ${stopsText}
     }
     resetForm();
   });
+
+  // 所有變數、函式與事件監聽器都初始化完成後，才載入後台資料
+  loadContent();
 
 })();
 
