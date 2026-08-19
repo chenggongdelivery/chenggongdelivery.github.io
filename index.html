@@ -148,6 +148,13 @@
     line-height:1.2; min-height:36px;
   }
   .header-lookup-btn:active{transform:translateY(2px); box-shadow:none;}
+  .header-edit-btn{
+    border:2px solid var(--ink); background:var(--card); color:var(--ocean-dark);
+    padding:8px 11px; border-radius:999px; font-weight:700; font-size:12px;
+    box-shadow:0 2px 0 var(--ink); white-space:nowrap; cursor:pointer; font-family:inherit;
+    line-height:1.2; min-height:36px;
+  }
+  .header-edit-btn:active{transform:translateY(2px); box-shadow:none;}
 
   main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
 
@@ -2213,6 +2220,7 @@
       </details>
     <div class="header-spacer" aria-hidden="true"></div>
     <button type="button" class="header-lookup-btn" id="headerLookupBtn">🔍 訂單查詢</button>
+    <button type="button" class="header-edit-btn" id="headerEditCancelBtn" title="僅「待處理」可修改或取消">✏️ 修改或取消訂單</button>
     <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn">加入 LINE 社群</a>
   </div>
 </header>
@@ -4154,6 +4162,8 @@ function renderSettings(settings){
 
   const headerLookupBtn = document.getElementById('headerLookupBtn');
   if(headerLookupBtn) headerLookupBtn.addEventListener('click', ()=> openLookup());
+  const headerEditCancelBtn = document.getElementById('headerEditCancelBtn');
+  if(headerEditCancelBtn) headerEditCancelBtn.addEventListener('click', ()=> openLookup());
   const orderLookupBtn = document.getElementById('orderLookupBtn');
   if(orderLookupBtn) orderLookupBtn.addEventListener('click', ()=> openLookup());
   
@@ -4786,71 +4796,30 @@ function renderSettings(settings){
     }
   });
 
-  // 首頁：本機快取先顯示 + 背景更新（第二次開站幾乎不用等）
-  const BOOTSTRAP_CACHE_KEY = 'mifeng_bootstrap_v2';
-  const BOOTSTRAP_CACHE_TTL_MS = 10 * 60 * 1000;
-
-  function applyBootstrapData_(data){
-    if(!data) return;
-    try{
-      if(data.rules) renderRules(data.rules);
-      if(data.settings) renderSettings(data.settings);
-      if(data.merchantAds) renderMerchantAds(data.merchantAds);
-      if(data.services) renderServices(data.services);
-      if(data.merchants) renderMerchants(data.merchants);
-      if(data.menus) renderMenus(data.menus);
-      if(data.addressZones) renderAddressZones(data.addressZones);
-      if(data.deliverableTownships) renderDeliverableTownships(data.deliverableTownships);
-      if(data.deliverableRoads) renderDeliverableRoads(data.deliverableRoads);
-      if(data.paymentAccounts) renderPaymentAccounts(data.paymentAccounts);
-    }catch(err){ console.warn('applyBootstrapData_', err); }
-  }
-
-  function readBootstrapCache_(){
-    try{
-      const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
-      if(!raw) return null;
-      const packed = JSON.parse(raw);
-      if(!packed || !packed.data || !packed.ts) return null;
-      return packed;
-    }catch(e){ return null; }
-  }
-
-  function writeBootstrapCache_(data){
-    try{ localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); }catch(e){}
-  }
-
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
-    const cached = readBootstrapCache_();
-    let paintedFromCache = false;
-    if(cached && cached.data){
-      applyBootstrapData_(cached.data);
-      paintedFromCache = true;
-      if(Date.now() - cached.ts < BOOTSTRAP_CACHE_TTL_MS){
-        loadingEl.classList.add('hide');
-      } else {
-        loadingEl.textContent = '🔄 更新最新資料中…';
-      }
-    }
-    fetch(SCRIPT_URL + '?t=' + Date.now(), { cache: 'no-store' })
-      .then(r => {
-        if(!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
+    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
+    const freshUrl = SCRIPT_URL + '?t=' + Date.now();
+    fetch(freshUrl, { cache: 'no-store' })
+      .then(r => r.json())
       .then(data => {
-        applyBootstrapData_(data);
-        writeBootstrapCache_(data);
+        renderRules(data.rules);
+        renderSettings(data.settings);
+        renderMerchantAds(data.merchantAds);
+        renderServices(data.services);
+        renderMerchants(data.merchants);
+        renderMenus(data.menus);
+        renderAddressZones(data.addressZones);
+        renderDeliverableTownships(data.deliverableTownships);
+        renderDeliverableRoads(data.deliverableRoads);
+        renderPaymentAccounts(data.paymentAccounts);
         loadingEl.classList.add('hide');
       })
       .catch(()=>{
-        if(paintedFromCache){
-          loadingEl.classList.add('hide');
-        } else {
-          loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
-          loadingEl.style.borderColor = 'var(--coral-dark)';
-          loadingEl.style.color = 'var(--coral-dark)';
-        }
+        // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
+        loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
+        loadingEl.style.borderColor = 'var(--coral-dark)';
+        loadingEl.style.color = 'var(--coral-dark)';
       });
   }
   loadContent();
