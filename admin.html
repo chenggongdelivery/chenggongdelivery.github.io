@@ -465,6 +465,7 @@
   let trackingLastSent = 0;
   const TRACK_MIN_INTERVAL = 15000;
 
+  // 位置回報：無手動按鈕。點「取餐中／運送中」自動開始，離開這些狀態（如已送達）自動停止
   function stopLocationTracking(silent){
     if(trackingWatchId != null){
       navigator.geolocation.clearWatch(trackingWatchId);
@@ -472,9 +473,6 @@
     }
     trackingRowKey = null;
     trackingLastSent = 0;
-    document.querySelectorAll('.location-panel.tracking').forEach(el => el.classList.remove('tracking'));
-    document.querySelectorAll('.lp-start').forEach(b => { b.disabled = false; b.textContent = '📍 開始回報位置'; });
-    document.querySelectorAll('.lp-stop').forEach(b => { b.disabled = true; });
     if(!silent) toast('已停止位置回報');
   }
 
@@ -496,34 +494,18 @@
         order.lat = lat;
         order.lng = lng;
         order.locationUpdatedAt = data.updatedAt || '';
-        document.querySelectorAll(`.location-panel`).forEach(panel => {
-          if(panel.dataset.rowkey !== order.rowKey) return;
-          const coordsEl = panel.querySelector('.lp-coords');
-          if(coordsEl){
-            coordsEl.textContent = `目前：${lat.toFixed(5)}, ${lng.toFixed(5)}` + (order.locationUpdatedAt ? `　更新 ${order.locationUpdatedAt}` : '');
-          }
-        });
-      } else {
-        toast(data.message || '位置更新失敗');
       }
     }catch(err){
-      toast('位置回報失敗，請檢查網路');
+      // 靜默失敗，避免干擾外送操作；下次定位會再試
     }
   }
 
   function startLocationTracking(order){
-    if(!navigator.geolocation){ toast('此裝置不支援定位'); return; }
+    if(!navigator.geolocation){ toast('此裝置不支援定位，客戶端將無法看到地圖'); return; }
+    if(trackingRowKey === order.rowKey && trackingWatchId != null) return; // 已在回報中
     if(trackingRowKey && trackingRowKey !== order.rowKey) stopLocationTracking(true);
     trackingRowKey = order.rowKey;
-    toast('開始回報位置（請允許定位權限）');
-    document.querySelectorAll('.location-panel').forEach(el => {
-      const on = el.dataset.rowkey === order.rowKey;
-      el.classList.toggle('tracking', on);
-      const startBtn = el.querySelector('.lp-start');
-      const stopBtn = el.querySelector('.lp-stop');
-      if(startBtn){ startBtn.disabled = on; startBtn.textContent = on ? '📍 回報中…' : '📍 開始回報位置'; }
-      if(stopBtn){ stopBtn.disabled = !on; }
-    });
+    toast('已自動開始位置回報（請允許定位權限）');
     const onPos = (pos) => {
       if(trackingRowKey !== order.rowKey) return;
       const lat = pos.coords.latitude;
@@ -535,9 +517,9 @@
     };
     const onErr = (err) => {
       let msg = '無法取得定位';
-      if(err.code === 1) msg = '請允許定位權限';
+      if(err.code === 1) msg = '請允許定位權限，客戶才能看到外送位置';
       if(err.code === 2) msg = '無法取得位置，請開啟 GPS';
-      if(err.code === 3) msg = '定位逾時，請重試';
+      if(err.code === 3) msg = '定位逾時，請確認 GPS 已開啟';
       toast(msg);
     };
     navigator.geolocation.getCurrentPosition(onPos, onErr, { enableHighAccuracy:true, timeout:15000, maximumAge:5000 });
@@ -1203,18 +1185,6 @@
         <button type="button" class="nav-btn">🗺️ 一鍵導航</button>
         <div class="nav-hint"></div>
       </div>
-      ${(order.status === '取餐中' || order.status === '運送中') ? `
-      <div class="location-panel${trackingRowKey === order.rowKey ? ' tracking' : ''}" data-rowkey="${escapeHtml(order.rowKey)}">
-        <div class="lp-title">🛵 客戶地圖位置回報（取餐中／運送中）</div>
-        <div class="lp-coords">${order.lat != null && order.lng != null
-          ? `目前：${Number(order.lat).toFixed(5)}, ${Number(order.lng).toFixed(5)}${order.locationUpdatedAt ? '　更新 ' + escapeHtml(String(order.locationUpdatedAt)) : ''}`
-          : '尚未回報座標（按下方開始後，客戶查詢即可看到地圖）'}</div>
-        <div class="lp-actions">
-          <button type="button" class="lp-start" ${trackingRowKey === order.rowKey ? 'disabled' : ''}>${trackingRowKey === order.rowKey ? '📍 回報中…' : '📍 開始回報位置'}</button>
-          <button type="button" class="lp-stop" ${trackingRowKey === order.rowKey ? '' : 'disabled'}>停止回報</button>
-        </div>
-        <div class="lp-hint">點選上方「取餐中」或「運送中」會自動開始回報，不用手動按這裡；如果剛剛沒允許定位權限，可以再按一次「開始回報位置」重試。同時只能回報一張單。</div>
-      </div>` : ''}
     `;
 
     const confirmBtn = card.querySelector('.confirm-payment-btn');
@@ -1329,11 +1299,6 @@
         if(navHint) navHint.textContent = '請確認訂單有商家或送達地址';
       }
     }
-
-    const lpStart = card.querySelector('.lp-start');
-    const lpStop = card.querySelector('.lp-stop');
-    if(lpStart) lpStart.addEventListener('click', ()=> startLocationTracking(order));
-    if(lpStop) lpStop.addEventListener('click', ()=> stopLocationTracking(false));
 
     return card;
   }
@@ -1531,8 +1496,7 @@
     renderOrders();
     toast(`已更新為「${newStatus}」`);
 
-    // 點選「取餐中」或「運送中」時自動開始回報位置，不用再手動按「開始回報位置」；
-    // 一路回報到按下「已送達」（上面 wasSharing && !stillSharing 那段）才會自動停止
+    // 取餐中／運送中 → 自動開始回報；已送達／其他 → 自動停止（無手動按鈕，避免刻意不回報）
     if(!wasSharing && stillSharing){
       startLocationTracking(order);
     }
