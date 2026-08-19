@@ -164,7 +164,7 @@
   .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
   .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
 
-  .loading-banner{display:none !important;
+  .loading-banner{
     display:flex; align-items:center; justify-content:center; gap:8px;
     background:var(--card); color:var(--ocean-dark); border:2px dashed var(--ocean); border-radius:var(--radius);
     padding:10px 16px; margin:16px 0; font-size:12.5px; font-weight:700;
@@ -4707,6 +4707,8 @@ function renderSettings(settings){
             resultEl.textContent = '❌ ' + (serverMsg || '查詢次數過於頻繁，請稍後再試');
           } else if(data && data.error === 'lookup_error'){
             resultEl.textContent = '❌ ' + (serverMsg || '查詢暫時失敗，請稍後再試');
+          } else if(data && data.error === 'contact_mismatch'){
+            resultEl.textContent = '❌ ' + (serverMsg || '電話有找到訂單，但社群暱稱不一致');
           } else {
             resultEl.textContent = '❌ ' + (serverMsg || '查無資料，請確認電話與社群暱稱是否皆與下單時相同，或稍後再試。');
           }
@@ -4898,53 +4900,50 @@ function renderSettings(settings){
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
     if(loadingEl){
-      loadingEl.style.display = 'block';
+      loadingEl.style.display = 'flex';
       loadingEl.classList.remove('hide');
-      loadingEl.textContent = '⏳ 載入最新資料中，請稍候...';
+      loadingEl.textContent = '⏳ 正在連線試算表載入最新資料...';
     }
     let cached = null;
-    let cacheAge = Infinity;
     try{
       const raw = localStorage.getItem(BOOTSTRAP_CACHE_KEY);
       if(raw){
         const obj = JSON.parse(raw);
         if(obj && obj.data && obj.data.menus){
           cached = obj.data;
-          cacheAge = Date.now() - Number(obj.ts || 0);
         }
       }
     }catch(e){}
 
-    // 有快取：先立即顯示快取資料，接著視需要在背景更新。
+    // 有快取：先立刻顯示（加速體感），但「每次打開頁面一定再向試算表拉一次」
     if(cached){
       try{
         applyBootstrapData_(cached);
-        if(loadingEl) loadingEl.classList.add('hide');
+        if(loadingEl){
+          loadingEl.textContent = '⏳ 已顯示快取，正在向試算表確認最新資料...';
+        }
       }catch(err){
         console.warn('套用首頁快取失敗，改由後端重新載入：', err);
         cached = null;
       }
     }
 
-    // 只有「沒有快取」或快取超過 10 分鐘才打後端。
-    // 不再每次開首頁都加 ?t=時間戳，避免強制繞過瀏覽器／CDN 快取。
-    const needFresh = !cached || cacheAge > BOOTSTRAP_CACHE_TTL;
-    if(!needFresh) return;
-    // 首頁資料只在背景更新，絕不阻塞訂單查詢、修改、取消等功能。
-
     const doFetch = () => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      fetch(SCRIPT_URL, { cache: 'no-store', signal: controller.signal })
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      // 加時間戳避免中間層快取；訂單查詢不受此函式影響
+      fetch(SCRIPT_URL + '?bootstrap=1&t=' + Date.now(), { cache: 'no-store', signal: controller.signal })
         .then(r => {
           if(!r.ok) throw new Error('bootstrap http ' + r.status);
           return r.json();
         })
         .then(data => {
-          // 只有真的有完整菜單資料才覆蓋畫面與快取，避免空資料把正常菜單洗掉。
           if(!data || !Array.isArray(data.menus)) throw new Error('bootstrap menus missing');
           applyBootstrapData_(data);
-          if(loadingEl) loadingEl.classList.add('hide');
+          if(loadingEl){
+            loadingEl.textContent = '✅ 已從試算表更新最新資料';
+            setTimeout(() => loadingEl.classList.add('hide'), 600);
+          }
           try{
             localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
           }catch(e){}
@@ -4952,35 +4951,37 @@ function renderSettings(settings){
         .catch(err => {
           console.warn('首頁資料載入失敗：', err);
           if(loadingEl){
-            loadingEl.textContent = '⚠️ 最新資料載入失敗，正在重試...';
-            setTimeout(() => {
-              const retry = new AbortController();
-              const retryTimer = setTimeout(() => retry.abort(), 10000);
-              fetch(SCRIPT_URL + '?t=' + Date.now(), { cache: 'no-store', signal: retry.signal })
-                .then(r => { if(!r.ok) throw new Error('retry http ' + r.status); return r.json(); })
-                .then(data => {
-                  if(!data || !Array.isArray(data.menus)) throw new Error('retry menus missing');
-                  applyBootstrapData_(data);
-                  loadingEl.classList.add('hide');
-                  try{ localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ts:Date.now(), data:data})); }catch(e){}
-                })
-                .catch(retryErr => {
-                  console.warn('首頁資料重試失敗：', retryErr);
-                  loadingEl.textContent = '⚠️ 最新資料暫時無法載入，請稍後重新整理網頁';
-                })
-                .finally(() => clearTimeout(retryTimer));
-            }, 800);
+            if(cached){
+              loadingEl.textContent = '⚠️ 試算表連線失敗，目前顯示快取資料（訂單查詢仍可使用）';
+              setTimeout(() => loadingEl.classList.add('hide'), 2500);
+            } else {
+              loadingEl.textContent = '⚠️ 最新資料載入失敗，正在重試...';
+              setTimeout(() => {
+                const retry = new AbortController();
+                const retryTimer = setTimeout(() => retry.abort(), 15000);
+                fetch(SCRIPT_URL + '?bootstrap=1&t=' + Date.now(), { cache: 'no-store', signal: retry.signal })
+                  .then(r => { if(!r.ok) throw new Error('retry http ' + r.status); return r.json(); })
+                  .then(data => {
+                    if(!data || !Array.isArray(data.menus)) throw new Error('retry menus missing');
+                    applyBootstrapData_(data);
+                    loadingEl.textContent = '✅ 已從試算表更新最新資料';
+                    setTimeout(() => loadingEl.classList.add('hide'), 600);
+                    try{ localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ts:Date.now(), data:data})); }catch(e){}
+                  })
+                  .catch(retryErr => {
+                    console.warn('首頁資料重試失敗：', retryErr);
+                    loadingEl.textContent = '⚠️ 無法連線試算表，請檢查網路後重新整理';
+                  })
+                  .finally(() => clearTimeout(retryTimer));
+              }, 800);
+            }
           }
         })
         .finally(() => clearTimeout(timeout));
     };
 
-    // 先讓瀏覽器完成首屏繪製，再啟動 Google Apps Script。
-    if('requestIdleCallback' in window){
-      requestIdleCallback(doFetch, { timeout: 800 });
-    }else{
-      setTimeout(doFetch, 60);
-    }
+    // 稍微延遲再打 API，讓首屏先畫完，但不跳過連線
+    setTimeout(doFetch, 50);
   }
   // 預約日期欄位不能選過去的日期
   (function setScheduleDateMin(){
