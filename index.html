@@ -4493,7 +4493,10 @@ function renderSettings(settings){
   // 搶在使用者輸入完電話號碼、按下查詢之前先暖機，實際查詢時能回得快一點。
   // Google Apps Script 冷啟動（許久沒人呼叫）常常是查詢感覺很慢的主因之一。
   function warmUpLookupBackend_(){
-    forceFreshOrderLookup(`${SCRIPT_URL}?action=lookup&phone=&contact=&t=${Date.now()}`, { cache: 'no-store' .catch(()=>{});
+    fetch(`${SCRIPT_URL}?action=lookup&phone=&contact=&t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+    }).catch(()=>{});
   }
 
   async function performLookup(digits, contact, isFirst, quiet){
@@ -4509,7 +4512,10 @@ function renderSettings(settings){
 
     try{
       const url = `${SCRIPT_URL}?action=lookup&phone=${encodeURIComponent(digits)}&contact=${encodeURIComponent(contact)}&t=${Date.now()}`;
-      const res = await fetch(url, { cache: 'no-store' ;
+      const res = await fetch(url, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
       const data = await res.json();
 
       if(data.found){
@@ -4895,7 +4901,7 @@ function renderSettings(settings){
 
     // 背景更新；不阻塞首頁首屏。即使網路失敗，仍保留快取／頁面預設資料。
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
-    fetch(freshUrl, { cache: 'no-store' 
+    fetch(freshUrl, { cache: 'no-store' })
       .then(r => {
         if(!r.ok) throw new Error('bootstrap http ' + r.status);
         return r.json();
@@ -5501,23 +5507,5 @@ ${stopsText}
 
 
 <div class="toast" id="toast"></div>
-
-<script>
-/* 修改／取消成功後，強制重新查詢一次，確保畫面狀態與後台一致 */
-async function refreshOrderAfterMutation() {
-  try {
-    if (typeof currentOrder !== 'undefined' && currentOrder) {
-      if (typeof lookupOrder === 'function') {
-        await lookupOrder(true);
-      } else if (typeof queryOrder === 'function') {
-        await queryOrder(true);
-      }
-    }
-  } catch (e) {
-    console.warn('訂單更新後重新同步失敗', e);
-  }
-}
-</script>
-
 </body>
 </html>
