@@ -164,7 +164,7 @@
   .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
   .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
 
-  .loading-banner{
+  .loading-banner{display:none !important;
     display:flex; align-items:center; justify-content:center; gap:8px;
     background:var(--card); color:var(--ocean-dark); border:2px dashed var(--ocean); border-radius:var(--radius);
     padding:10px 16px; margin:16px 0; font-size:12.5px; font-weight:700;
@@ -2671,7 +2671,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcVv7SVcAYfGL6II-4KdCmyEJjO5QYjYo_ikH00aJkR82VlrMCh0oIvA57wFGO4K7GfQ/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsoU2dTmol9_RyAauZOu_268u_QUCWfWkiPn1BpFVtgbW1bAOdTdG_SM6fMMey099Z3w/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -2700,6 +2700,7 @@
   let merchantGroupOrder = [];
   let transferFeePerStop = 15;
   let zoneFees = { inner: 30, outer: 60, outside: 70 };
+  let fee = 30;
 
   // 依 zoneFees 更新範圍按鈕文字/data-fee，以及首頁外送費卡片價格；並同步目前已選取按鈕的 fee 變數
   function applyZoneFeesToUI(){
@@ -4881,6 +4882,11 @@ function renderSettings(settings){
 
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
+    if(loadingEl){
+      loadingEl.style.display = 'block';
+      loadingEl.classList.remove('hide');
+      loadingEl.textContent = '⏳ 載入最新資料中，請稍候...';
+    }
     let cached = null;
     let cacheAge = Infinity;
     try{
@@ -4894,24 +4900,27 @@ function renderSettings(settings){
       }
     }catch(e){}
 
-    // 有快取：先畫面立即顯示，完全不等待 Google Apps Script。
+    // 有快取：先立即顯示快取資料，接著視需要在背景更新。
     if(cached){
-      applyBootstrapData_(cached);
-      loadingEl.classList.add('hide');
-    }else{
-      // 沒快取也不要讓載入提示卡住首頁；首頁先顯示，資料在背景補上。
-      loadingEl.classList.add('hide');
+      try{
+        applyBootstrapData_(cached);
+        if(loadingEl) loadingEl.classList.add('hide');
+      }catch(err){
+        console.warn('套用首頁快取失敗，改由後端重新載入：', err);
+        cached = null;
+      }
     }
 
     // 只有「沒有快取」或快取超過 10 分鐘才打後端。
     // 不再每次開首頁都加 ?t=時間戳，避免強制繞過瀏覽器／CDN 快取。
     const needFresh = !cached || cacheAge > BOOTSTRAP_CACHE_TTL;
     if(!needFresh) return;
+    // 首頁資料只在背景更新，絕不阻塞訂單查詢、修改、取消等功能。
 
     const doFetch = () => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
-      fetch(SCRIPT_URL, { cache: 'default', signal: controller.signal })
+      const timeout = setTimeout(() => controller.abort(), 6000);
+      fetch(SCRIPT_URL, { cache: 'no-store', signal: controller.signal })
         .then(r => {
           if(!r.ok) throw new Error('bootstrap http ' + r.status);
           return r.json();
@@ -4920,13 +4929,33 @@ function renderSettings(settings){
           // 只有真的有完整菜單資料才覆蓋畫面與快取，避免空資料把正常菜單洗掉。
           if(!data || !Array.isArray(data.menus)) throw new Error('bootstrap menus missing');
           applyBootstrapData_(data);
+          if(loadingEl) loadingEl.classList.add('hide');
           try{
             localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
           }catch(e){}
         })
         .catch(err => {
-          console.warn('首頁資料背景載入失敗：', err);
-          // 不阻塞首頁，也不要求使用者手動重新整理。
+          console.warn('首頁資料載入失敗：', err);
+          if(loadingEl){
+            loadingEl.textContent = '⚠️ 最新資料載入失敗，正在重試...';
+            setTimeout(() => {
+              const retry = new AbortController();
+              const retryTimer = setTimeout(() => retry.abort(), 10000);
+              fetch(SCRIPT_URL + '?t=' + Date.now(), { cache: 'no-store', signal: retry.signal })
+                .then(r => { if(!r.ok) throw new Error('retry http ' + r.status); return r.json(); })
+                .then(data => {
+                  if(!data || !Array.isArray(data.menus)) throw new Error('retry menus missing');
+                  applyBootstrapData_(data);
+                  loadingEl.classList.add('hide');
+                  try{ localStorage.setItem(BOOTSTRAP_CACHE_KEY, JSON.stringify({ts:Date.now(), data:data})); }catch(e){}
+                })
+                .catch(retryErr => {
+                  console.warn('首頁資料重試失敗：', retryErr);
+                  loadingEl.textContent = '⚠️ 最新資料暫時無法載入，請稍後重新整理網頁';
+                })
+                .finally(() => clearTimeout(retryTimer));
+            }, 800);
+          }
         })
         .finally(() => clearTimeout(timeout));
     };
@@ -4938,8 +4967,6 @@ function renderSettings(settings){
       setTimeout(doFetch, 60);
     }
   }
-  loadContent();
-
   // 預約日期欄位不能選過去的日期
   (function setScheduleDateMin(){
     const el = document.getElementById('cScheduleDate');
@@ -5035,7 +5062,6 @@ function renderSettings(settings){
     }
   }
 
-  let fee = 30;
   const zoneOutsideHintEl = document.getElementById('zoneOutsideHint');
   function updateZoneOutsideHint(zoneKey){
     if(!zoneOutsideHintEl) return;
@@ -5516,6 +5542,11 @@ ${stopsText}
     }
     resetForm();
   });
+
+  // 所有全域變數與事件初始化完成後，才開始載入首頁資料。
+  // 避免快取資料在 fee / reservationOpenTime 等變數初始化前被套用，造成 TDZ 錯誤，
+  // 進而讓整個 JavaScript 中斷、首頁一直停在「載入最新資料中」。
+  loadContent();
 
 })();
 
