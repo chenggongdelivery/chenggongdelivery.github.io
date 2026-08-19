@@ -463,10 +463,6 @@
     }
     trackingRowKey = null;
     trackingLastSent = 0;
-    document.querySelectorAll('.location-auto-hint.tracking').forEach(el => {
-      el.classList.remove('tracking');
-      el.textContent = '📍 點選「取餐中／運送中」會自動開始回報位置給客戶地圖';
-    });
     if(!silent) toast('已停止位置回報');
   }
 
@@ -501,11 +497,6 @@
     if(trackingRowKey && trackingRowKey !== order.rowKey) stopLocationTracking(true);
     trackingRowKey = order.rowKey;
     toast('開始回報位置（請允許定位權限）');
-    document.querySelectorAll('.location-auto-hint').forEach(el => {
-      const on = el.dataset.rowkey === order.rowKey;
-      el.classList.toggle('tracking', on);
-      if(on) el.textContent = '📍 位置回報中（點「已送達」會自動停止）';
-    });
     const onPos = (pos) => {
       if(trackingRowKey !== order.rowKey) return;
       const lat = pos.coords.latitude;
@@ -1185,12 +1176,6 @@
         <button type="button" class="nav-btn">🗺️ 一鍵導航</button>
         <div class="nav-hint"></div>
       </div>
-      ${(order.status === '取餐中' || order.status === '運送中') ? `
-      <div class="location-auto-hint${trackingRowKey === order.rowKey ? ' tracking' : ''}" data-rowkey="${escapeHtml(order.rowKey)}">
-        📍 ${trackingRowKey === order.rowKey
-          ? '位置回報中（點「已送達」會自動停止）'
-          : '點選「取餐中／運送中」會自動開始回報位置給客戶地圖'}
-      </div>` : ''}
     `;
 
     const confirmBtn = card.querySelector('.confirm-payment-btn');
