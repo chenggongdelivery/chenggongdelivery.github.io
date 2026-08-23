@@ -167,26 +167,28 @@
   .loading-banner.hide{opacity:0; transform:translateY(-6px); pointer-events:none; height:0; margin:0; padding:0; border:none; overflow:hidden;}
 
   
-  .announce-wrap{ margin:12px 0 0; }
+  .announce-wrap{ margin:14px 0 0; }
   .announce-fold{
-    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
-    background:var(--coral); color:var(--paper); overflow:hidden;
+    border:2px solid var(--ink); border-radius:16px; box-shadow:0 3px 0 var(--ink);
+    background:linear-gradient(180deg, #1E5B67 0%, #174A54 100%); color:#F5FBFD; overflow:hidden;
   }
-  .announce-fold.hours{ background:var(--coral-dark); }
-  .announce-fold.delay{ background:var(--gold); color:var(--ink); }
+  .announce-fold.hours{ background:linear-gradient(180deg, #2A6B78 0%, #1A4A54 100%); }
+  .announce-fold.delay{
+    background:linear-gradient(180deg, #F0C85A 0%, #E3A94B 100%); color:var(--ink);
+  }
   .announce-fold > summary{
-    list-style:none; cursor:pointer; padding:12px 14px; font-weight:800; font-size:14px;
-    display:flex; align-items:center; gap:8px; user-select:none;
+    list-style:none; cursor:pointer; padding:13px 15px; font-weight:800; font-size:14.5px;
+    display:flex; align-items:center; gap:8px; user-select:none; letter-spacing:.02em;
   }
   .announce-fold > summary::-webkit-details-marker{ display:none; }
-  .announce-fold > summary .fold-arrow{ margin-left:auto; opacity:.7; font-size:12px; transition:transform .15s; }
+  .announce-fold > summary .fold-arrow{ margin-left:auto; opacity:.75; font-size:12px; transition:transform .15s; }
   .announce-fold[open] > summary .fold-arrow{ transform:rotate(90deg); }
   .announce-fold .announce-body{
-    padding:0 14px 14px; font-weight:600; font-size:13.5px; line-height:1.7; white-space:pre-wrap;
+    padding:0 15px 15px; font-weight:600; font-size:14px; line-height:1.75; white-space:pre-wrap; opacity:.95;
   }
   .announce-new-badge{
-    display:inline-block; background:#fff; color:var(--coral-dark); font-size:11px; font-weight:900;
-    padding:1px 8px; border-radius:999px; border:1.5px solid var(--ink); letter-spacing:.04em;
+    display:inline-block; background:#fff; color:#1E5B67; font-size:11px; font-weight:900;
+    padding:2px 9px; border-radius:999px; border:1.5px solid var(--ink); letter-spacing:.04em;
   }
   .announce-fold.delay .announce-new-badge{ color:var(--ink); }
 
@@ -960,26 +962,28 @@
       font-size: 13px;
     }
     
-  .announce-wrap{ margin:12px 0 0; }
+  .announce-wrap{ margin:14px 0 0; }
   .announce-fold{
-    border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
-    background:var(--coral); color:var(--paper); overflow:hidden;
+    border:2px solid var(--ink); border-radius:16px; box-shadow:0 3px 0 var(--ink);
+    background:linear-gradient(180deg, #1E5B67 0%, #174A54 100%); color:#F5FBFD; overflow:hidden;
   }
-  .announce-fold.hours{ background:var(--coral-dark); }
-  .announce-fold.delay{ background:var(--gold); color:var(--ink); }
+  .announce-fold.hours{ background:linear-gradient(180deg, #2A6B78 0%, #1A4A54 100%); }
+  .announce-fold.delay{
+    background:linear-gradient(180deg, #F0C85A 0%, #E3A94B 100%); color:var(--ink);
+  }
   .announce-fold > summary{
-    list-style:none; cursor:pointer; padding:12px 14px; font-weight:800; font-size:14px;
-    display:flex; align-items:center; gap:8px; user-select:none;
+    list-style:none; cursor:pointer; padding:13px 15px; font-weight:800; font-size:14.5px;
+    display:flex; align-items:center; gap:8px; user-select:none; letter-spacing:.02em;
   }
   .announce-fold > summary::-webkit-details-marker{ display:none; }
-  .announce-fold > summary .fold-arrow{ margin-left:auto; opacity:.7; font-size:12px; transition:transform .15s; }
+  .announce-fold > summary .fold-arrow{ margin-left:auto; opacity:.75; font-size:12px; transition:transform .15s; }
   .announce-fold[open] > summary .fold-arrow{ transform:rotate(90deg); }
   .announce-fold .announce-body{
-    padding:0 14px 14px; font-weight:600; font-size:13.5px; line-height:1.7; white-space:pre-wrap;
+    padding:0 15px 15px; font-weight:600; font-size:14px; line-height:1.75; white-space:pre-wrap; opacity:.95;
   }
   .announce-new-badge{
-    display:inline-block; background:#fff; color:var(--coral-dark); font-size:11px; font-weight:900;
-    padding:1px 8px; border-radius:999px; border:1.5px solid var(--ink); letter-spacing:.04em;
+    display:inline-block; background:#fff; color:#1E5B67; font-size:11px; font-weight:900;
+    padding:2px 9px; border-radius:999px; border:1.5px solid var(--ink); letter-spacing:.04em;
   }
   .announce-fold.delay .announce-new-badge{ color:var(--ink); }
 
@@ -1827,92 +1831,105 @@
   }
 
 
+  /* 廣告區：柔和暖色，與公告區隔但不搶戲 */
   .merchant-ads{
-    margin:16px 0 0;
-    border:2.5px solid var(--ink);
-    border-radius:18px;
-    background:linear-gradient(145deg, #FFF3D6 0%, #FFE0A8 40%, #FFB347 100%);
-    box-shadow:0 4px 0 var(--ink), 0 14px 28px -10px rgba(226,83,47,.45);
+    margin:18px 0 4px;
+    border:2px solid var(--ink);
+    border-radius:16px;
+    background:#FFF9F0;
+    box-shadow:0 3px 0 var(--ink);
     overflow:hidden;
     position:relative;
   }
-  .merchant-ads::before{
-    content:'';
-    position:absolute; inset:0;
-    background:radial-gradient(circle at 12% 20%, rgba(255,255,255,.55), transparent 42%),
-               radial-gradient(circle at 88% 0%, rgba(255,80,40,.18), transparent 40%);
-    pointer-events:none;
-  }
   .merchant-ads-head{
     position:relative; z-index:1;
-    padding:13px 16px;
-    font-weight:900;
+    padding:12px 14px;
+    font-weight:800;
     font-size:15px;
-    letter-spacing:.03em;
-    background:linear-gradient(95deg, #E2532F 0%, #FF6B3D 40%, #E3A94B 100%);
-    color:#fff;
-    border-bottom:2.5px solid var(--ink);
+    letter-spacing:.02em;
+    background:#F6E6C8;
+    color:var(--ink);
+    border-bottom:1.5px solid rgba(34,48,46,.18);
     display:flex;
     align-items:center;
     gap:8px;
-    text-shadow:0 1px 0 rgba(0,0,0,.15);
   }
   .merchant-ads-head .ads-badge{
-    font-size:10.5px;
-    font-weight:900;
+    font-size:11px;
+    font-weight:800;
     background:#fff;
-    color:#C73A1A;
-    border:1.5px solid var(--ink);
+    color:#9A5B20;
+    border:1.5px solid rgba(34,48,46,.35);
     border-radius:999px;
-    padding:2px 9px;
+    padding:2px 8px;
     letter-spacing:.04em;
-    animation:adsPulse 1.8s ease-in-out infinite;
-  }
-  @keyframes adsPulse{
-    0%, 100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(255,255,255,.4); }
-    50%{ transform:scale(1.06); box-shadow:0 0 0 4px rgba(255,255,255,0); }
   }
   .merchant-ads-list{
     position:relative; z-index:1;
-    display:grid;
-    gap:0;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding:12px;
   }
   .merchant-ad-card{
     display:flex;
     gap:12px;
-    padding:14px 16px;
-    border-bottom:1.5px dashed rgba(185,63,34,.28);
-    align-items:flex-start;
+    padding:12px;
+    align-items:center;
     text-decoration:none;
     color:inherit;
-    background:rgba(255,255,255,.72);
-    transition:background .15s ease, transform .12s ease;
-  }
-  .merchant-ad-card:last-child{ border-bottom:none; }
-  .merchant-ad-card:hover{ background:#fff; }
-  .merchant-ad-card:active{ background:#fff; transform:scale(.99); }
-  .merchant-ad-card img{
-    width:72px; height:72px; object-fit:cover;
-    border-radius:14px; border:2.5px solid var(--ink); flex-shrink:0;
     background:#fff;
-    box-shadow:0 3px 0 rgba(34,48,46,.25);
+    border:1.5px solid rgba(34,48,46,.2);
+    border-radius:14px;
+    box-shadow:0 1px 0 rgba(34,48,46,.08);
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .merchant-ad-card:hover{
+    background:#FFFcf7;
+    border-color:rgba(34,48,46,.35);
+  }
+  .merchant-ad-card:active{ background:#F8F1E4; }
+  .merchant-ad-card img,
+  .merchant-ad-card .ad-fallback{
+    width:72px; height:72px; object-fit:cover;
+    border-radius:12px; border:1.5px solid rgba(34,48,46,.2); flex-shrink:0;
+    background:#F6E6C8;
+  }
+  .merchant-ad-card .ad-fallback{
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px;
+    background:#F6E6C8;
   }
   .merchant-ad-card .ad-text{ min-width:0; flex:1; }
+  .merchant-ad-card .ad-tag{
+    display:inline-block;
+    font-size:11px; font-weight:700;
+    background:#F3E4C8; color:#7A5A28;
+    border:none; border-radius:999px;
+    padding:2px 8px; margin-bottom:5px; letter-spacing:.02em;
+  }
   .merchant-ad-card .ad-name{
-    font-weight:900; font-size:15.5px; margin:0 0 5px;
-    color:#C73A1A;
+    font-weight:800; font-size:16px; margin:0 0 4px;
+    color:var(--ink); line-height:1.3;
   }
   .merchant-ad-card .ad-desc{
-    font-size:13px; line-height:1.55; color:var(--ink);
-    white-space:pre-wrap;
+    font-size:13.5px; line-height:1.55; color:#3A4543;
+    white-space:pre-wrap; font-weight:500;
   }
   .merchant-ad-card .ad-link{
     display:inline-flex; align-items:center; gap:4px;
-    margin-top:8px; font-size:12px; font-weight:900;
-    color:#fff; background:linear-gradient(90deg, #E2532F, #FF6B3D);
-    border:1.5px solid var(--ink); border-radius:999px;
-    padding:5px 12px;
-    box-shadow:0 2px 0 var(--ink);
+    margin-top:8px; font-size:12.5px; font-weight:700;
+    color:var(--ocean-dark); background:transparent;
+    border:none; border-radius:0; padding:0;
+    box-shadow:none; text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .merchant-ad-card{ cursor:pointer; }
+  .thumb.ad-jump-highlight{
+    outline:3px solid var(--gold);
+    outline-offset:2px;
+    border-radius:12px;
+    transition:outline-color .3s ease;
   }
 
   .hero-preorder-tip{
@@ -2352,7 +2369,7 @@
   </div>
 
   <div class="merchant-ads" id="merchantAdsSection" style="display:none;">
-    <div class="merchant-ads-head">🔥 限時優惠・商家廣告 <span class="ads-badge">HOT</span></div>
+    <div class="merchant-ads-head">📣 商家優惠 <span class="ads-badge">推薦</span></div>
     <div class="merchant-ads-list" id="merchantAdsList"></div>
   </div>
 
@@ -3901,6 +3918,33 @@
   let latestMerchantAds_ = [];
   let latestWelcomeAnnounce_ = '';
 
+  function jumpToMerchantMenu_(merchantName){
+    const name = String(merchantName || '').trim();
+    if(!name) return;
+    const menuSection = document.getElementById('menuSection');
+    if(menuSection) menuSection.open = true;
+
+    const thumbs = Array.from(document.querySelectorAll('#menuGallery .thumb'));
+    const match = thumbs.find(t => {
+      const cap = t.querySelector('.thumb-cap');
+      return cap && cap.textContent.trim() === name;
+    });
+
+    if(match){
+      const cat = match.closest('details.menu-category');
+      if(cat) cat.open = true;
+      // 等 details 展開後再捲動
+      requestAnimationFrame(()=>{
+        match.scrollIntoView({ behavior:'smooth', block:'center' });
+        match.classList.add('ad-jump-highlight');
+        setTimeout(()=> match.classList.remove('ad-jump-highlight'), 2200);
+      });
+    } else {
+      if(menuSection) menuSection.scrollIntoView({ behavior:'smooth', block:'start' });
+      if(typeof toast === 'function') toast('目前尚無「' + name + '」的菜單相片，可在表單手動填寫');
+    }
+  }
+
   function renderMerchantAds(ads){
     const section = document.getElementById('merchantAdsSection');
     const list = document.getElementById('merchantAdsList');
@@ -3912,19 +3956,29 @@
       list.innerHTML = '';
       return;
     }
-    list.innerHTML = items.map(ad => {
+    list.innerHTML = items.map((ad, i) => {
       const name = escapeHtml(ad.merchant || '商家優惠');
       const desc = escapeHtml(ad.desc || '');
       const img = (ad.image || '').trim();
-      const link = (ad.link || '').trim();
-      const imgHtml = img ? `<img src="${escapeHtml(img)}" alt="${name}" loading="lazy">` : '';
-      const linkHtml = link ? `<span class="ad-link">查看詳情 →</span>` : '';
-      const inner = `${imgHtml}<div class="ad-text"><div class="ad-name">${name}</div>${desc ? `<div class="ad-desc">${desc}</div>` : ''}${linkHtml}</div>`;
-      if(link){
-        return `<a class="merchant-ad-card" href="${escapeHtml(link)}" target="_blank" rel="noopener">${inner}</a>`;
-      }
-      return `<div class="merchant-ad-card">${inner}</div>`;
+      const imgHtml = img
+        ? `<img src="${escapeHtml(img)}" alt="${name}" loading="lazy">`
+        : `<div class="ad-fallback" aria-hidden="true">📣</div>`;
+      const linkHtml = `<span class="ad-link">看菜單 →</span>`;
+      const inner = `${imgHtml}<div class="ad-text"><span class="ad-tag">優惠</span><div class="ad-name">${name}</div>${desc ? `<div class="ad-desc">${desc}</div>` : ''}${linkHtml}</div>`;
+      return `<div class="merchant-ad-card" role="button" tabindex="0" data-ad-idx="${i}">${inner}</div>`;
     }).join('');
+    list.querySelectorAll('.merchant-ad-card').forEach(card => {
+      const go = ()=>{
+        const idx = Number(card.dataset.adIdx);
+        const ad = items[idx];
+        if(!ad) return;
+        jumpToMerchantMenu_(ad.merchant || '');
+      };
+      card.addEventListener('click', go);
+      card.addEventListener('keydown', e=>{
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); }
+      });
+    });
     section.style.display = 'block';
   }
 
@@ -3962,24 +4016,26 @@
     if(announce){
       html += `<div class="wp-announce">${escapeHtml(announce)}</div>`;
     }
-    ads.slice(0, 5).forEach(ad => {
+    ads.slice(0, 5).forEach((ad, i) => {
       const name = escapeHtml(ad.merchant || '商家優惠');
       const desc = escapeHtml(ad.desc || '');
       const img = (ad.image || '').trim();
-      const link = (ad.link || '').trim();
       const imgHtml = img ? `<img src="${escapeHtml(img)}" alt="${name}" loading="lazy">` : '';
       const inner = `${imgHtml}<div><div class="wp-ad-name">${name}</div>${desc ? `<div class="wp-ad-desc">${desc}</div>` : ''}</div>`;
-      if(link){
-        html += `<a class="wp-ad" href="${escapeHtml(link)}" target="_blank" rel="noopener">${inner}</a>`;
-      } else {
-        html += `<div class="wp-ad">${inner}</div>`;
-      }
+      html += `<div class="wp-ad" role="button" tabindex="0" data-wp-ad-idx="${i}" style="cursor:pointer;">${inner}</div>`;
     });
     body.innerHTML = html;
+    body.querySelectorAll('.wp-ad[data-wp-ad-idx]').forEach(el => {
+      el.addEventListener('click', ()=>{
+        const ad = ads[Number(el.dataset.wpAdIdx)];
+        hideWelcomePopup_();
+        if(ad) setTimeout(()=> jumpToMerchantMenu_(ad.merchant || ''), 120);
+      });
+    });
     if(title){
       if(announce && ads.length) title.textContent = '📢 公告與優惠';
       else if(announce) title.textContent = '📢 公告';
-      else title.textContent = '🔥 限時優惠';
+      else title.textContent = '📣 商家優惠';
     }
     const overlay = document.getElementById('welcomePopupOverlay');
     if(overlay){
