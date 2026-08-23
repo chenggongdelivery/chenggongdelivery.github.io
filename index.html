@@ -2276,7 +2276,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單手動填。</div>
+        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方表單手動填。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -2298,12 +2298,12 @@
 <div class="fee-grid">
         <div class="fee-card">
           <span class="zone">鎮內</span>
-          <div class="price" id="feePriceInner">$30 <span>／單</span></div>
+          <div class="price" id="feePriceInner">$50 <span>／單</span></div>
           <div class="range">三仙台加油站 ↔ 全滿加油站</div>
         </div>
         <div class="fee-card">
           <span class="zone">鎮外</span>
-          <div class="price" id="feePriceOuter">$60 <span>／單</span></div>
+          <div class="price" id="feePriceOuter">$100 <span>／單</span></div>
           <div class="range">北至小港天后宮 · 南至和平國小</div>
         </div>
         <div class="fee-card">
@@ -2411,9 +2411,9 @@
     <div class="field">
       <label>範圍</label>
       <div class="zone-toggle">
-        <button type="button" class="zone-btn active" data-zone="inner" data-fee="30">鎮內（$30）</button>
-        <button type="button" class="zone-btn" data-zone="outer" data-fee="60">鎮外（$60）</button>
-        <button type="button" class="zone-btn" data-zone="outside" data-fee="70">超出範圍（分級計算，請至社群詢問）</button>
+        <button type="button" class="zone-btn active" data-zone="inner" data-fee="50">鎮內（$50）</button>
+        <button type="button" class="zone-btn" data-zone="outer" data-fee="100">鎮外（$100）</button>
+        <button type="button" class="zone-btn" data-zone="outside" data-fee="120">超出範圍（分級計算，請至社群詢問）</button>
       </div>
       <div id="zoneOutsideHint" style="display:none; font-size:12px; margin-top:8px; font-weight:700; line-height:1.6; color:var(--coral-dark);"></div>
     </div>
@@ -2609,7 +2609,7 @@
 
 <script>
 (function(){
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXK7quhFmyCyTiKWxCGAkVRJZ7DRy9tEg4uUx5gBmQMr4ctAKg2M698fu6h_SyNf3Vbg/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsoU2dTmol9_RyAauZOu_268u_QUCWfWkiPn1BpFVtgbW1bAOdTdG_SM6fMMey099Z3w/exec';
 
   function escapeHtml(str){
     const div = document.createElement('div');
@@ -2637,7 +2637,7 @@
   let merchantGroups = {};
   let merchantGroupOrder = [];
   let transferFeePerStop = 15;
-  let zoneFees = { inner: 30, outer: 60, outside: 70 };
+  let zoneFees = { inner: 50, outer: 100, outside: 120 };
 
   // 依 zoneFees 更新範圍按鈕文字/data-fee，以及首頁外送費卡片價格；並同步目前已選取按鈕的 fee 變數
   function applyZoneFeesToUI(){
@@ -2813,7 +2813,7 @@
       if(!groups.length && q){
         const empty = document.createElement('div');
         empty.className = 'mp-empty';
-        empty.textContent = '找不到符合的商家，可選上方「其他」手動輸入';
+        empty.textContent = '找不到符合的商家，可選下方「其他」手動輸入';
         panel.appendChild(empty);
       }
 
@@ -3822,11 +3822,11 @@ function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
 
-    // 三段外送費：試算表有填才覆寫，沒填就維持預設 30／60／70
+    // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
     const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
-    zoneFees.inner = parseFee(settings['鎮內運費'], 30);
-    zoneFees.outer = parseFee(settings['鎮外運費'], 60);
-    zoneFees.outside = parseFee(settings['超出範圍運費'], 70);
+    zoneFees.inner = parseFee(settings['鎮內運費'], 50);
+    zoneFees.outer = parseFee(settings['鎮外運費'], 100);
+    zoneFees.outside = parseFee(settings['超出範圍運費'], 120);
     applyZoneFeesToUI();
 
     // 範圍判斷用的界線緯度：後台有填才啟用精準座標判斷，沒填就自動退回關鍵字比對
@@ -4922,7 +4922,7 @@ function renderSettings(settings){
     }
   }
 
-  let fee = 30;
+  let fee = 50;
   const zoneOutsideHintEl = document.getElementById('zoneOutsideHint');
   function updateZoneOutsideHint(zoneKey){
     if(!zoneOutsideHintEl) return;
@@ -4973,7 +4973,10 @@ function renderSettings(settings){
     const contact = document.getElementById('cContact').value.trim() || '（尚未填寫）';
     const schedule = document.getElementById('cSchedule').value;
     const note = document.getElementById('cNote').value.trim();
-    const zoneLabel = fee === 30 ? '鎮內' : '鎮外';
+    const activeZoneBtn = document.querySelector('.zone-btn.active');
+    const zoneLabel = activeZoneBtn
+      ? (activeZoneBtn.dataset.zone === 'inner' ? '鎮內' : (activeZoneBtn.dataset.zone === 'outer' ? '鎮外' : '超出範圍'))
+      : (fee <= zoneFees.inner ? '鎮內' : (fee >= zoneFees.outside ? '超出範圍' : '鎮外'));
     const selectedExtras = getSelectedExtraServices();
     const extraServiceTotal = selectedExtras.reduce((sum, s) => sum + Number(s.fee || 0), 0);
     const deliveryBase = calculateDeliveryBase(stops, fee, transferFeePerStop);
@@ -5105,7 +5108,11 @@ ${stopsText}
       contact: document.getElementById('cContact').value.trim(),
       schedule: document.getElementById('cSchedule').value,
       note: document.getElementById('cNote').value.trim(),
-      zone: fee === 30 ? '鎮內' : '鎮外',
+      zone: (function(){
+        const z = document.querySelector('.zone-btn.active');
+        if(z) return z.dataset.zone === 'inner' ? '鎮內' : (z.dataset.zone === 'outer' ? '鎮外' : '超出範圍');
+        return fee <= zoneFees.inner ? '鎮內' : (fee >= zoneFees.outside ? '超出範圍' : '鎮外');
+      })(),
       fee: baseFee + extraServiceTotal + transferTotal,
       extraServices: extraNames,
       paymentMethod: paymentMethod,
@@ -5171,10 +5178,11 @@ ${stopsText}
     document.getElementById('cAddrDetail').value = snapshot.cAddrDetail || '';
     document.getElementById('cAddrNote').value = snapshot.cAddrNote || '';
     syncAddressField();
-    fee = snapshot.fee || 30;
+    fee = snapshot.fee || zoneFees.inner;
     rebuildStops(snapshot.stops);
     document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.zone-btn[data-fee="${fee}"]`).classList.add('active');
+    const matchBtn = document.querySelector(`.zone-btn[data-fee="${fee}"]`) || document.querySelector('.zone-btn[data-zone="inner"]');
+    if(matchBtn) matchBtn.classList.add('active');
     document.querySelectorAll('#extraServicePicker input').forEach(cb => {
       cb.checked = (snapshot.extraIdx || []).includes(cb.dataset.idx);
     });
