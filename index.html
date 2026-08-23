@@ -212,11 +212,19 @@
   }
 
   .status-banner{
-    display:none; align-items:center; gap:10px; background:var(--coral); color:var(--paper);
+    display:none; flex-direction:column; align-items:stretch; gap:12px; background:var(--coral); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
     padding:14px 18px; margin:20px 0; font-weight:700; font-size:14px; line-height:1.5;
     animation:fadeSlideIn .3s ease;
   }
+  .status-banner .status-banner-text{ flex:1; }
+  .status-banner .status-line-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    align-self:flex-start; background:#06C755; color:#fff; border:2px solid var(--ink);
+    border-radius:999px; padding:10px 16px; font-weight:800; font-size:13.5px;
+    text-decoration:none; box-shadow:0 2px 0 var(--ink); font-family:inherit;
+  }
+  .status-banner .status-line-btn:active{ transform:translateY(2px); box-shadow:none; }
   .progress-banner{
     display:none; align-items:center; gap:10px; background:var(--ocean); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -2210,7 +2218,8 @@
         <summary title="營業時間"><span class="hours-ico">🕒</span><span class="provisional" id="provisionalBadge" style="display:none;margin-left:4px;">暫定</span></summary>
         <div class="header-rules-panel">
           <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">營業時間：<span id="hoursTimeText">08:00–20:00</span></div>
-          <div class="note" style="font-size:12px;opacity:.8;">非營業時間可預約</div>
+          <div class="note" style="font-size:12px;opacity:.8;line-height:1.6;">非營業時間可預約；急需請私訊小蜜丰</div>
+          <a id="headerHoursLineBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;align-items:center;gap:4px;background:#06C755;color:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;text-decoration:none;">💬 私訊小蜜丰</a>
         </div>
       </details>
     <div class="header-spacer" aria-hidden="true"></div>
@@ -2276,7 +2285,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方表單手動填。</div>
+        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單表單手動填。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -2813,7 +2822,7 @@
       if(!groups.length && q){
         const empty = document.createElement('div');
         empty.className = 'mp-empty';
-        empty.textContent = '找不到符合的商家，可選下方「其他」手動輸入';
+        empty.textContent = '找不到符合的商家，可選上方「其他」手動輸入';
         panel.appendChild(empty);
       }
 
@@ -3821,6 +3830,9 @@
 function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
+    const lineHref = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+    const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
+    if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
 
     // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
     const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
@@ -3915,27 +3927,35 @@ function renderSettings(settings){
     const banner = document.getElementById('statusBanner');
     const sendBtn = document.getElementById('sendLineBtn');
 
+    const lineUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
+    function fillStatusBanner_(icon, msg, showLineBtn){
+      const btnHtml = showLineBtn
+        ? `<a class="status-line-btn" href="${escapeHtml(lineUrl)}" target="_blank" rel="noopener">💬 私訊小蜜丰</a>`
+        : '';
+      banner.innerHTML = `<div class="status-banner-text">${icon} ${escapeHtml(msg)}</div>${btnHtml}`;
+      banner.style.display = 'flex';
+    }
+
     if(isOpen){
       // 正常營業時間內：完全開放
       orderingMode = 'open';
       orderingDisabled = false;
       banner.style.display = 'none';
+      banner.innerHTML = '';
       sendBtn.classList.remove('disabled-btn');
     } else if(forcedClosed){
       // 手動強制公休：完全不能下單，包含預約單
       orderingMode = 'closed';
       orderingDisabled = true;
       const msg = (settings['暫停服務公告'] || '目前暫停接單，造成不便敬請見諒').trim();
-      banner.textContent = `⏸️ ${msg}`;
-      banner.style.display = 'flex';
+      fillStatusBanner_('⏸️', msg, true);
       sendBtn.classList.add('disabled-btn');
     } else {
-      // 單純非營業時間：只能下預約單，立即單會被擋下
+      // 單純非營業時間：可預約；急需可按按鈕私訊（文案可由試算表「非營業時間公告」調整）
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
-      const msg = (settings['暫停服務公告'] || `目前非營業時間，僅開放預約單，服務時段為 ${openTime}–${closeTime}`).trim();
-      banner.textContent = `🌙 ${msg}`;
-      banner.style.display = 'flex';
+      const msg = (settings['暫停服務公告'] || `目前非營業時間（${openTime}–${closeTime}）。若仍想下單，請私訊小蜜丰；也可先填預約單。`).trim();
+      fillStatusBanner_('🌙', msg, true);
       sendBtn.classList.remove('disabled-btn');
     }
 
@@ -5289,7 +5309,7 @@ ${stopsText}
 
   function validateRequired(data){
     if(orderingMode === 'reservationOnly' && !data.schedule){
-      toast('目前非營業時間，僅開放預約單，請選擇預約時間');
+      toast('目前非營業時間。急需請私訊小蜜丰；或選擇預約時間後送出');
       document.getElementById('cScheduleDate').focus();
       return false;
     }
