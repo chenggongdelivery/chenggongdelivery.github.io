@@ -225,13 +225,90 @@
     text-decoration:none; box-shadow:0 2px 0 var(--ink); font-family:inherit;
   }
   .status-banner .status-line-btn:active{ transform:translateY(2px); box-shadow:none; }
-  .zone-line-btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:6px;
-    margin-top:8px; background:#06C755; color:#fff !important; border:2px solid var(--ink);
-    border-radius:999px; padding:9px 14px; font-weight:800; font-size:13px;
+  #zoneOutsideHint{
+    display:none;
+    margin-top:12px;
+    padding:12px 14px;
+    background:#FFF6E8;
+    border:2px solid var(--ink);
+    border-radius:14px;
+    box-shadow:0 2px 0 var(--ink);
+    color:var(--ink);
+    font-size:13px;
+    font-weight:600;
+    line-height:1.55;
+  }
+  #zoneOutsideHint .zone-hint-text{ margin:0 0 10px; color:#8B3A1A; font-weight:700; }
+  #zoneOutsideHint .zone-line-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    width:100%; box-sizing:border-box;
+    background:#06C755; color:#fff !important; border:2px solid var(--ink);
+    border-radius:999px; padding:11px 16px; font-weight:800; font-size:14px;
     text-decoration:none !important; box-shadow:0 2px 0 var(--ink); font-family:inherit;
   }
-  .zone-line-btn:active{ transform:translateY(2px); box-shadow:none; }
+  #zoneOutsideHint .zone-line-btn:active{ transform:translateY(2px); box-shadow:none; }
+
+  /* 開站公告／廣告彈窗 */
+  .welcome-popup-overlay{
+    display:none; position:fixed; inset:0; z-index:500;
+    background:rgba(34,48,46,.72); padding:20px 14px;
+    align-items:center; justify-content:center;
+    -webkit-overflow-scrolling:touch;
+  }
+  .welcome-popup-overlay.show{ display:flex; }
+  .welcome-popup{
+    position:relative; width:100%; max-width:380px; max-height:min(82vh, 560px);
+    background:var(--card); border:2.5px solid var(--ink); border-radius:18px;
+    box-shadow:0 4px 0 var(--ink); display:flex; flex-direction:column;
+    overflow:hidden; animation:popIn .28s ease;
+  }
+  .welcome-popup-close{
+    position:absolute; top:10px; right:10px; z-index:2;
+    width:36px; height:36px; border-radius:50%; border:2px solid var(--ink);
+    background:#fff; color:var(--ink); font-size:20px; font-weight:800;
+    line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 0 var(--ink); font-family:inherit; padding:0;
+  }
+  .welcome-popup-close:active{ transform:translateY(2px); box-shadow:none; }
+  .welcome-popup-head{
+    padding:18px 48px 10px 18px; font-size:17px; font-weight:800; color:var(--ocean);
+  }
+  .welcome-popup-body{
+    padding:0 18px 12px; overflow-y:auto; flex:1; min-height:0;
+    font-size:14px; line-height:1.65; color:var(--ink);
+  }
+  .welcome-popup-body .wp-announce{
+    background:#E8F6FA; border:1.5px solid rgba(34,48,46,.2); border-radius:12px;
+    padding:12px 14px; margin-bottom:12px; white-space:pre-wrap; font-weight:600;
+  }
+  .welcome-popup-body .wp-ad{
+    display:flex; gap:12px; align-items:flex-start;
+    border:1.5px solid rgba(34,48,46,.18); border-radius:12px;
+    padding:10px; margin-bottom:10px; text-decoration:none; color:inherit;
+    background:#fff;
+  }
+  .welcome-popup-body .wp-ad img{
+    width:64px; height:64px; object-fit:cover; border-radius:10px;
+    border:1.5px solid rgba(34,48,46,.15); flex-shrink:0;
+  }
+  .welcome-popup-body .wp-ad .wp-ad-name{ font-weight:800; font-size:14px; margin-bottom:2px; }
+  .welcome-popup-body .wp-ad .wp-ad-desc{ font-size:12.5px; opacity:.85; line-height:1.45; }
+  .welcome-popup-foot{
+    padding:12px 18px 16px; border-top:1.5px solid rgba(34,48,46,.12);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .welcome-popup-foot label{
+    display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700;
+    cursor:pointer; user-select:none;
+  }
+  .welcome-popup-foot input{ width:18px; height:18px; accent-color:var(--ocean); }
+  .welcome-popup-ok{
+    width:100%; border:2px solid var(--ink); border-radius:999px;
+    background:var(--ocean); color:#fff; font-weight:800; font-size:15px;
+    padding:12px; cursor:pointer; font-family:inherit;
+    box-shadow:0 2px 0 var(--ink);
+  }
+  .welcome-popup-ok:active{ transform:translateY(2px); box-shadow:none; }
   .progress-banner{
     display:none; align-items:center; gap:10px; background:var(--ocean); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -2238,6 +2315,17 @@
 </header>
 
 <main>
+  <div class="welcome-popup-overlay" id="welcomePopupOverlay" aria-hidden="true">
+    <div class="welcome-popup" role="dialog" aria-labelledby="welcomePopupTitle">
+      <button type="button" class="welcome-popup-close" id="welcomePopupClose" aria-label="關閉">×</button>
+      <div class="welcome-popup-head" id="welcomePopupTitle">📢 公告與優惠</div>
+      <div class="welcome-popup-body" id="welcomePopupBody"></div>
+      <div class="welcome-popup-foot">
+        <label><input type="checkbox" id="welcomePopupDontShow"> 今日不再顯示</label>
+        <button type="button" class="welcome-popup-ok" id="welcomePopupOk">我知道了</button>
+      </div>
+    </div>
+  </div>
   <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
   <div class="announce-stack" id="announceStack">
   <div class="status-banner" id="statusBanner"></div>
@@ -2431,7 +2519,7 @@
         <button type="button" class="zone-btn" data-zone="outer" data-fee="100">鎮外（$100）</button>
         <button type="button" class="zone-btn" data-zone="outside" data-fee="120">超出範圍（分級計算，請私訊小蜜丰詢問）</button>
       </div>
-      <div id="zoneOutsideHint" style="display:none; font-size:12.5px; margin-top:10px; font-weight:700; line-height:1.65; color:var(--coral-dark);"></div>
+      <div id="zoneOutsideHint" style="display:none;"></div>
     </div>
     <div class="field" id="extraServiceField" style="display:none;">
       <label>加購服務（選填）</label>
@@ -3547,6 +3635,7 @@
       fee = zoneFees.inner;
       document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.zone-btn[data-zone="inner"]').classList.add('active');
+      hintEl.classList.remove('zone-outside-box');
       hintEl.textContent = `✓ 已自動判斷為「鎮內」範圍${precisionNote}`;
       hintEl.style.color = 'var(--ocean-dark)';
       hintEl.style.display = 'block';
@@ -3556,18 +3645,19 @@
       fee = zoneFees.outer;
       document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.zone-btn[data-zone="outer"]').classList.add('active');
+      hintEl.classList.remove('zone-outside-box');
       hintEl.textContent = `✓ 已自動判斷為「鎮外」範圍${precisionNote}`;
       hintEl.style.color = 'var(--ocean-dark)';
       hintEl.style.display = 'block';
       updateZoneOutsideHint('outer');
       updatePreview();
     } else {
-      // 超出範圍：自動選取超出範圍費用，並提示可私訊確認
+      // 超出範圍：短提示即可，私訊按鈕統一由下方 zoneOutsideHint 顯示（避免重複）
       fee = zoneFees.outside;
       document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.zone-btn[data-zone="outside"]').classList.add('active');
-      const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，已自動選取「超出範圍（分級計算）」。請先私訊確認能否配送與實際費用。<br><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 私訊小蜜丰詢問</a>`;
+      hintEl.classList.remove('zone-outside-box');
+      hintEl.textContent = `⚠️ 此地址可能已超出服務範圍${precisionNote}，已自動選取「超出範圍」`;
       hintEl.style.color = 'var(--coral-dark)';
       hintEl.style.display = 'block';
       updateZoneOutsideHint('outside');
@@ -3808,11 +3898,15 @@
   let businessCloseTime = '20:00';
 
   
+  let latestMerchantAds_ = [];
+  let latestWelcomeAnnounce_ = '';
+
   function renderMerchantAds(ads){
     const section = document.getElementById('merchantAdsSection');
     const list = document.getElementById('merchantAdsList');
     if(!section || !list) return;
     const items = Array.isArray(ads) ? ads.filter(a => a && (a.merchant || a.desc || a.image)) : [];
+    latestMerchantAds_ = items;
     if(!items.length){
       section.style.display = 'none';
       list.innerHTML = '';
@@ -3834,12 +3928,77 @@
     section.style.display = 'block';
   }
 
+  function todayKey_(){
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  }
+  function shouldShowWelcomePopup_(){
+    try{
+      return localStorage.getItem('cg_welcome_popup_hide') !== todayKey_();
+    }catch(e){ return true; }
+  }
+  function hideWelcomePopup_(){
+    const overlay = document.getElementById('welcomePopupOverlay');
+    if(!overlay) return;
+    const dont = document.getElementById('welcomePopupDontShow');
+    if(dont && dont.checked){
+      try{ localStorage.setItem('cg_welcome_popup_hide', todayKey_()); }catch(e){}
+    }
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  function maybeShowWelcomePopup_(){
+    if(!shouldShowWelcomePopup_()) return;
+    const announce = (latestWelcomeAnnounce_ || '').trim();
+    const ads = latestMerchantAds_ || [];
+    if(!announce && !ads.length) return;
+
+    const body = document.getElementById('welcomePopupBody');
+    const title = document.getElementById('welcomePopupTitle');
+    if(!body) return;
+
+    let html = '';
+    if(announce){
+      html += `<div class="wp-announce">${escapeHtml(announce)}</div>`;
+    }
+    ads.slice(0, 5).forEach(ad => {
+      const name = escapeHtml(ad.merchant || '商家優惠');
+      const desc = escapeHtml(ad.desc || '');
+      const img = (ad.image || '').trim();
+      const link = (ad.link || '').trim();
+      const imgHtml = img ? `<img src="${escapeHtml(img)}" alt="${name}" loading="lazy">` : '';
+      const inner = `${imgHtml}<div><div class="wp-ad-name">${name}</div>${desc ? `<div class="wp-ad-desc">${desc}</div>` : ''}</div>`;
+      if(link){
+        html += `<a class="wp-ad" href="${escapeHtml(link)}" target="_blank" rel="noopener">${inner}</a>`;
+      } else {
+        html += `<div class="wp-ad">${inner}</div>`;
+      }
+    });
+    body.innerHTML = html;
+    if(title){
+      if(announce && ads.length) title.textContent = '📢 公告與優惠';
+      else if(announce) title.textContent = '📢 公告';
+      else title.textContent = '🔥 限時優惠';
+    }
+    const overlay = document.getElementById('welcomePopupOverlay');
+    if(overlay){
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
+  }
+
 function renderSettings(settings){
     if(!settings) return;
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
     const lineHref = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
+
+    // 開站彈窗用：公告內容優先，其次營業時間調整公告
+    const mainAnnounce = (settings['公告內容'] || '').trim();
+    const hoursAnnounce = (settings['營業時間調整公告'] || '').trim();
+    latestWelcomeAnnounce_ = mainAnnounce || hoursAnnounce || '';
 
     // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
     const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
@@ -4844,6 +5003,8 @@ function renderSettings(settings){
         renderDeliverableRoads(data.deliverableRoads);
         renderPaymentAccounts(data.paymentAccounts);
         loadingEl.classList.add('hide');
+        // 資料載入完成後再顯示開站彈窗（公告／廣告）
+        setTimeout(maybeShowWelcomePopup_, 350);
       })
       .catch(()=>{
         // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
@@ -4853,6 +5014,17 @@ function renderSettings(settings){
       });
   }
   loadContent();
+
+  (function bindWelcomePopup_(){
+    const closeBtn = document.getElementById('welcomePopupClose');
+    const okBtn = document.getElementById('welcomePopupOk');
+    const overlay = document.getElementById('welcomePopupOverlay');
+    if(closeBtn) closeBtn.addEventListener('click', hideWelcomePopup_);
+    if(okBtn) okBtn.addEventListener('click', hideWelcomePopup_);
+    if(overlay) overlay.addEventListener('click', (e)=>{
+      if(e.target === overlay) hideWelcomePopup_();
+    });
+  })();
 
   // 預約日期欄位不能選過去的日期
   (function setScheduleDateMin(){
@@ -4955,7 +5127,7 @@ function renderSettings(settings){
     if(!zoneOutsideHintEl) return;
     if(zoneKey === 'outside'){
       const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      zoneOutsideHintEl.innerHTML = `⚠️ 超出範圍地址請先私訊小蜜丰，確認可配送與實際費用後再送出委託。<br><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 私訊小蜜丰詢問</a>`;
+      zoneOutsideHintEl.innerHTML = `<div class="zone-hint-text">⚠️ 超出範圍地址請先私訊小蜜丰，確認可配送與實際費用後再送出委託。</div><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 私訊小蜜丰詢問</a>`;
       zoneOutsideHintEl.style.display = 'block';
     } else {
       zoneOutsideHintEl.style.display = 'none';
