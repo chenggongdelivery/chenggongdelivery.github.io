@@ -1841,7 +1841,7 @@
     overflow:hidden;
     position:relative;
   }
-  .merchant-ads-head{
+  .merchant-ads > summary.merchant-ads-head{
     position:relative; z-index:1;
     padding:12px 14px;
     font-weight:800;
@@ -1853,6 +1853,17 @@
     display:flex;
     align-items:center;
     gap:8px;
+    list-style:none;
+    cursor:pointer;
+    user-select:none;
+  }
+  .merchant-ads > summary.merchant-ads-head::-webkit-details-marker{ display:none; }
+  .merchant-ads[open] > summary.merchant-ads-head .fold-arrow{ transform:rotate(90deg); }
+  .merchant-ads > summary.merchant-ads-head .fold-arrow{
+    transition:transform .15s ease;
+  }
+  .merchant-ads:not([open]) > summary.merchant-ads-head{
+    border-bottom:none;
   }
   .merchant-ads-head .ads-badge{
     font-size:11px;
@@ -2368,10 +2379,14 @@
   </div>
   </div>
 
-  <div class="merchant-ads" id="merchantAdsSection" style="display:none;">
-    <div class="merchant-ads-head">📣 商家優惠 <span class="ads-badge">推薦</span></div>
+  <details class="merchant-ads" id="merchantAdsSection" style="display:none;" open>
+    <summary class="merchant-ads-head">
+      <span>📣 商家優惠</span>
+      <span class="ads-badge">推薦</span>
+      <span class="fold-arrow" style="margin-left:auto;opacity:.7;font-size:12px;">▸</span>
+    </summary>
     <div class="merchant-ads-list" id="merchantAdsList"></div>
-  </div>
+  </details>
 
   <div class="announce-wrap" id="delayWarningWrap" style="display:none; margin-top:12px;">
     <details class="announce-fold delay" id="delayWarningDetails">
@@ -3980,6 +3995,19 @@
       });
     });
     section.style.display = 'block';
+    // 若使用者曾收合過，維持收合；否則預設展開
+    try{
+      if(localStorage.getItem('cg_ads_folded') === '1') section.open = false;
+      else section.open = true;
+    }catch(e){ section.open = true; }
+    if(!section.dataset.foldBound){
+      section.dataset.foldBound = '1';
+      section.addEventListener('toggle', ()=>{
+        try{
+          localStorage.setItem('cg_ads_folded', section.open ? '0' : '1');
+        }catch(e){}
+      });
+    }
   }
 
   function todayKey_(){
