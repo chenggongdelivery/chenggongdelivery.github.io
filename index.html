@@ -225,6 +225,13 @@
     text-decoration:none; box-shadow:0 2px 0 var(--ink); font-family:inherit;
   }
   .status-banner .status-line-btn:active{ transform:translateY(2px); box-shadow:none; }
+  .zone-line-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    margin-top:8px; background:#06C755; color:#fff !important; border:2px solid var(--ink);
+    border-radius:999px; padding:9px 14px; font-weight:800; font-size:13px;
+    text-decoration:none !important; box-shadow:0 2px 0 var(--ink); font-family:inherit;
+  }
+  .zone-line-btn:active{ transform:translateY(2px); box-shadow:none; }
   .progress-banner{
     display:none; align-items:center; gap:10px; background:var(--ocean); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -2285,7 +2292,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單表單手動填。</div>
+        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單手動填。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -2318,7 +2325,7 @@
         <div class="fee-card">
           <span class="zone">超出範圍</span>
           <div class="price" id="feePriceOutside" style="font-size:20px;">分級計算</div>
-          <div class="range">超出鎮外服務範圍之地址，請至社群詢問確認</div>
+          <div class="range">超出鎮外服務範圍之地址，請私訊小蜜丰詢問確認</div>
         </div>
       </div>
       <div class="range-map">
@@ -2424,7 +2431,7 @@
         <button type="button" class="zone-btn" data-zone="outer" data-fee="100">鎮外（$100）</button>
         <button type="button" class="zone-btn" data-zone="outside" data-fee="120">超出範圍（分級計算，請私訊小蜜丰詢問）</button>
       </div>
-      <div id="zoneOutsideHint" style="display:none; font-size:12px; margin-top:8px; font-weight:700; line-height:1.6; color:var(--coral-dark);"></div>
+      <div id="zoneOutsideHint" style="display:none; font-size:12.5px; margin-top:10px; font-weight:700; line-height:1.65; color:var(--coral-dark);"></div>
     </div>
     <div class="field" id="extraServiceField" style="display:none;">
       <label>加購服務（選填）</label>
@@ -2657,7 +2664,7 @@
       if(btn){
         btn.dataset.fee = price;
         btn.textContent = key === 'outside'
-          ? `${labelMap[key]}（分級計算，請至社群詢問）`
+          ? `${labelMap[key]}（分級計算，請私訊小蜜丰詢問）`
           : `${labelMap[key]}（$${price}）`;
       }
     });
@@ -3560,7 +3567,7 @@
       document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.zone-btn[data-zone="outside"]').classList.add('active');
       const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，已自動選取「超出範圍（分級計算）」，如需確認請<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">點此私訊確認是否能配送</a>`;
+      hintEl.innerHTML = `⚠️ 此地址可能已超出服務範圍${precisionNote}，已自動選取「超出範圍（分級計算）」。請先私訊確認能否配送與實際費用。<br><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 私訊小蜜丰詢問</a>`;
       hintEl.style.color = 'var(--coral-dark)';
       hintEl.style.display = 'block';
       updateZoneOutsideHint('outside');
@@ -4948,7 +4955,7 @@ function renderSettings(settings){
     if(!zoneOutsideHintEl) return;
     if(zoneKey === 'outside'){
       const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      zoneOutsideHintEl.innerHTML = `⚠️ 超出範圍地址請先<a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" style="color:var(--coral-dark); text-decoration:underline; font-weight:700;">私訊／於群組詢問</a>確認可配送與實際費用後，再送出委託。`;
+      zoneOutsideHintEl.innerHTML = `⚠️ 超出範圍地址請先私訊小蜜丰，確認可配送與實際費用後再送出委託。<br><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 私訊小蜜丰詢問</a>`;
       zoneOutsideHintEl.style.display = 'block';
     } else {
       zoneOutsideHintEl.style.display = 'none';
