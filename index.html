@@ -2417,7 +2417,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；菜單上沒顯示的商家，也可在下方下單處手動填寫。</div>
+        <div class="menu-update-hint">點菜單加入品項；菜單上沒有的商家也可在下方下單處手動填寫。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -4076,8 +4076,17 @@
     if(!body) return;
 
     let html = '';
-    if(announce){
-      html += `<div class="wp-announce">${escapeHtml(announce)}</div>`;
+    const closedOnly = (window.__closedAnnounceText || '').trim();
+    if(closedOnly){
+      html += `<div class="wp-announce" style="background:#FDE8E4;border-color:rgba(169,56,32,.35);"><b>🏪 商家公休公告</b><br>${escapeHtml(closedOnly)}</div>`;
+    }
+    // 其餘公告（去掉公休原文，避免重複）
+    let otherAnnounce = announce;
+    if(closedOnly && otherAnnounce.indexOf(closedOnly) === 0){
+      otherAnnounce = otherAnnounce.slice(closedOnly.length).replace(/^\n+/, '').trim();
+    }
+    if(otherAnnounce){
+      html += `<div class="wp-announce">${escapeHtml(otherAnnounce)}</div>`;
     }
     ads.slice(0, 5).forEach((ad, i) => {
       const name = escapeHtml(ad.merchant || '商家優惠');
@@ -4114,11 +4123,27 @@ function renderSettings(settings){
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
 
-    // 開站彈窗用：合併商家公休／一般公告／營業時間調整（有填才加入）
-    const closedAnnounce = (settings['商家公休公告'] || settings['商家公休'] || '').trim();
-    const mainAnnounce = (settings['公告內容'] || '').trim();
-    const hoursAnnounce = (settings['營業時間調整公告'] || '').trim();
-    latestWelcomeAnnounce_ = [closedAnnounce, mainAnnounce, hoursAnnounce].filter(Boolean).join('\n\n');
+    // 彈性找出商家公休文案（相容欄位名稱略有不同）
+    (function(){
+      let closed = '';
+      const prefer = ['商家公休公告','商家公休','公休公告'];
+      for(const k of prefer){
+        const v = (settings[k] || '').toString().trim();
+        if(v){ closed = v; break; }
+      }
+      if(!closed){
+        for(const k of Object.keys(settings || {})){
+          if(/公休/.test(k)){
+            const v = (settings[k] || '').toString().trim();
+            if(v){ closed = v; break; }
+          }
+        }
+      }
+      window.__closedAnnounceText = closed;
+      const mainAnnounce = (settings['公告內容'] || '').trim();
+      const hoursAnnounce = (settings['營業時間調整公告'] || '').trim();
+      latestWelcomeAnnounce_ = [closed, mainAnnounce, hoursAnnounce].filter(Boolean).join('\n\n');
+    })();
 
     // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
     const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
@@ -4180,7 +4205,7 @@ function renderSettings(settings){
 
     // 商家公休公告：獨立橫幅，有內容就顯示
     (function(){
-      const t = (settings['商家公休公告'] || settings['商家公休'] || settings['公休公告'] || '').trim();
+      const t = (window.__closedAnnounceText || '').trim();
       const box = document.getElementById('merchantClosedBannerBox');
       const textEl = document.getElementById('merchantClosedBannerText');
       if(!box || !textEl) return;
