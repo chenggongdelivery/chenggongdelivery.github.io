@@ -2377,6 +2377,16 @@
       <div class="announce-body" id="hoursAnnouncementBanner"></div>
     </details>
   </div>
+  <div class="announce-wrap" id="merchantClosedWrap" style="display:none;">
+    <details class="announce-fold" id="merchantClosedDetails" style="background:linear-gradient(180deg,#C94A2E 0%,#A33820 100%);">
+      <summary>
+        <span>🏪 商家公休公告</span>
+        <span class="announce-new-badge" id="merchantClosedNewBadge" style="display:none;">新</span>
+        <span class="fold-arrow">▸</span>
+      </summary>
+      <div class="announce-body" id="merchantClosedBanner"></div>
+    </details>
+  </div>
   </div>
 
   <details class="merchant-ads" id="merchantAdsSection" style="display:none;" open>
@@ -2412,7 +2422,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單手動填。</div>
+        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單處手動填寫商家及品項。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -4015,9 +4025,26 @@
     const p = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
   }
+  /** 今日結束時間戳（本地 23:59:59.999），用於「今日不再顯示」隔日自動恢復 */
+  function endOfTodayMs_(){
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    return end.getTime();
+  }
   function shouldShowWelcomePopup_(){
     try{
-      return localStorage.getItem('cg_welcome_popup_hide') !== todayKey_();
+      const until = Number(localStorage.getItem('cg_welcome_popup_hide_until') || 0);
+      if(until > 0){
+        if(Date.now() < until) return false; // 仍在「今日」內
+        localStorage.removeItem('cg_welcome_popup_hide_until'); // 已過期，清掉
+      }
+      // 相容舊版：只存日期字串
+      const old = localStorage.getItem('cg_welcome_popup_hide');
+      if(old){
+        if(old === todayKey_()) return false;
+        localStorage.removeItem('cg_welcome_popup_hide'); // 不是今天 → 視為過期
+      }
+      return true;
     }catch(e){ return true; }
   }
   function hideWelcomePopup_(){
@@ -4025,7 +4052,10 @@
     if(!overlay) return;
     const dont = document.getElementById('welcomePopupDontShow');
     if(dont && dont.checked){
-      try{ localStorage.setItem('cg_welcome_popup_hide', todayKey_()); }catch(e){}
+      try{
+        localStorage.setItem('cg_welcome_popup_hide_until', String(endOfTodayMs_()));
+        localStorage.removeItem('cg_welcome_popup_hide');
+      }catch(e){}
     }
     overlay.classList.remove('show');
     overlay.setAttribute('aria-hidden', 'true');
@@ -4079,10 +4109,11 @@ function renderSettings(settings){
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
 
-    // 開站彈窗用：公告內容優先，其次營業時間調整公告
+    // 開站彈窗用：商家公休 > 一般公告 > 營業時間調整
+    const closedAnnounce = (settings['商家公休公告'] || '').trim();
     const mainAnnounce = (settings['公告內容'] || '').trim();
     const hoursAnnounce = (settings['營業時間調整公告'] || '').trim();
-    latestWelcomeAnnounce_ = mainAnnounce || hoursAnnounce || '';
+    latestWelcomeAnnounce_ = closedAnnounce || mainAnnounce || hoursAnnounce || '';
 
     // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
     const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
@@ -4137,10 +4168,15 @@ function renderSettings(settings){
       'announcementWrap', 'announcementDetails', 'announcementBanner', 'announcementNewBadge'
     );
     applyFoldableAnnouncement_(
+      'cg_merchant_closed_v1',
+      (settings['商家公休公告'] || '').trim(),
+      'merchantClosedWrap', 'merchantClosedDetails', 'merchantClosedBanner', 'merchantClosedNewBadge'
+    );
+    applyFoldableAnnouncement_(
       'cg_delay_warning_v1',
       (settings['配送延遲提醒'] || '').trim(),
       'delayWarningWrap', 'delayWarningDetails', 'delayWarningBanner', 'delayWarningNewBadge'
-    )
+    );
 
     const note = (settings['收款帳號說明'] || '').trim();
     if(note){
