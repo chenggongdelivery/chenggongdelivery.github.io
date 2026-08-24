@@ -4031,18 +4031,27 @@
     end.setHours(23, 59, 59, 999);
     return end.getTime();
   }
+  function welcomeContentFp_(){
+    const announce = (latestWelcomeAnnounce_ || '').trim();
+    const ads = (latestMerchantAds_ || []).map(a => (a.merchant||'') + '|' + (a.desc||'')).join(';;');
+    return announce + '##' + ads;
+  }
   function shouldShowWelcomePopup_(){
     try{
+      const fp = welcomeContentFp_();
+      // 公告／廣告內容有變更 → 強制再顯示（不受「今日不再顯示」限制）
+      const lastFp = localStorage.getItem('cg_welcome_popup_fp') || '';
+      if(fp && fp !== lastFp) return true;
+
       const until = Number(localStorage.getItem('cg_welcome_popup_hide_until') || 0);
       if(until > 0){
-        if(Date.now() < until) return false; // 仍在「今日」內
-        localStorage.removeItem('cg_welcome_popup_hide_until'); // 已過期，清掉
+        if(Date.now() < until) return false;
+        localStorage.removeItem('cg_welcome_popup_hide_until');
       }
-      // 相容舊版：只存日期字串
       const old = localStorage.getItem('cg_welcome_popup_hide');
       if(old){
         if(old === todayKey_()) return false;
-        localStorage.removeItem('cg_welcome_popup_hide'); // 不是今天 → 視為過期
+        localStorage.removeItem('cg_welcome_popup_hide');
       }
       return true;
     }catch(e){ return true; }
@@ -4051,20 +4060,21 @@
     const overlay = document.getElementById('welcomePopupOverlay');
     if(!overlay) return;
     const dont = document.getElementById('welcomePopupDontShow');
-    if(dont && dont.checked){
-      try{
+    try{
+      localStorage.setItem('cg_welcome_popup_fp', welcomeContentFp_());
+      if(dont && dont.checked){
         localStorage.setItem('cg_welcome_popup_hide_until', String(endOfTodayMs_()));
         localStorage.removeItem('cg_welcome_popup_hide');
-      }catch(e){}
-    }
+      }
+    }catch(e){}
     overlay.classList.remove('show');
     overlay.setAttribute('aria-hidden', 'true');
   }
   function maybeShowWelcomePopup_(){
-    if(!shouldShowWelcomePopup_()) return;
     const announce = (latestWelcomeAnnounce_ || '').trim();
     const ads = latestMerchantAds_ || [];
     if(!announce && !ads.length) return;
+    if(!shouldShowWelcomePopup_()) return;
 
     const body = document.getElementById('welcomePopupBody');
     const title = document.getElementById('welcomePopupTitle');
@@ -4109,11 +4119,11 @@ function renderSettings(settings){
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
 
-    // 開站彈窗用：商家公休 > 一般公告 > 營業時間調整
-    const closedAnnounce = (settings['商家公休公告'] || '').trim();
+    // 開站彈窗用：合併商家公休／一般公告／營業時間調整（有填才加入）
+    const closedAnnounce = (settings['商家公休公告'] || settings['商家公休'] || '').trim();
     const mainAnnounce = (settings['公告內容'] || '').trim();
     const hoursAnnounce = (settings['營業時間調整公告'] || '').trim();
-    latestWelcomeAnnounce_ = closedAnnounce || mainAnnounce || hoursAnnounce || '';
+    latestWelcomeAnnounce_ = [closedAnnounce, mainAnnounce, hoursAnnounce].filter(Boolean).join('\n\n');
 
     // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
     const parseFee = (v, fallback) => { const n = Number(v); return (v !== '' && v != null && !isNaN(n)) ? n : fallback; };
@@ -4169,9 +4179,16 @@ function renderSettings(settings){
     );
     applyFoldableAnnouncement_(
       'cg_merchant_closed_v1',
-      (settings['商家公休公告'] || '').trim(),
+      (settings['商家公休公告'] || settings['商家公休'] || '').trim(),
       'merchantClosedWrap', 'merchantClosedDetails', 'merchantClosedBanner', 'merchantClosedNewBadge'
     );
+    // 商家公休有內容時預設展開，避免被「已讀」狀態收合後以為沒出現
+    (function(){
+      const t = (settings['商家公休公告'] || settings['商家公休'] || '').trim();
+      const d = document.getElementById('merchantClosedDetails');
+      const w = document.getElementById('merchantClosedWrap');
+      if(t && d && w && w.style.display !== 'none') d.open = true;
+    })();
     applyFoldableAnnouncement_(
       'cg_delay_warning_v1',
       (settings['配送延遲提醒'] || '').trim(),
