@@ -683,6 +683,8 @@
   .hours-card .time{font-family:ui-monospace,'Cascadia Code','SF Mono',Menlo,monospace; font-size:22px; font-weight:700;}
   .hours-card .note{font-size:12.5px; color:var(--ocean-dark); margin-top:4px;}
   .hours-card .provisional{font-size:11px; background:var(--gold); color:var(--ink); padding:2px 8px; border-radius:999px; font-weight:700; margin-left:8px; vertical-align:middle;}
+  #provisionalBadge[hidden],
+  #provisionalBadge[aria-hidden="true"]{ display:none !important; }
 
   .steps{display:grid; gap:14px;}
   .step{display:flex; gap:14px; align-items:flex-start; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px;}
@@ -2363,7 +2365,7 @@
         </div>
       </details>
     <details class="header-rules header-hours" id="headerHours">
-        <summary title="營業時間"><span class="hours-ico">🕒</span><span class="provisional" id="provisionalBadge" style="display:none;margin-left:4px;">暫定</span></summary>
+        <summary title="營業時間"><span class="hours-ico">🕒</span><span class="provisional" id="provisionalBadge" hidden style="display:none;margin-left:4px;">暫定</span></summary>
         <div class="header-rules-panel">
           <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">營業時間：<span id="hoursTimeText">08:00–20:00</span></div>
           <div class="note" style="font-size:12px;opacity:.8;line-height:1.6;">非營業時間可預約；急需請私訊小蜜丰</div>
@@ -4296,15 +4298,22 @@ function renderSettings(settings){
     const scheduleHintEl = document.getElementById('scheduleHint');
     if(scheduleHintEl) scheduleHintEl.textContent = `預約時段開放 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一個時段`;
 
-    // 試算表 FALSE／false／布林 false 都隱藏「暫定」
+    // 只有明確 TRUE 才顯示「暫定」；FALSE／false／空白／未設定都隱藏
     const provRaw = settings['顯示暫定標籤'];
-    const showProvisional = !(
-      provRaw === false ||
-      String(provRaw == null ? '' : provRaw).trim().toUpperCase() === 'FALSE' ||
-      String(provRaw) === '0'
-    );
+    const provStr = String(provRaw == null ? '' : provRaw).trim().toUpperCase();
+    const showProvisional = provRaw === true || provStr === 'TRUE' || provStr === '1';
     const provisionalEl = document.getElementById('provisionalBadge');
-    if(provisionalEl) provisionalEl.style.display = showProvisional ? 'inline-block' : 'none';
+    if(provisionalEl){
+      if(showProvisional){
+        provisionalEl.style.display = 'inline-block';
+        provisionalEl.hidden = false;
+        provisionalEl.setAttribute('aria-hidden', 'false');
+      } else {
+        provisionalEl.style.display = 'none';
+        provisionalEl.hidden = true;
+        provisionalEl.setAttribute('aria-hidden', 'true');
+      }
+    }
 
     const isOpen = (settings['是否營業'] || 'TRUE').toString().toUpperCase() !== 'FALSE';
     const forcedClosed = (settings['強制公休'] || 'FALSE').toString().toUpperCase() === 'TRUE';
