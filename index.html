@@ -2417,7 +2417,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；菜單上沒有的商家也可在下方下單處手動填寫。</div>
+        <div class="menu-update-hint">點菜單加入品項；菜單上沒有顯示的商家，也可在下方下單處手動填寫。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -4123,25 +4123,32 @@ function renderSettings(settings){
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
 
-    // 彈性找出商家公休文案（相容欄位名稱略有不同）
+    // 彈性找出商家公休文案（相容欄位名稱略有不同；過濾誤傳的 true/false）
     (function(){
+      function cleanText_(v){
+        const s = (v == null ? '' : String(v)).replace(/\u3000/g, ' ').trim();
+        if(!s) return '';
+        const up = s.toUpperCase();
+        if(up === 'TRUE' || up === 'FALSE') return '';
+        return s;
+      }
       let closed = '';
       const prefer = ['商家公休公告','商家公休','公休公告'];
       for(const k of prefer){
-        const v = (settings[k] || '').toString().trim();
+        const v = cleanText_(settings[k]);
         if(v){ closed = v; break; }
       }
       if(!closed){
         for(const k of Object.keys(settings || {})){
           if(/公休/.test(k)){
-            const v = (settings[k] || '').toString().trim();
+            const v = cleanText_(settings[k]);
             if(v){ closed = v; break; }
           }
         }
       }
       window.__closedAnnounceText = closed;
-      const mainAnnounce = (settings['公告內容'] || '').trim();
-      const hoursAnnounce = (settings['營業時間調整公告'] || '').trim();
+      const mainAnnounce = cleanText_(settings['公告內容']);
+      const hoursAnnounce = cleanText_(settings['營業時間調整公告']);
       latestWelcomeAnnounce_ = [closed, mainAnnounce, hoursAnnounce].filter(Boolean).join('\n\n');
     })();
 
