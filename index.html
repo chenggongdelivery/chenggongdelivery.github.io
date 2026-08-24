@@ -61,6 +61,10 @@
   }
   .header-rules > summary:active{ transform:translateY(1px); }
   .header-hours > summary{ padding:6px 9px; }
+  .header-hours > summary .hours-label{ font-size:12px; font-weight:700; }
+  @media (max-width:480px){
+    .header-hours > summary .hours-label{ font-size:11px; }
+  }
   .header-rules-panel{
     position:fixed; top:calc(100% + 10px); left:0; z-index:80;
     width:min(92vw, 360px); max-height:min(70vh, 420px); overflow:auto;
@@ -2366,7 +2370,7 @@
         </div>
       </details>
     <details class="header-rules header-hours" id="headerHours">
-        <summary title="營業時間"><span class="hours-ico">🕒</span><span class="provisional" id="provisionalBadge" hidden style="display:none;margin-left:4px;"></span></summary>
+        <summary title="營業時間"><span class="hours-ico">🕒</span><span class="hours-label">營業時間</span></summary>
         <div class="header-rules-panel">
           <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">營業時間：<span id="hoursTimeText">08:00–20:00</span></div>
           <div class="note" style="font-size:12px;opacity:.8;line-height:1.6;">非營業時間可預約；急需請私訊小蜜丰</div>
@@ -2456,7 +2460,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；菜單上沒有的店家也可以在下方手動填寫。</div>
+        <div class="menu-update-hint">點菜單加入品項；菜單上沒有的店家也可以在下方下單處手動填寫。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -4299,22 +4303,21 @@ function renderSettings(settings){
     const scheduleHintEl = document.getElementById('scheduleHint');
     if(scheduleHintEl) scheduleHintEl.textContent = `預約時段開放 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一個時段`;
 
-    // 只有明確 TRUE 才顯示「暫定」；FALSE／空白都不顯示（連文字都清空）
+    // 只有明確 TRUE 才在「營業時間」旁加上「暫定」；FALSE 完全不出現
     const provRaw = settings['顯示暫定標籤'];
     const provStr = String(provRaw == null ? '' : provRaw).trim().toUpperCase();
     const showProvisional = provRaw === true || provStr === 'TRUE' || provStr === '1';
-    const provisionalEl = document.getElementById('provisionalBadge');
-    if(provisionalEl){
+    const hoursSummary = document.querySelector('#headerHours > summary');
+    if(hoursSummary){
+      // 清掉舊的暫定標籤（若有）
+      hoursSummary.querySelectorAll('.provisional, #provisionalBadge').forEach(n => n.remove());
       if(showProvisional){
-        provisionalEl.textContent = '暫定';
-        provisionalEl.hidden = false;
-        provisionalEl.style.cssText = 'display:inline-block;margin-left:4px;';
-        provisionalEl.setAttribute('aria-hidden', 'false');
-      } else {
-        provisionalEl.textContent = '';
-        provisionalEl.hidden = true;
-        provisionalEl.style.cssText = 'display:none !important;margin-left:0;';
-        provisionalEl.setAttribute('aria-hidden', 'true');
+        const badge = document.createElement('span');
+        badge.id = 'provisionalBadge';
+        badge.className = 'provisional';
+        badge.textContent = '暫定';
+        badge.style.cssText = 'display:inline-block;margin-left:4px;font-size:11px;background:var(--gold);color:var(--ink);padding:2px 8px;border-radius:999px;font-weight:700;';
+        hoursSummary.appendChild(badge);
       }
     }
 
