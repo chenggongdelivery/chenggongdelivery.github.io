@@ -2377,16 +2377,11 @@
       <div class="announce-body" id="hoursAnnouncementBanner"></div>
     </details>
   </div>
-  <div class="announce-wrap" id="merchantClosedWrap" style="display:none;">
-    <details class="announce-fold" id="merchantClosedDetails" style="background:linear-gradient(180deg,#C94A2E 0%,#A33820 100%);">
-      <summary>
-        <span>🏪 商家公休公告</span>
-        <span class="announce-new-badge" id="merchantClosedNewBadge" style="display:none;">新</span>
-        <span class="fold-arrow">▸</span>
-      </summary>
-      <div class="announce-body" id="merchantClosedBanner"></div>
-    </details>
   </div>
+  <!-- 商家公休：獨立橫幅（不放在可收合堆疊裡，避免被藏住） -->
+  <div id="merchantClosedBannerBox" style="display:none; margin:12px 0 0; padding:14px 16px; background:linear-gradient(180deg,#C94A2E 0%,#A33820 100%); color:#fff; border:2px solid var(--ink); border-radius:16px; box-shadow:0 3px 0 var(--ink); font-weight:700; font-size:14.5px; line-height:1.65; white-space:pre-wrap;">
+    <div style="font-weight:900; font-size:15px; margin-bottom:6px;">🏪 商家公休公告</div>
+    <div id="merchantClosedBannerText"></div>
   </div>
 
   <details class="merchant-ads" id="merchantAdsSection" style="display:none;" open>
@@ -2422,7 +2417,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；沒有的店可在下方下單處手動填寫商家及品項。</div>
+        <div class="menu-update-hint">點菜單加入品項；菜單上沒顯示的商家，也可在下方下單處手動填寫。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -4178,22 +4173,25 @@ function renderSettings(settings){
       'announcementWrap', 'announcementDetails', 'announcementBanner', 'announcementNewBadge'
     );
     applyFoldableAnnouncement_(
-      'cg_merchant_closed_v1',
-      (settings['商家公休公告'] || settings['商家公休'] || '').trim(),
-      'merchantClosedWrap', 'merchantClosedDetails', 'merchantClosedBanner', 'merchantClosedNewBadge'
-    );
-    // 商家公休有內容時預設展開，避免被「已讀」狀態收合後以為沒出現
-    (function(){
-      const t = (settings['商家公休公告'] || settings['商家公休'] || '').trim();
-      const d = document.getElementById('merchantClosedDetails');
-      const w = document.getElementById('merchantClosedWrap');
-      if(t && d && w && w.style.display !== 'none') d.open = true;
-    })();
-    applyFoldableAnnouncement_(
       'cg_delay_warning_v1',
       (settings['配送延遲提醒'] || '').trim(),
       'delayWarningWrap', 'delayWarningDetails', 'delayWarningBanner', 'delayWarningNewBadge'
     );
+
+    // 商家公休公告：獨立橫幅，有內容就顯示
+    (function(){
+      const t = (settings['商家公休公告'] || settings['商家公休'] || settings['公休公告'] || '').trim();
+      const box = document.getElementById('merchantClosedBannerBox');
+      const textEl = document.getElementById('merchantClosedBannerText');
+      if(!box || !textEl) return;
+      if(t){
+        textEl.textContent = t;
+        box.style.display = 'block';
+      } else {
+        textEl.textContent = '';
+        box.style.display = 'none';
+      }
+    })();
 
     const note = (settings['收款帳號說明'] || '').trim();
     if(note){
