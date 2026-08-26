@@ -2460,7 +2460,7 @@
     <details class="info-fold" id="menuSection" style="margin-top:14px;">
       <summary>🍽 商家菜單 <span class="fold-arrow">▸</span></summary>
       <div class="fold-body">
-        <div class="menu-update-hint">點菜單加入品項；菜單上沒有的店家也可以在下方下單處手動填寫。</div>
+        <div class="menu-update-hint">點菜單加入品項；菜單上沒有的商家也可以在下方下單處手動填寫。</div>
         <div class="menu-gallery" id="menuGallery">
           <div class="empty">菜單準備中。</div>
         </div>
@@ -4321,8 +4321,21 @@ function renderSettings(settings){
       }
     }
 
-    const isOpen = (settings['是否營業'] || 'TRUE').toString().toUpperCase() !== 'FALSE';
-    const forcedClosed = (settings['強制公休'] || 'FALSE').toString().toUpperCase() === 'TRUE';
+    // 布林 false 不能用 || 預設，否則會被當成營業中
+    function parseFlagTrue_(v){
+      if(v === true || v === 1) return true;
+      const s = String(v == null ? '' : v).trim().toUpperCase();
+      return s === 'TRUE' || s === '1' || s === 'YES' || s === '是';
+    }
+    function parseFlagFalse_(v){
+      if(v === false || v === 0) return true;
+      const s = String(v == null ? '' : v).trim().toUpperCase();
+      return s === 'FALSE' || s === '0' || s === 'NO' || s === '否';
+    }
+    const forcedClosed = parseFlagTrue_(settings['強制公休']);
+    // 後端「是否營業」= 營業時段內且非強制公休
+    const isOpenFinal = String(settings['是否營業'] || '').toLowerCase() === 'true';
+
     const banner = document.getElementById('statusBanner');
     const sendBtn = document.getElementById('sendLineBtn');
 
@@ -4335,25 +4348,24 @@ function renderSettings(settings){
       banner.style.display = 'flex';
     }
 
-    if(isOpen){
-      // 正常營業時間內：完全開放
+    // 強制公休優先：完全不能下單（含預約）
+    if(forcedClosed){
+      orderingMode = 'closed';
+      orderingDisabled = true;
+      const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停接單，造成不便敬請見諒').trim();
+      fillStatusBanner_('⏸️', msg, true);
+      sendBtn.classList.add('disabled-btn');
+    } else if(isOpenFinal){
       orderingMode = 'open';
       orderingDisabled = false;
       banner.style.display = 'none';
       banner.innerHTML = '';
       sendBtn.classList.remove('disabled-btn');
-    } else if(forcedClosed){
-      // 手動強制公休：完全不能下單，包含預約單
-      orderingMode = 'closed';
-      orderingDisabled = true;
-      const msg = (settings['暫停服務公告'] || '目前暫停接單，造成不便敬請見諒').trim();
-      fillStatusBanner_('⏸️', msg, true);
-      sendBtn.classList.add('disabled-btn');
     } else {
-      // 單純非營業時間：可預約；急需可按按鈕私訊（文案可由試算表「非營業時間公告」調整）
+      // 單純非營業時間：可預約，不可即時單
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
-      const msg = (settings['暫停服務公告'] || `目前非營業時間（${openTime}–${closeTime}）。若仍想下單，請私訊小蜜丰；也可先填預約單。`).trim();
+      const msg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（${openTime}–${closeTime}）。若仍想下單，請私訊小蜜丰；也可先填預約單。`).trim();
       fillStatusBanner_('🌙', msg, true);
       sendBtn.classList.remove('disabled-btn');
     }
@@ -5720,6 +5732,10 @@ ${stopsText}
   });
 
   function validateRequired(data){
+    if(orderingMode === 'closed' || orderingDisabled){
+      toast('目前暫停接單中，請稍後再試');
+      return false;
+    }
     if(orderingMode === 'reservationOnly' && !data.schedule){
       toast('目前非營業時間。急需請私訊小蜜丰；或選擇預約時間後送出');
       document.getElementById('cScheduleDate').focus();
