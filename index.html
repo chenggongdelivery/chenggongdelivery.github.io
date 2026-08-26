@@ -3972,7 +3972,7 @@
     return Array.from(boxes).map(cb => availableExtraServices[Number(cb.dataset.idx)]).filter(Boolean);
   }
 
-  let orderingDisabled = false; // 完全不能下單（強制公休時為true）
+  let orderingDisabled = false; // 完全關閉接單時為 true（強制公休改為可預約）
   let orderingMode = 'open'; // 'open' | 'reservationOnly' | 'closed'
   let businessOpenTime = '08:00';
   let businessCloseTime = '20:00';
@@ -4348,13 +4348,13 @@ function renderSettings(settings){
       banner.style.display = 'flex';
     }
 
-    // 強制公休優先：完全不能下單（含預約）
+    // 強制公休：不可即時單，但可預約「暫停結束後」的時段
     if(forcedClosed){
-      orderingMode = 'closed';
-      orderingDisabled = true;
-      const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停接單，造成不便敬請見諒').trim();
-      fillStatusBanner_('⏸️', msg, true);
-      sendBtn.classList.add('disabled-btn');
+      orderingMode = 'reservationOnly';
+      orderingDisabled = false;
+      const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停即時外送，請改預約稍後時段').trim();
+      fillStatusBanner_('⏸️', msg + '（即時單暫停，可預約稍後時段）', true);
+      sendBtn.classList.remove('disabled-btn');
     } else if(isOpenFinal){
       orderingMode = 'open';
       orderingDisabled = false;
@@ -5737,7 +5737,7 @@ ${stopsText}
       return false;
     }
     if(orderingMode === 'reservationOnly' && !data.schedule){
-      toast('目前非營業時間。急需請私訊小蜜丰；或選擇預約時間後送出');
+      toast('目前暫停即時外送，請選擇預約時間後再送出（或私訊小蜜丰）');
       document.getElementById('cScheduleDate').focus();
       return false;
     }
