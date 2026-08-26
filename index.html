@@ -2429,7 +2429,7 @@
 
   <details class="merchant-ads" id="merchantAdsSection" style="display:none;" open>
     <summary class="merchant-ads-head">
-      <span>📣 商家優惠</span>
+      <span>📣 好康報報</span>
       <span class="ads-badge">推薦</span>
       <span class="fold-arrow" style="margin-left:auto;opacity:.7;font-size:12px;">▸</span>
     </summary>
@@ -4020,7 +4020,7 @@
       return;
     }
     list.innerHTML = items.map((ad, i) => {
-      const name = escapeHtml(ad.merchant || '商家優惠');
+      const name = escapeHtml(ad.merchant || '好康報報');
       const desc = escapeHtml(ad.desc || '');
       const img = (ad.image || '').trim();
       const imgHtml = img
@@ -4132,7 +4132,7 @@
       html += `<div class="wp-announce">${escapeHtml(otherAnnounce)}</div>`;
     }
     ads.slice(0, 5).forEach((ad, i) => {
-      const name = escapeHtml(ad.merchant || '商家優惠');
+      const name = escapeHtml(ad.merchant || '好康報報');
       const desc = escapeHtml(ad.desc || '');
       const img = (ad.image || '').trim();
       const imgHtml = img ? `<img src="${escapeHtml(img)}" alt="${name}" loading="lazy">` : '';
@@ -4150,7 +4150,7 @@
     if(title){
       if(announce && ads.length) title.textContent = '📢 公告與優惠';
       else if(announce) title.textContent = '📢 公告';
-      else title.textContent = '📣 商家優惠';
+      else title.textContent = '📣 好康報報';
     }
     const overlay = document.getElementById('welcomePopupOverlay');
     if(overlay){
