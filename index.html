@@ -527,20 +527,42 @@
   .menu-category summary .mc-arrow{transition:transform .2s ease; font-size:12px; color:var(--ocean-dark);}
   .menu-category[open] summary .mc-arrow{transform:rotate(90deg);}
   .menu-category-body{
-    padding:0 16px 16px; display:grid; grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:12px;
+    padding:0 16px 16px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(84px, 1fr));
+    gap:12px;
   }
   .menu-merchant-bar{
     grid-column:1 / -1;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-top:2px;
-    padding:7px 10px;
-    background:rgba(30,91,103,.1);
-    border:1.5px solid rgba(34,48,46,.22);
-    border-radius:12px;
+    display:none; /* 改回同分類照片連續往右排，不再每店斷行 */
   }
+  .thumb-contact{
+    position:absolute;
+    left:4px;
+    top:4px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    z-index:2;
+  }
+  .thumb-contact a{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:22px;
+    height:22px;
+    padding:0 5px;
+    border-radius:999px;
+    border:1.5px solid var(--ink);
+    font-size:10px;
+    font-weight:900;
+    text-decoration:none;
+    line-height:1;
+    box-shadow:0 1px 0 var(--ink);
+  }
+  .thumb-contact a.tc-phone{ background:#06C755; color:#fff; }
+  .thumb-contact a.tc-line{ background:#06C755; color:#fff; }
+
   .menu-merchant-bar .mm-name{
     font-weight:800;
     font-size:13px;
@@ -3001,6 +3023,7 @@
   let merchantHoursMap = {};
   let merchantFreeMap = {};
   let merchantPhoneMap = {};
+  let merchantLineMap = {};
   let merchantCategoryMap = {};
   let merchantGroups = {};
   let merchantGroupOrder = [];
@@ -3014,6 +3037,24 @@
     const href = telHref_(phone);
     if(!href) return '';
     return `<a class="mm-call" href="${escapeHtml(href)}" onclick="event.stopPropagation();">${escapeHtml(phone)}</a>`;
+  }
+  function merchantLineHtml_(name){
+    let url = (merchantLineMap[name] || '').trim();
+    if(!url) return '';
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    return `<a class="mm-call" href="${escapeHtml(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();">LINE 點餐</a>`;
+  }
+  function merchantThumbContactHtml_(name){
+    const phone = merchantPhoneMap[name] || '';
+    const tel = telHref_(phone);
+    let line = (merchantLineMap[name] || '').trim();
+    if(line && !/^https?:\/\//i.test(line)) line = 'https://' + line;
+    if(!tel && !line) return '';
+    let html = '<div class="thumb-contact">';
+    if(tel) html += `<a class="tc-phone" href="${escapeHtml(tel)}" title="${escapeHtml(phone)}" onclick="event.stopPropagation();">📞</a>`;
+    if(line) html += `<a class="tc-line" href="${escapeHtml(line)}" target="_blank" rel="noopener" title="LINE 點餐" onclick="event.stopPropagation();">LINE</a>`;
+    html += '</div>';
+    return html;
   }
   let transferFeePerStop = 15;
   let zoneFees = { inner: 50, outer: 100, outside: 120 };
@@ -3046,6 +3087,7 @@
     merchantHoursMap = {};
     merchantFreeMap = {};
     merchantPhoneMap = {};
+    merchantLineMap = {};
     merchantCategoryMap = {};
     merchantGroups = {};
     merchantGroupOrder = [];
@@ -3058,6 +3100,7 @@
       merchantHoursMap[m.name] = m.hours || '';
       merchantFreeMap[m.name] = !!m.freeDelivery;
       merchantPhoneMap[m.name] = (m.phone || '').trim();
+      merchantLineMap[m.name] = (m.lineUrl || m.line || '').trim();
       merchantCategoryMap[m.name] = cat;
     });
 
@@ -3194,7 +3237,7 @@
       if(!groups.length && q){
         const empty = document.createElement('div');
         empty.className = 'mp-empty';
-        empty.textContent = '找不到符合的商家，可選下方「其他」手動輸入';
+        empty.textContent = '找不到符合的商家，可選上方「其他」手動輸入';
         panel.appendChild(empty);
       }
 
@@ -3278,13 +3321,16 @@
     }
     const phone = merchantPhoneMap[merchant] || '';
     const href = telHref_(phone);
-    if(href){
-      box.innerHTML = `<span class="smp-label">店家電話</span><a class="smp-call" href="${escapeHtml(href)}">📞 ${escapeHtml(phone)}</a>`;
-      box.classList.add('is-show');
-    } else {
-      box.innerHTML = `<span class="smp-label">店家電話</span><span class="smp-miss">此商家尚未提供電話</span>`;
-      box.classList.add('is-show');
+    let line = (merchantLineMap[merchant] || '').trim();
+    if(line && !/^https?:\/\//i.test(line)) line = 'https://' + line;
+    let parts = [`<span class="smp-label">聯繫店家</span>`];
+    if(href) parts.push(`<a class="smp-call" href="${escapeHtml(href)}">📞 ${escapeHtml(phone)}</a>`);
+    if(line) parts.push(`<a class="smp-call" href="${escapeHtml(line)}" target="_blank" rel="noopener">LINE 點餐</a>`);
+    if(!href && !line){
+      parts.push(`<span class="smp-miss">此商家尚未提供電話／LINE</span>`);
     }
+    box.innerHTML = parts.join('');
+    box.classList.add('is-show');
   }
 
   function updateStopHoursHint(row){
@@ -3727,41 +3773,44 @@
       const body = document.createElement('div');
       body.className = 'menu-category-body';
 
+      // 有照片的商家：同分類連續往右排（與新增電話前相同）
       g.order.forEach(merchant => {
         const photos = g.merchants[merchant] || [];
-        const callHtml = merchantCallHtml_(merchant);
-        if(photos.length){
-          const bar = document.createElement('div');
-          bar.className = 'menu-merchant-bar';
-          bar.innerHTML = `<span class="mm-name">${escapeHtml(merchant)}</span>${callHtml}`;
-          body.appendChild(bar);
-          photos.forEach((m, idx) => {
-            const cartId = 'cart' + (cartIdCounter++);
-            const thumb = document.createElement('div');
-            thumb.className = 'thumb';
-            thumb.dataset.cartId = cartId;
-            thumb.innerHTML = `
-              <img src="${escapeHtml(m.image)}" alt="${escapeHtml(merchant)}" loading="lazy">
-              <div class="thumb-cap">${escapeHtml(merchant)}</div>
-              <button type="button" class="thumb-select-btn" aria-label="加入購物清單"></button>
-            `;
-            thumb.querySelector('img').addEventListener('click', ()=>{ openMenuLightbox(merchant, photos, idx); });
-            thumb.querySelector('.thumb-select-btn').addEventListener('click', (e)=>{
-              e.stopPropagation();
-              toggleCartSelection(cartId, merchant, m.image, thumb);
-            });
-            body.appendChild(thumb);
-          });
-        } else {
-          const card = document.createElement('div');
-          card.className = 'menu-merchant-card';
-          card.innerHTML = `
-            <span class="mm-name">${escapeHtml(merchant)}</span>
-            ${callHtml || ''}
-            <span class="mm-note">${callHtml ? '尚無菜單照片・可先電話確認' : '尚無菜單照片'}</span>
+        if(!photos.length) return;
+        photos.forEach((m, idx) => {
+          const cartId = 'cart' + (cartIdCounter++);
+          const thumb = document.createElement('div');
+          thumb.className = 'thumb';
+          thumb.dataset.cartId = cartId;
+          thumb.innerHTML = `
+            ${merchantThumbContactHtml_(merchant)}
+            <img src="${escapeHtml(m.image)}" alt="${escapeHtml(merchant)}" loading="lazy">
+            <div class="thumb-cap">${escapeHtml(merchant)}</div>
+            <button type="button" class="thumb-select-btn" aria-label="加入購物清單"></button>
           `;
-          body.appendChild(card);
-        }
+          thumb.querySelector('img').addEventListener('click', ()=>{ openMenuLightbox(merchant, photos, idx); });
+          thumb.querySelector('.thumb-select-btn').addEventListener('click', (e)=>{
+            e.stopPropagation();
+            toggleCartSelection(cartId, merchant, m.image, thumb);
+          });
+          body.appendChild(thumb);
+        });
+      });
+      // 無照片商家：列在該分類底部
+      g.order.forEach(merchant => {
+        const photos = g.merchants[merchant] || [];
+        if(photos.length) return;
+        const callHtml = merchantCallHtml_(merchant);
+        const lineHtml = merchantLineHtml_(merchant);
+        const card = document.createElement('div');
+        card.className = 'menu-merchant-card';
+        card.innerHTML = `
+          <span class="mm-name">${escapeHtml(merchant)}</span>
+          ${callHtml || ''}
+          ${lineHtml || ''}
+          <span class="mm-note">${(callHtml || lineHtml) ? '尚無菜單照片・可先聯繫店家' : '尚無菜單照片'}</span>
+        `;
+        body.appendChild(card);
       });
 
       details.appendChild(body);
@@ -3786,8 +3835,10 @@
   function renderLightboxPhoto(){
     const lbMerchantEl = document.getElementById('menuLightboxMerchant');
     const callHtml = merchantCallHtml_(lightboxMerchant);
-    lbMerchantEl.innerHTML = callHtml
-      ? `${escapeHtml(lightboxMerchant)} ${callHtml}`
+    const lineHtml = merchantLineHtml_(lightboxMerchant);
+    const extra = [callHtml, lineHtml].filter(Boolean).join(' ');
+    lbMerchantEl.innerHTML = extra
+      ? `${escapeHtml(lightboxMerchant)} ${extra}`
       : escapeHtml(lightboxMerchant);
     document.getElementById('menuLightboxImg').src = lightboxPhotos[lightboxIndex].image;
     document.getElementById('menuLightboxItemsInput').value = '';
