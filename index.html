@@ -2199,36 +2199,93 @@
     display:none;
     margin:10px 0 0;
     padding:10px 12px;
-    background:#C94A2E;
-    color:#fff;
+    background:linear-gradient(180deg,#FBE9E5 0%,#F5D5CD 100%);
+    color:var(--ink);
     border:2px solid var(--ink);
-    border-radius:12px;
+    border-radius:14px;
     box-shadow:0 2px 0 var(--ink);
-    align-items:flex-start;
+    flex-direction:column;
     gap:8px;
-    line-height:1.45;
   }
-  .merchant-closed-banner[style*="block"],
   .merchant-closed-banner.is-show{
     display:flex !important;
   }
-  .merchant-closed-label{
-    flex-shrink:0;
+  .merchant-closed-head{
+    display:flex;
+    align-items:center;
+    gap:6px;
     font-weight:900;
     font-size:13px;
-    background:rgba(255,255,255,.2);
-    border:1.5px solid rgba(255,255,255,.45);
+    color:#A33820;
+  }
+  .merchant-closed-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .mc-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .mc-name{
+    display:inline-flex;
+    align-items:center;
+    max-width:100%;
+    padding:6px 12px;
     border-radius:999px;
-    padding:2px 8px;
+    background:#C94A2E;
+    color:#fff;
+    border:1.5px solid var(--ink);
+    font-weight:800;
+    font-size:13.5px;
+    line-height:1.3;
+    box-shadow:0 1px 0 var(--ink);
+  }
+  .mc-time{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:6px 10px;
+    border-radius:10px;
+    background:#fff;
+    color:var(--ink);
+    border:1.5px solid var(--ink);
+    font-weight:800;
+    font-size:12.5px;
+    line-height:1.3;
     white-space:nowrap;
   }
-  .merchant-closed-text{
-    flex:1;
-    min-width:0;
-    font-weight:700;
-    font-size:15px;
-    white-space:pre-wrap;
-    word-break:break-word;
+  .mc-time-date{
+    color:var(--ink);
+    font-weight:900;
+  }
+  .mc-time-tag{
+    color:#A33820;
+    font-weight:900;
+    background:#FDE8E4;
+    border-radius:6px;
+    padding:1px 6px;
+  }
+  .wp-closed-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:4px;
+  }
+  .wp-closed-list .mc-item{ gap:6px; }
+  .wp-closed-list .mc-name{
+    font-size:13px;
+    padding:5px 10px;
+    box-shadow:none;
+  }
+  .wp-closed-list .mc-time{
+    font-size:12px;
+    padding:5px 8px;
+  }
+  .wp-closed-list .mc-time-tag{
+    font-size:11.5px;
   }
 
   .menu-switch-hint{
@@ -2421,10 +2478,10 @@
     </details>
   </div>
   </div>
-  <!-- 商家公休：精簡橫幅 -->
+  <!-- 商家公休：店名橢圓 + 公休時間框 -->
   <div id="merchantClosedBannerBox" class="merchant-closed-banner" style="display:none;">
-    <span class="merchant-closed-label">⚠️ 公休</span>
-    <span id="merchantClosedBannerText" class="merchant-closed-text"></span>
+    <div class="merchant-closed-head">⚠️ 商家公休</div>
+    <div id="merchantClosedBannerText" class="merchant-closed-list"></div>
   </div>
 
   <details class="merchant-ads" id="merchantAdsSection" style="display:none;" open>
@@ -4108,6 +4165,23 @@
     overlay.classList.remove('show');
     overlay.setAttribute('aria-hidden', 'true');
   }
+  /** 解析商家公休文案：店名橢圓 + 右側公休時間 */
+  function parseClosedMerchants_(text){
+    const raw = String(text || '').trim();
+    if(!raw) return [];
+    const parts = raw.split(/[、,，]/).map(s => s.trim()).filter(Boolean);
+    return parts.map(p => {
+      let t = p.replace(/\s*公休\s*$/u, '').trim() || p;
+      // 店名(27日) / 店名（8/28）
+      let m = t.match(/^(.+?)\s*[（(]([^）)]+)[）)]\s*$/);
+      if(m) return { name: m[1].trim(), time: m[2].trim() };
+      // 店名 今日公休 已去掉公休 → 店名 今日
+      m = t.match(/^(.+?)\s+(今日|明天|全天|整天|\d{1,2}\/\d{1,2}(?:日)?|\d{1,2}日|\d{1,2}月\d{1,2}日)$/);
+      if(m) return { name: m[1].trim(), time: m[2].trim() };
+      return { name: t, time: '公休' };
+    });
+  }
+
   function maybeShowWelcomePopup_(){
     const announce = (latestWelcomeAnnounce_ || '').trim();
     const ads = latestMerchantAds_ || [];
@@ -4121,7 +4195,11 @@
     let html = '';
     const closedOnly = (window.__closedAnnounceText || '').trim();
     if(closedOnly){
-      html += `<div class="wp-announce wp-closed" style="background:#FDE8E4;border-color:rgba(169,56,32,.35);padding:10px 12px;"><span style="font-weight:900;font-size:13px;">⚠️ 公休</span>　<span style="font-weight:700;font-size:14.5px;">${escapeHtml(closedOnly)}</span></div>`;
+      const items = parseClosedMerchants_(closedOnly);
+      const rows = items.map(it =>
+        `<div class="mc-item"><span class="mc-name">${escapeHtml(it.name)}</span><span class="mc-time">${it.time && it.time !== "公休" ? `<span class="mc-time-date">${escapeHtml(it.time)}</span>` : ""}<span class="mc-time-tag">商家公休</span></span></div>`
+      ).join('');
+      html += `<div class="wp-announce wp-closed" style="background:#FDE8E4;border-color:rgba(169,56,32,.35);padding:10px 12px;"><div style="font-weight:900;font-size:13px;margin-bottom:6px;">⚠️ 商家公休</div><div class="wp-closed-list">${rows}</div></div>`;
     }
     // 其餘公告（去掉公休原文，避免重複）
     let otherAnnounce = announce;
@@ -4260,18 +4338,21 @@ function renderSettings(settings){
       'delayWarningWrap', 'delayWarningDetails', 'delayWarningBanner', 'delayWarningNewBadge'
     );
 
-    // 商家公休公告：獨立橫幅，有內容就顯示
+    // 商家公休公告：店名橢圓 + 公休時間框
     (function(){
       const t = (window.__closedAnnounceText || '').trim();
       const box = document.getElementById('merchantClosedBannerBox');
       const textEl = document.getElementById('merchantClosedBannerText');
       if(!box || !textEl) return;
       if(t){
-        textEl.textContent = t;
+        const items = parseClosedMerchants_(t);
+        textEl.innerHTML = items.map(it =>
+          `<div class="mc-item"><span class="mc-name">${escapeHtml(it.name)}</span><span class="mc-time">${it.time && it.time !== "公休" ? `<span class="mc-time-date">${escapeHtml(it.time)}</span>` : ""}<span class="mc-time-tag">商家公休</span></span></div>`
+        ).join('');
         box.style.display = 'flex';
         box.classList.add('is-show');
       } else {
-        textEl.textContent = '';
+        textEl.innerHTML = '';
         box.style.display = 'none';
         box.classList.remove('is-show');
       }
