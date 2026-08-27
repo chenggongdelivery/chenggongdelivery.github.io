@@ -529,6 +529,58 @@
   .menu-category-body{
     padding:0 16px 16px; display:grid; grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); gap:12px;
   }
+  .menu-merchant-bar{
+    grid-column:1 / -1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:2px;
+    padding:7px 10px;
+    background:rgba(30,91,103,.1);
+    border:1.5px solid rgba(34,48,46,.22);
+    border-radius:12px;
+  }
+  .menu-merchant-bar .mm-name{
+    font-weight:800;
+    font-size:13px;
+    color:var(--ocean-dark);
+  }
+  .menu-merchant-bar .mm-call,
+  .menu-merchant-card .mm-call{
+    display:inline-flex;
+    align-items:center;
+    gap:3px;
+    padding:4px 10px;
+    border-radius:999px;
+    background:#06C755;
+    color:#fff;
+    border:1.5px solid var(--ink);
+    font-size:12px;
+    font-weight:800;
+    text-decoration:none;
+    box-shadow:0 1px 0 var(--ink);
+  }
+  .menu-merchant-bar .mm-call:active,
+  .menu-merchant-card .mm-call:active{ transform:translateY(1px); }
+  .menu-merchant-card{
+    grid-column:1 / -1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    padding:10px 12px;
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:12px;
+    box-shadow:0 1px 0 var(--ink);
+  }
+  .menu-merchant-card .mm-name{ font-weight:800; font-size:13.5px; }
+  .menu-merchant-card .mm-note{
+    font-size:11.5px;
+    color:var(--ocean-dark);
+    opacity:.85;
+  }
   .menu-category-body .thumb{
     width:100%; aspect-ratio:1/1; border-radius:10px; overflow:hidden; border:2px solid var(--ink);
     cursor:pointer; background:#ddd; position:relative;
@@ -2219,43 +2271,61 @@
     color:var(--ocean-dark);
   }
   .merchant-closed-list{
-    display:flex;
-    flex-direction:column;
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:8px;
+  }
+  @media (max-width:520px){
+    .merchant-closed-list{
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width:360px){
+    .merchant-closed-list{
+      grid-template-columns:1fr;
+    }
   }
   .mc-item{
     display:flex;
-    align-items:center;
-    gap:8px;
-    flex-wrap:wrap;
+    flex-direction:column;
+    align-items:stretch;
+    gap:6px;
+    min-width:0;
   }
   .mc-name{
-    display:inline-flex;
+    display:flex;
     align-items:center;
-    max-width:100%;
-    padding:6px 12px;
+    justify-content:center;
+    width:100%;
+    box-sizing:border-box;
+    padding:6px 10px;
     border-radius:999px;
     background:var(--ocean);
     color:#fff;
     border:1.5px solid var(--ink);
     font-weight:800;
-    font-size:13.5px;
+    font-size:12.5px;
     line-height:1.3;
     box-shadow:0 1px 0 var(--ink);
+    text-align:center;
+    word-break:break-word;
   }
   .mc-time{
-    display:inline-flex;
+    display:flex;
     align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    width:100%;
+    box-sizing:border-box;
     gap:4px;
-    padding:6px 10px;
+    padding:5px 8px;
     border-radius:10px;
     background:#fff;
     color:var(--ink);
     border:1.5px solid var(--ink);
     font-weight:800;
-    font-size:12.5px;
+    font-size:12px;
     line-height:1.3;
-    white-space:nowrap;
   }
   .mc-time-date{
     color:var(--ocean-dark);
@@ -2269,10 +2339,13 @@
     padding:1px 6px;
   }
   .wp-closed-list{
-    display:flex;
-    flex-direction:column;
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:8px;
     margin-top:4px;
+  }
+  @media (max-width:360px){
+    .wp-closed-list{ grid-template-columns:1fr; }
   }
   .wp-closed-list .mc-item{ gap:6px; }
   .wp-closed-list .mc-name{
@@ -2874,9 +2947,21 @@
 
   let merchantHoursMap = {};
   let merchantFreeMap = {};
+  let merchantPhoneMap = {};
   let merchantCategoryMap = {};
   let merchantGroups = {};
   let merchantGroupOrder = [];
+
+  function telHref_(phone){
+    const d = String(phone || '').replace(/[^\d+]/g, '');
+    return d ? ('tel:' + d) : '';
+  }
+  function merchantCallHtml_(name){
+    const phone = merchantPhoneMap[name] || '';
+    const href = telHref_(phone);
+    if(!href) return '';
+    return `<a class="mm-call" href="${escapeHtml(href)}" onclick="event.stopPropagation();">${escapeHtml(phone)}</a>`;
+  }
   let transferFeePerStop = 15;
   let zoneFees = { inner: 50, outer: 100, outside: 120 };
 
@@ -2907,6 +2992,7 @@
   function renderMerchants(merchants){
     merchantHoursMap = {};
     merchantFreeMap = {};
+    merchantPhoneMap = {};
     merchantCategoryMap = {};
     merchantGroups = {};
     merchantGroupOrder = [];
@@ -2918,6 +3004,7 @@
       merchantGroups[cat].push(m);
       merchantHoursMap[m.name] = m.hours || '';
       merchantFreeMap[m.name] = !!m.freeDelivery;
+      merchantPhoneMap[m.name] = (m.phone || '').trim();
       merchantCategoryMap[m.name] = cat;
     });
 
@@ -3500,39 +3587,51 @@
 
   function renderMenus(menus){
     const box = document.getElementById('menuGallery');
-    if(!menus || !menus.length){
-      box.innerHTML = '<div class="empty">目前尚無菜單相片，想知道賣什麼可以直接在下方備註詢問。</div>';
-      return;
-    }
+    const menuList = menus || [];
 
     // 商家名稱 → 分類的對照表（沒在商家名單裡的，歸到「其他」）
-    const merchantCategoryMap = {};
+    const merchantCategoryMapLocal = {};
     merchantGroupOrder.forEach(cat => {
-      merchantGroups[cat].forEach(m => { merchantCategoryMap[m.name] = cat; });
+      (merchantGroups[cat] || []).forEach(m => { merchantCategoryMapLocal[m.name] = cat; });
     });
 
     // 先依分類分組，分類內再依商家分組（同商家多張照片放一起）
     const catOrder = [];
     const catGroups = {};
-    menus.forEach(m => {
-      const cat = merchantCategoryMap[m.merchant] || '其他商家';
+    function ensureCat_(cat){
       if(!catGroups[cat]){ catGroups[cat] = { merchants: {}, order: [] }; catOrder.push(cat); }
-      const g = catGroups[cat];
+      return catGroups[cat];
+    }
+    menuList.forEach(m => {
+      const cat = merchantCategoryMapLocal[m.merchant] || '其他商家';
+      const g = ensureCat_(cat);
       if(!g.merchants[m.merchant]){ g.merchants[m.merchant] = []; g.order.push(m.merchant); }
       g.merchants[m.merchant].push(m);
     });
+    // 沒有菜單照片的商家也列入對應分類（方便看電話）
+    merchantGroupOrder.forEach(cat => {
+      (merchantGroups[cat] || []).forEach(m => {
+        const g = ensureCat_(cat);
+        if(!g.merchants[m.name]){ g.merchants[m.name] = []; g.order.push(m.name); }
+      });
+    });
+
+    if(!catOrder.length){
+      box.innerHTML = '<div class="empty">目前尚無商家資料，想知道賣什麼可以直接在下方備註詢問。</div>';
+      return;
+    }
 
     box.innerHTML = '';
     menuCategoryMerchants = {};
     merchantCategoryLookup = {};
     catOrder.forEach(cat => {
       const g = catGroups[cat];
-      menuCategoryMerchants[cat] = g.order.map(name => ({ merchant: name, photos: g.merchants[name] }));
+      menuCategoryMerchants[cat] = g.order.map(name => ({ merchant: name, photos: g.merchants[name] || [] }));
       g.order.forEach(name => { merchantCategoryLookup[name] = cat; });
     });
     catOrder.forEach(cat => {
       const g = catGroups[cat];
-      const totalPhotos = g.order.reduce((sum, name) => sum + g.merchants[name].length, 0);
+      const totalPhotos = g.order.reduce((sum, name) => sum + (g.merchants[name] || []).length, 0);
 
       const details = document.createElement('details');
       details.className = 'menu-category';
@@ -3545,24 +3644,40 @@
       body.className = 'menu-category-body';
 
       g.order.forEach(merchant => {
-        const photos = g.merchants[merchant];
-        photos.forEach((m, idx) => {
-          const cartId = 'cart' + (cartIdCounter++);
-          const thumb = document.createElement('div');
-          thumb.className = 'thumb';
-          thumb.dataset.cartId = cartId;
-          thumb.innerHTML = `
-            <img src="${escapeHtml(m.image)}" alt="${escapeHtml(merchant)}" loading="lazy">
-            <div class="thumb-cap">${escapeHtml(merchant)}</div>
-            <button type="button" class="thumb-select-btn" aria-label="加入購物清單"></button>
-          `;
-          thumb.querySelector('img').addEventListener('click', ()=>{ openMenuLightbox(merchant, photos, idx); });
-          thumb.querySelector('.thumb-select-btn').addEventListener('click', (e)=>{
-            e.stopPropagation();
-            toggleCartSelection(cartId, merchant, m.image, thumb);
+        const photos = g.merchants[merchant] || [];
+        const callHtml = merchantCallHtml_(merchant);
+        if(photos.length){
+          const bar = document.createElement('div');
+          bar.className = 'menu-merchant-bar';
+          bar.innerHTML = `<span class="mm-name">${escapeHtml(merchant)}</span>${callHtml}`;
+          body.appendChild(bar);
+          photos.forEach((m, idx) => {
+            const cartId = 'cart' + (cartIdCounter++);
+            const thumb = document.createElement('div');
+            thumb.className = 'thumb';
+            thumb.dataset.cartId = cartId;
+            thumb.innerHTML = `
+              <img src="${escapeHtml(m.image)}" alt="${escapeHtml(merchant)}" loading="lazy">
+              <div class="thumb-cap">${escapeHtml(merchant)}</div>
+              <button type="button" class="thumb-select-btn" aria-label="加入購物清單"></button>
+            `;
+            thumb.querySelector('img').addEventListener('click', ()=>{ openMenuLightbox(merchant, photos, idx); });
+            thumb.querySelector('.thumb-select-btn').addEventListener('click', (e)=>{
+              e.stopPropagation();
+              toggleCartSelection(cartId, merchant, m.image, thumb);
+            });
+            body.appendChild(thumb);
           });
-          body.appendChild(thumb);
-        });
+        } else {
+          const card = document.createElement('div');
+          card.className = 'menu-merchant-card';
+          card.innerHTML = `
+            <span class="mm-name">${escapeHtml(merchant)}</span>
+            ${callHtml || ''}
+            <span class="mm-note">${callHtml ? '尚無菜單照片・可先電話確認' : '尚無菜單照片'}</span>
+          `;
+          body.appendChild(card);
+        }
       });
 
       details.appendChild(body);
@@ -3585,7 +3700,11 @@
   }
 
   function renderLightboxPhoto(){
-    document.getElementById('menuLightboxMerchant').textContent = lightboxMerchant;
+    const lbMerchantEl = document.getElementById('menuLightboxMerchant');
+    const callHtml = merchantCallHtml_(lightboxMerchant);
+    lbMerchantEl.innerHTML = callHtml
+      ? `${escapeHtml(lightboxMerchant)} ${callHtml}`
+      : escapeHtml(lightboxMerchant);
     document.getElementById('menuLightboxImg').src = lightboxPhotos[lightboxIndex].image;
     document.getElementById('menuLightboxItemsInput').value = '';
 
@@ -3712,7 +3831,7 @@
   });
 
   document.getElementById('menuLightboxAddBtn').addEventListener('click', ()=>{
-    const merchant = document.getElementById('menuLightboxMerchant').textContent;
+    const merchant = lightboxMerchant || '';
     const itemsText = document.getElementById('menuLightboxItemsInput').value.trim();
     if(!itemsText){
       toast('請先輸入想買的品項');
