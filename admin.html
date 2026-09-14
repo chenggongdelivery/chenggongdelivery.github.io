@@ -505,7 +505,7 @@
             <input type="time" id="holidayEndTime">
           </div>
         </div>
-        <div class="field-hint">時間兩邊都留空＝該日／區間「全天」公休。若只休幾小時（例如 14:00～17:00），請填開始與結束時間；可跨日（例如 9/14 22:00 ～ 9/15 08:00）。</div>
+        <div class="field-hint">顯示方式例如：09/14 10:00 ～ 09/14 12:00（當日幾小時）、或 09/14 08:00 ～ 09/15 20:00（跨日）。時間留空視為 00:00～23:59（全天）。</div>
 
         <label for="holidayNote">公休公告文字（選填）</label>
         <input type="text" id="holidayNote" placeholder="不填會顯示預設的公休文案" maxlength="60">
@@ -947,16 +947,18 @@
   // ---------- 設定：公休日期（可全天或僅某時段） ----------
   let currentHolidays = [];
 
+  /** 統一顯示：09/14 10:00 ～ 09/14 12:00（或跨日 09/14 08:00 ～ 09/15 20:00） */
+  function formatHolidayDateShort(iso){
+    const m = String(iso || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+    if(m) return m[2] + '/' + m[3];
+    return iso || '';
+  }
   function formatHolidayRange(h){
-    const hasTime = !!(h.startTime || h.endTime);
-    if(h.start === h.end){
-      if(hasTime) return `${h.start} ${h.startTime || '00:00'}～${h.endTime || '23:59'}`;
-      return `${h.start}（全天）`;
-    }
-    if(hasTime){
-      return `${h.start} ${h.startTime || '00:00'} ～ ${h.end} ${h.endTime || '23:59'}`;
-    }
-    return `${h.start} ～ ${h.end}（全天）`;
+    const sd = formatHolidayDateShort(h.start);
+    const ed = formatHolidayDateShort(h.end || h.start);
+    const st = h.startTime || '00:00';
+    const et = h.endTime || '23:59';
+    return `${sd} ${st} ～ ${ed} ${et}`;
   }
 
   function renderHolidays(){
@@ -970,10 +972,11 @@
       const card = document.createElement('div');
       card.className = 'holiday-card';
       const hasTime = !!(h.startTime || h.endTime);
+      const isFullDay = !hasTime && h.start === (h.end || h.start);
       card.innerHTML = `
         <div>
           <div class="hc-dates">${escapeHtml(formatHolidayRange(h))}</div>
-          ${hasTime ? '<div class="hc-time">⏱️ 時段公休（非整日）</div>' : ''}
+          ${isFullDay ? '<div class="hc-time">全天</div>' : (hasTime ? '<div class="hc-time">⏱️ 指定時段</div>' : '')}
           ${h.note ? `<div class="hc-note">${escapeHtml(h.note)}</div>` : ''}
         </div>
         <button type="button" class="hc-del">🗑️ 刪除</button>
