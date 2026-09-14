@@ -153,10 +153,19 @@
     display:block; font-size:12.5px; font-weight:700; color:var(--ocean-dark); margin:12px 0 6px;
   }
   .holiday-form label:first-child{margin-top:0;}
-  .holiday-form input[type="date"]{
+  .holiday-form input[type="date"],
+  .holiday-form input[type="time"]{
     width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
     font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--ink); box-sizing:border-box;
     -webkit-appearance:none; appearance:none;
+  }
+  .holiday-form .holiday-time-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  }
+  .holiday-form .holiday-time-row label{margin-top:12px;}
+  .holiday-card .hc-time{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700;
+    color:var(--ocean); margin-top:4px;
   }
   .holiday-form input[type="text"]{
     width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
@@ -478,22 +487,34 @@
     </div>
 
     <div id="settingsView" style="display:none;">
-      <div class="section-heading" style="margin-top:0;">🏖️ 新增公休日期</div>
+      <div class="section-heading" style="margin-top:0;">🏖️ 新增公休（可全天或僅某時段）</div>
       <div class="holiday-form">
         <label for="holidayStart">開始日期</label>
         <input type="date" id="holidayStart">
 
-        <label for="holidayEnd">結束日期（單日公休可留空，自動等於開始日期）</label>
+        <label for="holidayEnd">結束日期（單日可留空，自動等於開始日期）</label>
         <input type="date" id="holidayEnd">
+
+        <div class="holiday-time-row">
+          <div>
+            <label for="holidayStartTime">開始時間（選填）</label>
+            <input type="time" id="holidayStartTime">
+          </div>
+          <div>
+            <label for="holidayEndTime">結束時間（選填）</label>
+            <input type="time" id="holidayEndTime">
+          </div>
+        </div>
+        <div class="field-hint">時間兩邊都留空＝該日／區間「全天」公休。若只休幾小時（例如 14:00～17:00），請填開始與結束時間；可跨日（例如 9/14 22:00 ～ 9/15 08:00）。</div>
 
         <label for="holidayNote">公休公告文字（選填）</label>
         <input type="text" id="holidayNote" placeholder="不填會顯示預設的公休文案" maxlength="60">
-        <div class="field-hint">設定的日期一到，網站會自動暫停即時下單（客戶仍可看到頁面，但無法送出即時單），也不能預約公休期間的時段。</div>
+        <div class="field-hint">公休時段內會暫停即時下單，也不能預約落在公休時段內的時間。</div>
 
-        <button type="button" id="addHolidayBtn">➕ 新增公休日期</button>
+        <button type="button" id="addHolidayBtn">➕ 新增公休</button>
       </div>
 
-      <div class="section-heading">📋 目前設定的公休日期</div>
+      <div class="section-heading">📋 目前設定的公休</div>
       <div id="holidayList"></div>
 
       <div class="section-heading">📢 首頁公告</div>
@@ -923,27 +944,37 @@
     loadContent();
   });
 
-  // ---------- 設定：公休日期 ----------
+  // ---------- 設定：公休日期（可全天或僅某時段） ----------
   let currentHolidays = [];
 
   function formatHolidayRange(h){
-    return h.start === h.end ? h.start : `${h.start} ～ ${h.end}`;
+    const hasTime = !!(h.startTime || h.endTime);
+    if(h.start === h.end){
+      if(hasTime) return `${h.start} ${h.startTime || '00:00'}～${h.endTime || '23:59'}`;
+      return `${h.start}（全天）`;
+    }
+    if(hasTime){
+      return `${h.start} ${h.startTime || '00:00'} ～ ${h.end} ${h.endTime || '23:59'}`;
+    }
+    return `${h.start} ～ ${h.end}（全天）`;
   }
 
   function renderHolidays(){
     const list = document.getElementById('holidayList');
     if(!currentHolidays.length){
-      list.innerHTML = '<div class="empty-state">🏖️ 目前沒有設定任何公休日期</div>';
+      list.innerHTML = '<div class="empty-state">🏖️ 目前沒有設定任何公休</div>';
       return;
     }
     list.innerHTML = '';
     currentHolidays.forEach(h => {
       const card = document.createElement('div');
       card.className = 'holiday-card';
+      const hasTime = !!(h.startTime || h.endTime);
       card.innerHTML = `
         <div>
-          <div class="hc-dates">${formatHolidayRange(h)}</div>
-          ${h.note ? `<div class="hc-note">${h.note}</div>` : ''}
+          <div class="hc-dates">${escapeHtml(formatHolidayRange(h))}</div>
+          ${hasTime ? '<div class="hc-time">⏱️ 時段公休（非整日）</div>' : ''}
+          ${h.note ? `<div class="hc-note">${escapeHtml(h.note)}</div>` : ''}
         </div>
         <button type="button" class="hc-del">🗑️ 刪除</button>
       `;
@@ -974,27 +1005,37 @@
   document.getElementById('addHolidayBtn').addEventListener('click', ()=>{
     const startEl = document.getElementById('holidayStart');
     const endEl = document.getElementById('holidayEnd');
+    const startTimeEl = document.getElementById('holidayStartTime');
+    const endTimeEl = document.getElementById('holidayEndTime');
     const noteEl = document.getElementById('holidayNote');
     const start = startEl.value;
     const end = endEl.value || start;
+    const startTime = (startTimeEl && startTimeEl.value) ? startTimeEl.value : '';
+    const endTime = (endTimeEl && endTimeEl.value) ? endTimeEl.value : '';
     const note = noteEl.value.trim();
 
     if(!start){ toast('請選擇開始日期'); return; }
+    if(start === end && startTime && endTime && endTime < startTime){
+      toast('同一天的結束時間不可早於開始時間');
+      return;
+    }
 
     const btn = document.getElementById('addHolidayBtn');
     btn.disabled = true;
     fetch(SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'addHoliday', pin: currentPin, start, end, note })
+      body: JSON.stringify({ action: 'addHoliday', pin: currentPin, start, end, startTime, endTime, note })
     })
       .then(r => r.json())
       .then(data => {
         btn.disabled = false;
         if(data.result === 'success'){
-          toast('✅ 已新增公休日期');
+          toast('✅ 已新增公休');
           startEl.value = '';
           endEl.value = '';
+          if(startTimeEl) startTimeEl.value = '';
+          if(endTimeEl) endTimeEl.value = '';
           noteEl.value = '';
           loadHolidays();
         } else {
