@@ -500,6 +500,7 @@
       <div class="holiday-form">
         <label for="announcementText">公告內容（顯示在網站最上方，留空就不顯示）</label>
         <textarea id="announcementText" class="announcement-textarea" rows="4" placeholder="例如：中秋節連假營業時間異動，詳見說明"></textarea>
+        <div class="field-hint" id="announcementUpdatedHint">儲存後會自動記錄更新時間，前台可顯示「更新於…」</div>
         <button type="button" id="saveAnnouncementBtn">💾 儲存公告</button>
       </div>
 
@@ -1034,6 +1035,16 @@
           return;
         }
         document.getElementById('announcementText').value = data.announcement || '';
+        const updatedHint = document.getElementById('announcementUpdatedHint');
+        if(updatedHint){
+          if(data.announcementUpdatedAt){
+            updatedHint.textContent = '最後更新：' + data.announcementUpdatedAt;
+          } else if(data.announcement){
+            updatedHint.textContent = '尚未記錄更新時間（下次儲存會自動寫入）';
+          } else {
+            updatedHint.textContent = '儲存後會自動記錄更新時間，前台可顯示「更新於…」';
+          }
+        }
         currentAds = data.ads || [];
         renderAds();
       })
@@ -1054,6 +1065,14 @@
         btn.disabled = false;
         if(data.result === 'success'){
           toast('✅ 公告已更新');
+          const updatedHint = document.getElementById('announcementUpdatedHint');
+          if(updatedHint){
+            if(data.announcementUpdatedAt){
+              updatedHint.textContent = '最後更新：' + data.announcementUpdatedAt;
+            } else {
+              updatedHint.textContent = '儲存後會自動記錄更新時間，前台可顯示「更新於…」';
+            }
+          }
         } else {
           toast(data.message || '儲存失敗，請重新整理後再試');
         }
