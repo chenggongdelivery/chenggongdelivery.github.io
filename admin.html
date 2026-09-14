@@ -144,6 +144,70 @@
     text-align:center; padding:60px 20px; color:var(--ocean-dark); opacity:.7; font-size:13.5px; line-height:1.8;
   }
 
+  /* ---- 設定：公休日期 ---- */
+  .holiday-form{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px 18px; margin-bottom:20px;
+  }
+  .holiday-form label{
+    display:block; font-size:12.5px; font-weight:700; color:var(--ocean-dark); margin:12px 0 6px;
+  }
+  .holiday-form label:first-child{margin-top:0;}
+  .holiday-form input[type="date"]{
+    width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+    font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--ink); box-sizing:border-box;
+    -webkit-appearance:none; appearance:none;
+  }
+  .holiday-form input[type="text"]{
+    width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+    font-family:'Noto Sans TC', sans-serif; font-size:13.5px; color:var(--ink); box-sizing:border-box;
+  }
+  .holiday-form .field-hint{font-size:11.5px; color:var(--ocean-dark); opacity:.7; margin-top:5px; line-height:1.5;}
+  .holiday-form button{
+    width:100%; margin-top:16px; padding:13px; border:2px solid var(--ink); border-radius:999px;
+    background:var(--coral); color:var(--paper); font-weight:700; font-size:14px; cursor:pointer; font-family:inherit;
+  }
+  .holiday-form button:active{filter:brightness(1.1);}
+  .holiday-form button:disabled{opacity:.6;}
+  .holiday-card{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .holiday-card .hc-dates{font-family:'JetBrains Mono',monospace; font-weight:900; font-size:15px; color:var(--coral-dark);}
+  .holiday-card .hc-note{font-size:12.5px; color:var(--ink); opacity:.8; margin-top:4px; line-height:1.5;}
+  .holiday-card .hc-del{
+    flex-shrink:0; border:2px solid var(--ink); background:var(--ink); color:var(--paper);
+    border-radius:999px; padding:9px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .holiday-card .hc-del:active{filter:brightness(1.3);}
+
+  /* ---- 設定：公告文字框 ---- */
+  .announcement-textarea{
+    width:100%; padding:11px 13px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+    font-family:'Noto Sans TC', sans-serif; font-size:13.5px; color:var(--ink); box-sizing:border-box; resize:vertical;
+  }
+
+  /* ---- 設定：廣告卡片 ---- */
+  .ad-card{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:14px 16px; margin-bottom:14px;
+  }
+  .ad-card label{display:block; font-size:11.5px; font-weight:700; color:var(--ocean-dark); margin:10px 0 4px;}
+  .ad-card label:first-child{margin-top:0;}
+  .ad-card input[type="text"]{
+    width:100%; padding:10px 12px; border:2px solid var(--ink); border-radius:10px; background:var(--paper);
+    font-family:'Noto Sans TC', sans-serif; font-size:13px; color:var(--ink); box-sizing:border-box;
+  }
+  .ad-card-actions{display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .ad-show-toggle{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--ocean-dark); flex:1;}
+  .ad-show-toggle input{width:16px; height:16px;}
+  .ad-card-actions button{
+    border:2px solid var(--ink); border-radius:999px; padding:9px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .ad-save-btn{background:var(--ocean); color:var(--paper);}
+  .ad-del-btn{background:var(--ink); color:var(--paper);}
+  .ad-save-btn:active, .ad-del-btn:active{filter:brightness(1.2);}
+
   .section-heading{
     font-size:13px; font-weight:700; color:var(--ocean-dark); margin:20px 0 10px; padding-left:2px;
   }
@@ -383,6 +447,7 @@
     <div class="view-tabs">
       <button class="active" id="viewOrdersBtn">📦 訂單</button>
       <button id="viewSettlementBtn">💰 結算</button>
+      <button id="viewSettingsBtn">⚙️ 設定</button>
     </div>
 
     <div id="ordersView">
@@ -410,6 +475,53 @@
       <button type="button" class="order-search-btn" id="openOrderSearchBtn">🔍 用日期或單號查詢訂單明細</button>
       <div class="settlement-hint" id="settlementHint">統計本月「已送達」訂單，依指派的外送員加總外送費</div>
       <div id="settlementList"></div>
+    </div>
+
+    <div id="settingsView" style="display:none;">
+      <div class="section-heading" style="margin-top:0;">🏖️ 新增公休日期</div>
+      <div class="holiday-form">
+        <label for="holidayStart">開始日期</label>
+        <input type="date" id="holidayStart">
+
+        <label for="holidayEnd">結束日期（單日公休可留空，自動等於開始日期）</label>
+        <input type="date" id="holidayEnd">
+
+        <label for="holidayNote">公休公告文字（選填）</label>
+        <input type="text" id="holidayNote" placeholder="不填會顯示預設的公休文案" maxlength="60">
+        <div class="field-hint">設定的日期一到，網站會自動暫停即時下單（客戶仍可看到頁面，但無法送出即時單），也不能預約公休期間的時段。</div>
+
+        <button type="button" id="addHolidayBtn">➕ 新增公休日期</button>
+      </div>
+
+      <div class="section-heading">📋 目前設定的公休日期</div>
+      <div id="holidayList"></div>
+
+      <div class="section-heading">📢 首頁公告</div>
+      <div class="holiday-form">
+        <label for="announcementText">公告內容（顯示在網站最上方，留空就不顯示）</label>
+        <textarea id="announcementText" class="announcement-textarea" rows="4" placeholder="例如：中秋節連假營業時間異動，詳見說明"></textarea>
+        <button type="button" id="saveAnnouncementBtn">💾 儲存公告</button>
+      </div>
+
+      <div class="section-heading">🛍️ 新增廣告</div>
+      <div class="holiday-form">
+        <label for="adMerchant">商家名稱</label>
+        <input type="text" id="adMerchant" placeholder="例如：新港早餐店" maxlength="40">
+
+        <label for="adDesc">廣告文案</label>
+        <input type="text" id="adDesc" placeholder="例如：平日早餐套餐特價中！點這裡看菜單" maxlength="80">
+
+        <label for="adImage">圖片網址（選填，可貼Google雲端硬碟分享連結）</label>
+        <input type="text" id="adImage" placeholder="https://drive.google.com/...">
+
+        <label for="adLink">連結網址（選填，點廣告後開啟的網址）</label>
+        <input type="text" id="adLink" placeholder="https://...">
+
+        <button type="button" id="addAdBtn">➕ 新增廣告</button>
+      </div>
+
+      <div class="section-heading">📋 目前的廣告（可直接編輯欄位後按儲存）</div>
+      <div id="adList"></div>
     </div>
   </div>
 </main>
@@ -774,25 +886,311 @@
     });
   });
 
-  // ---------- 頁籤切換：訂單／結算 ----------
+  // ---------- 頁籤切換：訂單／結算／設定 ----------
   const ordersView = document.getElementById('ordersView');
   const settlementView = document.getElementById('settlementView');
+  const settingsView = document.getElementById('settingsView');
   const viewOrdersBtn = document.getElementById('viewOrdersBtn');
   const viewSettlementBtn = document.getElementById('viewSettlementBtn');
+  const viewSettingsBtn = document.getElementById('viewSettingsBtn');
 
   viewOrdersBtn.addEventListener('click', ()=>{
     viewOrdersBtn.classList.add('active');
     viewSettlementBtn.classList.remove('active');
+    viewSettingsBtn.classList.remove('active');
     ordersView.style.display = 'block';
     settlementView.style.display = 'none';
+    settingsView.style.display = 'none';
   });
   viewSettlementBtn.addEventListener('click', ()=>{
     viewSettlementBtn.classList.add('active');
     viewOrdersBtn.classList.remove('active');
+    viewSettingsBtn.classList.remove('active');
     ordersView.style.display = 'none';
     settlementView.style.display = 'block';
+    settingsView.style.display = 'none';
     loadSettlement();
   });
+  viewSettingsBtn.addEventListener('click', ()=>{
+    viewSettingsBtn.classList.add('active');
+    viewOrdersBtn.classList.remove('active');
+    viewSettlementBtn.classList.remove('active');
+    ordersView.style.display = 'none';
+    settlementView.style.display = 'none';
+    settingsView.style.display = 'block';
+    loadHolidays();
+    loadContent();
+  });
+
+  // ---------- 設定：公休日期 ----------
+  let currentHolidays = [];
+
+  function formatHolidayRange(h){
+    return h.start === h.end ? h.start : `${h.start} ～ ${h.end}`;
+  }
+
+  function renderHolidays(){
+    const list = document.getElementById('holidayList');
+    if(!currentHolidays.length){
+      list.innerHTML = '<div class="empty-state">🏖️ 目前沒有設定任何公休日期</div>';
+      return;
+    }
+    list.innerHTML = '';
+    currentHolidays.forEach(h => {
+      const card = document.createElement('div');
+      card.className = 'holiday-card';
+      card.innerHTML = `
+        <div>
+          <div class="hc-dates">${formatHolidayRange(h)}</div>
+          ${h.note ? `<div class="hc-note">${h.note}</div>` : ''}
+        </div>
+        <button type="button" class="hc-del">🗑️ 刪除</button>
+      `;
+      card.querySelector('.hc-del').addEventListener('click', ()=> deleteHoliday(h.id));
+      list.appendChild(card);
+    });
+  }
+
+  function loadHolidays(){
+    const list = document.getElementById('holidayList');
+    list.innerHTML = '<div class="empty-state">載入中...</div>';
+    fetch(`${SCRIPT_URL}?action=getHolidays&pin=${encodeURIComponent(currentPin)}&t=${Date.now()}`, { cache:'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if(data.error){
+          toast('登入已失效，請重新輸入密碼');
+          return;
+        }
+        currentHolidays = data.holidays || [];
+        renderHolidays();
+      })
+      .catch(()=>{
+        toast('讀取公休設定失敗，請檢查網路連線');
+        list.innerHTML = '<div class="empty-state">讀取失敗，請重新整理再試</div>';
+      });
+  }
+
+  document.getElementById('addHolidayBtn').addEventListener('click', ()=>{
+    const startEl = document.getElementById('holidayStart');
+    const endEl = document.getElementById('holidayEnd');
+    const noteEl = document.getElementById('holidayNote');
+    const start = startEl.value;
+    const end = endEl.value || start;
+    const note = noteEl.value.trim();
+
+    if(!start){ toast('請選擇開始日期'); return; }
+
+    const btn = document.getElementById('addHolidayBtn');
+    btn.disabled = true;
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'addHoliday', pin: currentPin, start, end, note })
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        if(data.result === 'success'){
+          toast('✅ 已新增公休日期');
+          startEl.value = '';
+          endEl.value = '';
+          noteEl.value = '';
+          loadHolidays();
+        } else {
+          toast(data.message || '新增失敗，請重新整理後再試');
+        }
+      })
+      .catch(()=>{ btn.disabled = false; toast('新增失敗，請檢查網路連線'); });
+  });
+
+  function deleteHoliday(id){
+    if(!confirm('確定要刪除這筆公休設定嗎？')) return;
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteHoliday', pin: currentPin, id })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if(data.result === 'success'){
+          toast('🗑️ 已刪除公休日期');
+          loadHolidays();
+        } else {
+          toast(data.message || '刪除失敗，請重新整理後再試');
+        }
+      })
+      .catch(()=>{ toast('刪除失敗，請檢查網路連線'); });
+  }
+
+  // ---------- 設定：首頁公告與商家廣告 ----------
+  let currentAds = [];
+
+  function loadContent(){
+    fetch(`${SCRIPT_URL}?action=getContent&pin=${encodeURIComponent(currentPin)}&t=${Date.now()}`, { cache:'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        if(data.error){
+          toast('登入已失效，請重新輸入密碼');
+          return;
+        }
+        document.getElementById('announcementText').value = data.announcement || '';
+        currentAds = data.ads || [];
+        renderAds();
+      })
+      .catch(()=>{ toast('讀取公告/廣告失敗，請檢查網路連線'); });
+  }
+
+  document.getElementById('saveAnnouncementBtn').addEventListener('click', ()=>{
+    const btn = document.getElementById('saveAnnouncementBtn');
+    const text = document.getElementById('announcementText').value;
+    btn.disabled = true;
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'updateAnnouncement', pin: currentPin, text })
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        if(data.result === 'success'){
+          toast('✅ 公告已更新');
+        } else {
+          toast(data.message || '儲存失敗，請重新整理後再試');
+        }
+      })
+      .catch(()=>{ btn.disabled = false; toast('儲存失敗，請檢查網路連線'); });
+  });
+
+  function renderAds(){
+    const list = document.getElementById('adList');
+    list.innerHTML = '';
+    if(!currentAds.length){
+      list.innerHTML = '<div class="empty-state">🛍️ 目前沒有設定任何廣告</div>';
+      return;
+    }
+    currentAds.forEach(ad => {
+      const card = document.createElement('div');
+      card.className = 'ad-card';
+
+      function addField(labelText, fieldName, value){
+        const label = document.createElement('label');
+        label.textContent = labelText;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'ad-field';
+        input.dataset.field = fieldName;
+        input.value = value || '';
+        card.appendChild(label);
+        card.appendChild(input);
+      }
+
+      addField('商家名稱', 'merchant', ad.merchant);
+      addField('廣告文案', 'desc', ad.desc);
+      addField('圖片網址', 'image', ad.image);
+      addField('連結網址', 'link', ad.link);
+
+      const actions = document.createElement('div');
+      actions.className = 'ad-card-actions';
+      actions.innerHTML = `
+        <label class="ad-show-toggle"><input type="checkbox" class="ad-show-checkbox" ${ad.show ? 'checked' : ''}> 顯示中</label>
+        <button type="button" class="ad-save-btn">💾 儲存</button>
+        <button type="button" class="ad-del-btn">🗑️ 刪除</button>
+      `;
+      card.appendChild(actions);
+
+      actions.querySelector('.ad-save-btn').addEventListener('click', ()=> saveAd(ad.id, card));
+      actions.querySelector('.ad-del-btn').addEventListener('click', ()=> deleteAd(ad.id));
+
+      list.appendChild(card);
+    });
+  }
+
+  function saveAd(id, card){
+    const fields = {};
+    card.querySelectorAll('.ad-field').forEach(input => {
+      fields[input.dataset.field] = input.value.trim();
+    });
+    const show = card.querySelector('.ad-show-checkbox').checked;
+    const saveBtn = card.querySelector('.ad-save-btn');
+    saveBtn.disabled = true;
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'updateMerchantAd', pin: currentPin, id,
+        merchant: fields.merchant, desc: fields.desc, image: fields.image, link: fields.link, show
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        saveBtn.disabled = false;
+        if(data.result === 'success'){
+          toast('✅ 廣告已更新');
+          loadContent();
+        } else {
+          toast(data.message || '儲存失敗，請重新整理後再試');
+        }
+      })
+      .catch(()=>{ saveBtn.disabled = false; toast('儲存失敗，請檢查網路連線'); });
+  }
+
+  document.getElementById('addAdBtn').addEventListener('click', ()=>{
+    const merchantEl = document.getElementById('adMerchant');
+    const descEl = document.getElementById('adDesc');
+    const imageEl = document.getElementById('adImage');
+    const linkEl = document.getElementById('adLink');
+    const merchant = merchantEl.value.trim();
+    if(!merchant){ toast('請填寫商家名稱'); return; }
+
+    const btn = document.getElementById('addAdBtn');
+    btn.disabled = true;
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'addMerchantAd',
+        pin: currentPin,
+        merchant,
+        desc: descEl.value.trim(),
+        image: imageEl.value.trim(),
+        link: linkEl.value.trim()
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        if(data.result === 'success'){
+          toast('✅ 已新增廣告');
+          merchantEl.value = '';
+          descEl.value = '';
+          imageEl.value = '';
+          linkEl.value = '';
+          loadContent();
+        } else {
+          toast(data.message || '新增失敗，請重新整理後再試');
+        }
+      })
+      .catch(()=>{ btn.disabled = false; toast('新增失敗，請檢查網路連線'); });
+  });
+
+  function deleteAd(id){
+    if(!confirm('確定要刪除這則廣告嗎？')) return;
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteMerchantAd', pin: currentPin, id })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if(data.result === 'success'){
+          toast('🗑️ 已刪除廣告');
+          loadContent();
+        } else {
+          toast(data.message || '刪除失敗，請重新整理後再試');
+        }
+      })
+      .catch(()=>{ toast('刪除失敗，請檢查網路連線'); });
+  }
 
   // ---------- 結算範圍切換：單日 / 本月 ----------
   let settlementRange = 'day'; // 'day' | 'month'
