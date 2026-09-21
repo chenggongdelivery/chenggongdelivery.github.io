@@ -1889,22 +1889,37 @@
     });
   });
 
+  function normalizeStatus(s){
+    return String(s || '待處理').replace(/\u3000/g, ' ').trim() || '待處理';
+  }
+
   function renderOrders(){
     const list = document.getElementById('orderList');
     const filtered = currentFilter === '全部'
       ? currentOrders
-      : currentOrders.filter(o => (o.status || '待處理') === currentFilter);
+      : currentOrders.filter(o => normalizeStatus(o.status) === currentFilter);
 
     if(!filtered.length){
       list.innerHTML = '<div class="empty-state">📭 目前沒有符合條件的訂單</div>';
       return;
     }
 
-    const needsAssignment = filtered.filter(o => o.needsAssignment);
-    const immediate = filtered.filter(o => !o.isReservation && !o.needsAssignment);
+    // 非今日未完成單、或已送達待補指派
+    const openPast = filtered.filter(o => o.isOpenPast && !o.isReservation);
+    const needsAssignment = filtered.filter(o => o.needsAssignment && !o.isOpenPast && !o.isReservation);
+    const immediate = filtered.filter(o => !o.isReservation && !o.needsAssignment && !o.isOpenPast);
     const reservations = filtered.filter(o => o.isReservation);
 
     list.innerHTML = '';
+
+    if(openPast.length){
+      const h = document.createElement('div');
+      h.className = 'section-heading';
+      h.textContent = `⚠️ 未完成・非今日訂單（${openPast.length}）`;
+      h.style.color = 'var(--coral-dark)';
+      list.appendChild(h);
+      openPast.forEach(order => list.appendChild(createOrderCard(order)));
+    }
 
     if(needsAssignment.length){
       const h = document.createElement('div');
