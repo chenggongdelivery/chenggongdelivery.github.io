@@ -786,12 +786,37 @@
     border:2px solid var(--ink);
     border-radius:12px;
     box-shadow:0 1px 0 var(--ink);
+    cursor:pointer;
+    position:relative;
   }
-  .menu-merchant-card .mm-name{ font-weight:800; font-size:13.5px; }
+  .menu-merchant-card:active{ transform:translateY(1px); }
+  .menu-merchant-card.selected{
+    outline:3px solid #06C755; outline-offset:-3px;
+    background:#f0fff6;
+  }
+  .menu-merchant-card .mm-name{ font-weight:800; font-size:13.5px; flex:1 1 auto; min-width:0; }
   .menu-merchant-card .mm-note{
     font-size:11.5px;
     color:var(--ocean-dark);
     opacity:.85;
+    width:100%;
+  }
+  .menu-merchant-card .mm-pick{
+    margin-left:auto;
+    border:2px solid var(--ink);
+    background:var(--gold);
+    color:var(--ink);
+    border-radius:999px;
+    padding:6px 12px;
+    font-size:12.5px;
+    font-weight:800;
+    font-family:inherit;
+    cursor:pointer;
+    box-shadow:0 1px 0 var(--ink);
+    white-space:nowrap;
+  }
+  .menu-merchant-card.selected .mm-pick{
+    background:#06C755; color:#fff;
   }
   .menu-category-body .thumb{
     width:100%; aspect-ratio:1/1; border-radius:10px; overflow:hidden; border:2px solid var(--ink);
@@ -2972,14 +2997,14 @@
     <button type="button" class="order-back-gate" id="menuBackGateBtn">← 返回公告／同意頁</button>
     <div class="gate-intro" style="margin-top:12px;">
       <h1><span class="title-emoji">🍽</span> 今天想吃什麼？ <span class="title-emoji">✨</span></h1>
-      <p>點菜單加入品項～沒有菜單的店家，下一頁也可以手動填寫喔</p>
+      <p>點菜單或「選這家」加入品項；沒有菜單的店家也能直接選取後填寫</p>
     </div>
     <div class="menu-update-hint">點菜單加入品項。加入後點「開始下單」填寫配送資料。</div>
     <div class="menu-gallery" id="menuGallery" style="margin-top:12px;">
       <div class="empty">菜單準備中。</div>
     </div>
     <div style="margin:20px 0 28px;">
-      <div class="gate-hint">選好菜單後，請點下方浮動列中間的「🛒 開始下單」繼續。沒有菜單的店家也可直接到配送頁手動填寫。</div>
+      <div class="gate-hint">選好店家後，點下方「已選」確認品項，或點「🛒 開始下單」繼續填寫配送。</div>
     </div>
     <!-- 保留空殼供舊程式碼 open 屬性相容 -->
     <details id="menuSection" style="display:none;" open></details>
@@ -4112,16 +4137,21 @@
       const items = groups[merchant];
       const item = document.createElement('div');
       item.className = 'cart-review-item';
+      const hasPhoto = items.some(i => i.image);
+      const thumbHtml = hasPhoto
+        ? items.filter(i => i.image).map(i => `<img src="${escapeHtml(i.image)}" alt="${escapeHtml(merchant)}">`).join('')
+        : `<div style="font-size:12px;padding:8px 10px;background:var(--paper);border:1.5px dashed var(--ink);border-radius:8px;color:var(--ocean-dark);">尚無菜單照片・請直接填寫品項</div>`;
       item.innerHTML = `
         <div class="cri-head">
           <strong>${escapeHtml(merchant)}</strong>
-          <span style="font-size:11px; color:var(--ocean-dark); opacity:.7;">${items.length} 張菜單</span>
+          <span style="font-size:11px; color:var(--ocean-dark); opacity:.7;">${hasPhoto ? (items.length + ' 張菜單') : '無菜單・手動填寫'}</span>
         </div>
-        <div class="cri-thumbs">${items.map(i => `<img src="${escapeHtml(i.image)}" alt="${escapeHtml(merchant)}">`).join('')}</div>
+        <div class="cri-thumbs">${thumbHtml}</div>
         <textarea placeholder="想買的品項..." data-merchant="${escapeHtml(merchant)}"></textarea>
       `;
       item.querySelectorAll('.cri-thumbs img').forEach((img, i) => {
-        img.addEventListener('click', ()=>{ closeCartReview(); openMenuLightbox(merchant, items, i); });
+        const photoItems = items.filter(x => x.image);
+        img.addEventListener('click', ()=>{ closeCartReview(); openMenuLightbox(merchant, photoItems, i); });
       });
       listEl.appendChild(item);
     });
@@ -4155,6 +4185,11 @@
     // 清空購物車跟畫面上的勾選狀態
     cartSelections = [];
     document.querySelectorAll('.thumb.selected').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.menu-merchant-card.selected').forEach(el => {
+      el.classList.remove('selected');
+      const b = el.querySelector('.mm-pick');
+      if(b) b.textContent = '＋ 選這家';
+    });
     updateCartFloatBar();
     closeCartReview();
     if(lastRow) lastRow.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -4245,20 +4280,41 @@
           body.appendChild(thumb);
         });
       });
-      // 無照片商家：列在該分類底部
+      // 無照片商家：可點選加入購物清單（與有菜單相同流程）
       g.order.forEach(merchant => {
         const photos = g.merchants[merchant] || [];
         if(photos.length) return;
         const callHtml = merchantCallHtml_(merchant);
         const lineHtml = merchantLineHtml_(merchant);
+        const cartId = 'cart' + (cartIdCounter++);
         const card = document.createElement('div');
         card.className = 'menu-merchant-card';
+        card.dataset.cartId = cartId;
+        card.dataset.merchant = merchant;
         card.innerHTML = `
           <span class="mm-name">${escapeHtml(merchant)}</span>
           ${callHtml || ''}
           ${lineHtml || ''}
-          <span class="mm-note">${(callHtml || lineHtml) ? '尚無菜單照片・可先聯繫店家' : '尚無菜單照片'}</span>
+          <button type="button" class="mm-pick" aria-label="選這家店">＋ 選這家</button>
+          <span class="mm-note">尚無菜單照片・點「選這家」後可自行填寫品項</span>
         `;
+        const pick = ()=>{
+          // 無照片用空字串當 image，購物清單會顯示文字提示
+          toggleCartSelection(cartId, merchant, '', card);
+          const on = card.classList.contains('selected');
+          const btn = card.querySelector('.mm-pick');
+          if(btn) btn.textContent = on ? '✓ 已選' : '＋ 選這家';
+        };
+        card.querySelector('.mm-pick').addEventListener('click', (e)=>{
+          e.stopPropagation();
+          pick();
+        });
+        card.addEventListener('click', (e)=>{
+          // 點電話／LINE 連結不觸發選取
+          if(e.target.closest('a')) return;
+          if(e.target.closest('.mm-pick')) return;
+          pick();
+        });
         body.appendChild(card);
       });
 
