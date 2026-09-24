@@ -818,6 +818,29 @@
   .menu-merchant-card.selected .mm-pick{
     background:#06C755; color:#fff;
   }
+  .menu-merchant-card .mm-order-form{
+    display:none;
+    width:100%;
+    margin-top:4px;
+    padding-top:8px;
+    border-top:1.5px dashed var(--seafoam);
+  }
+  .menu-merchant-card.selected .mm-order-form{ display:block; }
+  .menu-merchant-card .mm-order-form textarea{
+    width:100%; min-height:72px; margin:0 0 8px;
+    border:2px solid var(--ink); border-radius:10px;
+    padding:10px 12px; font-family:inherit; font-size:15px;
+    background:var(--paper); resize:vertical; box-sizing:border-box;
+  }
+  .menu-merchant-card .mm-order-form .mm-add-btn{
+    width:100%; border:2px solid var(--ink); border-radius:12px;
+    background:#06C755; color:#fff; font-weight:800; font-size:14.5px;
+    padding:12px; cursor:pointer; font-family:inherit;
+    box-shadow:0 2px 0 var(--ink);
+  }
+  .menu-merchant-card .mm-order-form .mm-add-btn:active{
+    transform:translateY(1px); box-shadow:none;
+  }
   .menu-category-body .thumb{
     width:100%; aspect-ratio:1/1; border-radius:10px; overflow:hidden; border:2px solid var(--ink);
     cursor:pointer; background:#ddd; position:relative;
@@ -4296,24 +4319,57 @@
           ${callHtml || ''}
           ${lineHtml || ''}
           <button type="button" class="mm-pick" aria-label="選這家店">＋ 選這家</button>
-          <span class="mm-note">尚無菜單照片・點「選這家」後可自行填寫品項</span>
+          <span class="mm-note">尚無菜單照片・點選後直接在下方填寫品項</span>
+          <div class="mm-order-form">
+            <textarea class="mm-items" placeholder="想買的品項，例如：便當一個、飲料一杯" rows="3"></textarea>
+            <button type="button" class="mm-add-btn">✅ 加入訂單</button>
+          </div>
         `;
-        const pick = ()=>{
-          // 無照片用空字串當 image，購物清單會顯示文字提示
-          toggleCartSelection(cartId, merchant, '', card);
-          const on = card.classList.contains('selected');
-          const btn = card.querySelector('.mm-pick');
-          if(btn) btn.textContent = on ? '✓ 已選' : '＋ 選這家';
+        const ta = card.querySelector('.mm-items');
+        const addBtn = card.querySelector('.mm-add-btn');
+        const pickBtn = card.querySelector('.mm-pick');
+        const openForm = ()=>{
+          card.classList.add('selected');
+          if(pickBtn) pickBtn.textContent = '收起';
+          setTimeout(()=>{ try{ ta.focus(); }catch(e){} }, 50);
         };
-        card.querySelector('.mm-pick').addEventListener('click', (e)=>{
+        const closeForm = ()=>{
+          card.classList.remove('selected');
+          if(pickBtn) pickBtn.textContent = '＋ 選這家';
+        };
+        pickBtn.addEventListener('click', (e)=>{
           e.stopPropagation();
-          pick();
+          if(card.classList.contains('selected')) closeForm();
+          else openForm();
         });
         card.addEventListener('click', (e)=>{
-          // 點電話／LINE 連結不觸發選取
           if(e.target.closest('a')) return;
           if(e.target.closest('.mm-pick')) return;
-          pick();
+          if(e.target.closest('.mm-order-form')) return;
+          if(card.classList.contains('selected')) return;
+          openForm();
+        });
+        addBtn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          const items = (ta.value || '').trim();
+          if(!items){
+            toast('請先填寫想買的品項');
+            ta.focus();
+            return;
+          }
+          const row = addItemsToStop(merchant, items);
+          updatePreview();
+          if(typeof updateCartFloatBar === 'function') updateCartFloatBar();
+          toast('已加入「' + merchant + '」');
+          ta.value = '';
+          closeForm();
+          // 有訂單內容就提示可去填配送
+          if(typeof goToOrderPage === 'function'){
+            // 不強制跳頁，讓使用者可繼續選店
+          }
+          if(row && typeof goToOrderPage === 'function'){
+            // optional: mild hint only
+          }
         });
         body.appendChild(card);
       });
