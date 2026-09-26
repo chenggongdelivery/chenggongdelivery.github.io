@@ -67,11 +67,23 @@
   }
   .view-tabs button.active{background:var(--ocean); color:var(--paper);}
 
-  /* ---- 篩選列 ---- */
-  .filter-tabs{display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:2px;}
+  /* ---- 篩選列：網格一次看完，不需橫滑 ---- */
+  .filter-tabs{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:6px;
+    margin-bottom:14px;
+    overflow:visible;
+    padding-bottom:0;
+  }
   .filter-tabs button{
-    flex-shrink:0; border:2px solid var(--ink); background:var(--card); color:var(--ink);
-    padding:8px 16px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    width:100%; min-width:0;
+    border:2px solid var(--ink); background:var(--card); color:var(--ink);
+    padding:8px 4px 7px; border-radius:10px;
+    font-size:11.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; line-height:1.2; white-space:normal; text-align:center;
+    box-shadow:0 1px 0 var(--ink);
   }
   .filter-tabs button.active{background:var(--ink); color:var(--paper);}
 
@@ -427,6 +439,142 @@
   }
   .calc-trigger-btn{ flex:0 0 42px; width:42px; max-width:42px; }
 
+
+  /* ---- 後台 UI 優化 ---- */
+  main{ max-width:600px; }
+  .view-tabs{
+    position:sticky; top:56px; z-index:40;
+    background:rgba(243,233,210,.92);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    padding:8px 0 10px; margin:0 -4px 14px;
+  }
+  .view-tabs button{
+    padding:12px 10px; font-size:13px; border-radius:12px;
+    box-shadow:0 1px 0 var(--ink);
+  }
+  .view-tabs button.active{
+    background:var(--ocean); color:var(--paper);
+    box-shadow:0 2px 0 var(--ink);
+  }
+  .order-summary{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;
+  }
+  .order-summary .os-chip{
+    flex:1 1 auto; min-width:72px; text-align:center;
+    background:var(--card); border:2px solid var(--ink); border-radius:12px;
+    padding:8px 6px; box-shadow:0 1px 0 var(--ink);
+  }
+  .order-summary .os-chip .n{
+    font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:800;
+    color:var(--coral-dark); line-height:1.1;
+  }
+  .order-summary .os-chip .l{ font-size:11px; color:var(--ocean-dark); margin-top:2px; font-weight:700; }
+  .order-summary .os-chip.warn .n{ color:var(--coral-dark); }
+  .order-summary .os-chip.ok .n{ color:#0a6b3c; }
+  .filter-tabs{
+    position:sticky; top:118px; z-index:35;
+    background:rgba(243,233,210,.94);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    padding:6px 0 8px; margin-bottom:8px;
+    display:grid !important;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:6px;
+    overflow:visible !important;
+  }
+  .filter-tabs button{
+    width:100%; min-width:0 !important;
+    flex-shrink:1 !important;
+    padding:9px 3px 8px !important;
+    font-size:11.5px !important;
+    border-radius:10px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    white-space:normal !important;
+    line-height:1.2 !important;
+  }
+  .filter-tabs button .cnt{
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:800;
+    background:rgba(34,48,46,.1); border-radius:999px; padding:1px 8px;
+    min-width:1.6em; text-align:center;
+  }
+  .filter-tabs button.active .cnt{ background:rgba(255,255,255,.22); color:var(--paper); }
+  .filter-tabs button.ft-pending.active{ background:var(--gold); color:var(--ink); border-color:var(--ink); }
+  .filter-tabs button.ft-pending.active .cnt{ background:rgba(34,48,46,.12); color:var(--ink); }
+  .filter-tabs button.ft-doing.active{ background:var(--coral); color:var(--paper); }
+  .filter-tabs button.ft-done.active{ background:var(--seafoam); color:var(--ink); }
+  .filter-tabs button.ft-done.active .cnt{ color:var(--ink); background:rgba(34,48,46,.12); }
+  .filter-tabs button.ft-cancel.active{ background:#9aa5a4; color:#fff; }
+  .filter-sub{
+    display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+    margin:0 0 12px; padding:0 0 2px;
+  }
+  .filter-sub-hint{
+    font-size:11.5px; font-weight:700; color:var(--ocean-dark); opacity:.8;
+  }
+  .filter-sub .sub-ft{
+    border:1.5px solid var(--ink); background:var(--card); color:var(--ink);
+    border-radius:999px; padding:5px 10px; font-size:11.5px; font-weight:700;
+    cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; gap:4px;
+  }
+  .filter-sub .sub-ft.active{ background:var(--ink); color:var(--paper); }
+  .filter-sub .sub-ft .cnt{
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:800;
+  }
+  .settings-subtabs{
+    display:flex; gap:8px; margin-bottom:14px; overflow-x:auto;
+    position:sticky; top:118px; z-index:35;
+    background:rgba(243,233,210,.94); padding:6px 0 10px;
+  }
+  .settings-subtabs button{
+    flex-shrink:0; border:2px solid var(--ink); background:var(--card); color:var(--ink);
+    padding:9px 14px; border-radius:999px; font-size:12.5px; font-weight:700;
+    cursor:pointer; font-family:inherit;
+  }
+  .settings-subtabs button.active{ background:var(--ink); color:var(--paper); }
+  .settings-panel{ display:none; }
+  .settings-panel.active{ display:block; }
+  .settings-card{
+    background:var(--card); border:2px solid var(--ink); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:16px; margin-bottom:14px;
+  }
+  .settings-card h3{
+    margin:0 0 12px; font-size:15px; display:flex; align-items:center; gap:6px;
+  }
+  .section-heading{
+    font-size:14px; letter-spacing:.02em;
+    border-left:4px solid var(--ocean); padding-left:10px; margin:18px 0 12px;
+  }
+  .empty-state{
+    text-align:center; padding:28px 16px; color:var(--ocean-dark);
+    background:var(--card); border:2px dashed var(--seafoam); border-radius:14px;
+    font-size:13.5px; line-height:1.6;
+  }
+  .holiday-form label{ font-size:12.5px; }
+  .holiday-form input, .holiday-form textarea, .holiday-form select{
+    font-size:14px !important; min-height:44px;
+  }
+  .holiday-form button, #addHolidayBtn, #saveAnnouncementBtn, #addAdBtn{
+    min-height:46px; font-size:14px !important;
+  }
+  .admin-loading{
+    text-align:center; padding:20px; color:var(--ocean-dark); font-size:13px;
+  }
+  header{
+    padding:12px 14px;
+  }
+  header h1{ font-size:15px; }
+  .header-actions button{ min-height:36px; }
+  @media (max-width:420px){
+    .view-tabs button{ font-size:12px; padding:10px 6px; }
+    .order-summary .os-chip{ min-width:64px; }
+  }
+
 </style>
 </head>
 <body>
@@ -460,17 +608,21 @@
     </div>
 
     <div id="ordersView">
-      <div class="filter-tabs">
-        <button class="active" data-filter="全部">全部</button>
-        <button data-filter="待處理">待處理</button>
-        <button data-filter="處理中">處理中</button>
-        <button data-filter="取餐中">取餐中</button>
-        <button data-filter="運送中">運送中</button>
-        <button data-filter="已送達">已送達</button>
-        <button data-filter="已取消">已取消</button>
+      <div class="filter-tabs" id="orderFilterTabs">
+        <button class="active" data-filter="全部"><span class="ft-lab">全部</span><span class="cnt" data-cnt="全部">0</span></button>
+        <button data-filter="待處理" class="ft-pending"><span class="ft-lab">待處理</span><span class="cnt" data-cnt="待處理">0</span></button>
+        <button data-filter="進行中" class="ft-doing"><span class="ft-lab">進行中</span><span class="cnt" data-cnt="進行中">0</span></button>
+        <button data-filter="已送達" class="ft-done"><span class="ft-lab">已送達</span><span class="cnt" data-cnt="已送達">0</span></button>
+        <button data-filter="已取消" class="ft-cancel"><span class="ft-lab">已取消</span><span class="cnt" data-cnt="已取消">0</span></button>
+      </div>
+      <div class="filter-sub" id="orderFilterSub" style="display:none;">
+        <span class="filter-sub-hint">進行中細分：</span>
+        <button type="button" data-filter="處理中" class="sub-ft">處理中 <span class="cnt" data-cnt="處理中">0</span></button>
+        <button type="button" data-filter="取餐中" class="sub-ft">取餐中 <span class="cnt" data-cnt="取餐中">0</span></button>
+        <button type="button" data-filter="運送中" class="sub-ft">運送中 <span class="cnt" data-cnt="運送中">0</span></button>
       </div>
       <div id="orderList"></div>
-      <div class="refresh-hint">下拉頁面或點右上角重新整理，即可看到最新訂單</div>
+      <div class="refresh-hint">點右上角 🔄 重新整理可看最新訂單</div>
     </div>
 
     <div id="settlementView" style="display:none;">
@@ -487,7 +639,16 @@
     </div>
 
     <div id="settingsView" style="display:none;">
-      <div class="section-heading" style="margin-top:0;">🏖️ 新增公休（可全天或僅某時段）</div>
+      <div class="settings-subtabs" id="settingsSubtabs">
+        <button type="button" class="active" data-panel="holiday">🏖️ 公休</button>
+        <button type="button" data-panel="announce">📢 公告</button>
+        <button type="button" data-panel="ads">🛍️ 廣告</button>
+      </div>
+
+      <div class="settings-panel active" id="settingsPanelHoliday">
+      <div class="settings-card">
+      <h3>🏖️ 新增公休</h3>
+      <div class="section-heading" style="display:none;margin-top:0;">🏖️ 新增公休（可全天或僅某時段）</div>
       <div class="holiday-form">
         <label for="holidayStart">開始日期</label>
         <input type="date" id="holidayStart">
@@ -516,16 +677,24 @@
 
       <div class="section-heading">📋 目前設定的公休</div>
       <div id="holidayList"></div>
+      </div><!-- /.settings-card holiday form area still inside -->
+      </div><!-- /settingsPanelHoliday -->
 
-      <div class="section-heading">📢 首頁公告</div>
+      <div class="settings-panel" id="settingsPanelAnnounce">
+      <div class="settings-card">
+      <h3>📢 首頁公告</h3>
       <div class="holiday-form">
         <label for="announcementText">公告內容（顯示在網站最上方，留空就不顯示）</label>
         <textarea id="announcementText" class="announcement-textarea" rows="4" placeholder="例如：中秋節連假營業時間異動，詳見說明"></textarea>
         <div class="field-hint" id="announcementUpdatedHint">儲存後會自動記錄更新時間，前台可顯示「更新於…」</div>
         <button type="button" id="saveAnnouncementBtn">💾 儲存公告</button>
       </div>
+      </div><!-- /.settings-card announce -->
+      </div><!-- /settingsPanelAnnounce -->
 
-      <div class="section-heading">🛍️ 新增廣告</div>
+      <div class="settings-panel" id="settingsPanelAds">
+      <div class="settings-card">
+      <h3>🛍️ 新增廣告</h3>
       <div class="holiday-form">
         <label for="adMerchant">商家名稱</label>
         <input type="text" id="adMerchant" placeholder="例如：新港早餐店" maxlength="40">
@@ -542,8 +711,11 @@
         <button type="button" id="addAdBtn">➕ 新增廣告</button>
       </div>
 
-      <div class="section-heading">📋 目前的廣告（可直接編輯欄位後按儲存）</div>
+      <div class="section-heading">📋 目前的廣告</div>
+      <p class="field-hint" style="margin-top:-6px;margin-bottom:10px;">可直接改欄位後按儲存；關閉「顯示」前台就不會出現。</p>
       <div id="adList"></div>
+      </div><!-- /.settings-card ads -->
+      </div><!-- /settingsPanelAds -->
     </div>
   </div>
 </main>
@@ -660,7 +832,7 @@
   function toast(msg){
     toastEl.textContent = msg;
     toastEl.classList.add('show');
-    setTimeout(()=>toastEl.classList.remove('show'), 2200);
+    setTimeout(()=>toastEl.classList.remove('show'), 2600);
   }
 
   document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
@@ -898,14 +1070,25 @@
     loadOrders();
   });
 
-  // ---------- 篩選 ----------
-  document.querySelectorAll('.filter-tabs button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.filter-tabs button').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      renderOrders();
+  // ---------- 篩選（主列 + 進行中細分） ----------
+  function setOrderFilter_(filter){
+    currentFilter = filter;
+    document.querySelectorAll('#orderFilterTabs button').forEach(b=>{
+      b.classList.toggle('active', b.dataset.filter === filter || (filter !== '進行中' && isDoingStatus_(filter) && b.dataset.filter === '進行中'));
     });
+    // 點細分狀態時，主列「進行中」保持高亮
+    if(isDoingStatus_(filter)){
+      document.querySelectorAll('#orderFilterTabs button').forEach(b=>{
+        b.classList.toggle('active', b.dataset.filter === '進行中');
+      });
+    }
+    renderOrders();
+  }
+  document.querySelectorAll('#orderFilterTabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=> setOrderFilter_(btn.dataset.filter));
+  });
+  document.querySelectorAll('#orderFilterSub .sub-ft').forEach(btn=>{
+    btn.addEventListener('click', ()=> setOrderFilter_(btn.dataset.filter));
   });
 
   // ---------- 頁籤切換：訂單／結算／設定 ----------
@@ -916,32 +1099,38 @@
   const viewSettlementBtn = document.getElementById('viewSettlementBtn');
   const viewSettingsBtn = document.getElementById('viewSettingsBtn');
 
-  viewOrdersBtn.addEventListener('click', ()=>{
-    viewOrdersBtn.classList.add('active');
-    viewSettlementBtn.classList.remove('active');
-    viewSettingsBtn.classList.remove('active');
-    ordersView.style.display = 'block';
-    settlementView.style.display = 'none';
-    settingsView.style.display = 'none';
-  });
+  function switchAdminView_(name){
+    viewOrdersBtn.classList.toggle('active', name === 'orders');
+    viewSettlementBtn.classList.toggle('active', name === 'settlement');
+    viewSettingsBtn.classList.toggle('active', name === 'settings');
+    ordersView.style.display = name === 'orders' ? 'block' : 'none';
+    settlementView.style.display = name === 'settlement' ? 'block' : 'none';
+    settingsView.style.display = name === 'settings' ? 'block' : 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  viewOrdersBtn.addEventListener('click', ()=> switchAdminView_('orders'));
   viewSettlementBtn.addEventListener('click', ()=>{
-    viewSettlementBtn.classList.add('active');
-    viewOrdersBtn.classList.remove('active');
-    viewSettingsBtn.classList.remove('active');
-    ordersView.style.display = 'none';
-    settlementView.style.display = 'block';
-    settingsView.style.display = 'none';
+    switchAdminView_('settlement');
     loadSettlement();
   });
   viewSettingsBtn.addEventListener('click', ()=>{
-    viewSettingsBtn.classList.add('active');
-    viewOrdersBtn.classList.remove('active');
-    viewSettlementBtn.classList.remove('active');
-    ordersView.style.display = 'none';
-    settlementView.style.display = 'none';
-    settingsView.style.display = 'block';
+    switchAdminView_('settings');
     loadHolidays();
     loadContent();
+  });
+
+  // 設定內子頁籤：公休／公告／廣告
+  document.querySelectorAll('#settingsSubtabs button').forEach(btn => {
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('#settingsSubtabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = btn.dataset.panel;
+      document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+      const map = { holiday: 'settingsPanelHoliday', announce: 'settingsPanelAnnounce', ads: 'settingsPanelAds' };
+      const el = document.getElementById(map[panel]);
+      if(el) el.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   });
 
   // ---------- 設定：公休日期（可全天或僅某時段） ----------
@@ -1893,14 +2082,48 @@
     return String(s || '待處理').replace(/\u3000/g, ' ').trim() || '待處理';
   }
 
+  function updateOrderCounts_(){
+    const counts = { '全部': currentOrders.length, '待處理':0, '處理中':0, '取餐中':0, '運送中':0, '已送達':0, '已取消':0, '進行中':0 };
+    currentOrders.forEach(o => {
+      const s = normalizeStatus(o.status);
+      if(counts[s] !== undefined) counts[s]++;
+      if(s === '處理中' || s === '取餐中' || s === '運送中') counts['進行中']++;
+    });
+    document.querySelectorAll('#orderFilterTabs .cnt, #orderFilterSub .cnt').forEach(el => {
+      const k = el.getAttribute('data-cnt');
+      el.textContent = counts[k] != null ? counts[k] : 0;
+    });
+  }
+
+  function isDoingStatus_(s){
+    return s === '處理中' || s === '取餐中' || s === '運送中';
+  }
+
+  function syncFilterSubVisibility_(){
+    const sub = document.getElementById('orderFilterSub');
+    if(!sub) return;
+    const show = currentFilter === '進行中' || isDoingStatus_(currentFilter);
+    sub.style.display = show ? 'flex' : 'none';
+    sub.querySelectorAll('.sub-ft').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === currentFilter);
+    });
+  }
+
   function renderOrders(){
+    updateOrderCounts_();
+    syncFilterSubVisibility_();
     const list = document.getElementById('orderList');
-    const filtered = currentFilter === '全部'
-      ? currentOrders
-      : currentOrders.filter(o => normalizeStatus(o.status) === currentFilter);
+    let filtered;
+    if(currentFilter === '全部'){
+      filtered = currentOrders;
+    } else if(currentFilter === '進行中'){
+      filtered = currentOrders.filter(o => isDoingStatus_(normalizeStatus(o.status)));
+    } else {
+      filtered = currentOrders.filter(o => normalizeStatus(o.status) === currentFilter);
+    }
 
     if(!filtered.length){
-      list.innerHTML = '<div class="empty-state">📭 目前沒有符合條件的訂單</div>';
+      list.innerHTML = '<div class="empty-state">📭 目前沒有符合條件的訂單<br><span style="font-size:12px;opacity:.75;">可換上方篩選，或點右上角重新整理</span></div>';
       return;
     }
 
