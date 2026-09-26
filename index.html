@@ -500,6 +500,55 @@
     box-shadow:0 2px 0 var(--ink);
   }
   .welcome-popup-ok:active{ transform:translateY(2px); box-shadow:none; }
+
+  /* 非營業：第一頁預約模式彈窗 */
+  .reservation-mode-overlay{
+    position:fixed; inset:0; z-index:10050;
+    background:rgba(20,28,32,.55);
+    display:none; align-items:center; justify-content:center;
+    padding:18px 14px;
+  }
+  .reservation-mode-overlay.show{ display:flex; }
+  .reservation-mode-popup{
+    width:min(92vw, 380px);
+    background:var(--paper);
+    border:2.5px solid var(--ink);
+    border-radius:18px;
+    box-shadow:0 4px 0 var(--ink), 0 18px 40px rgba(0,0,0,.28);
+    padding:22px 18px 16px;
+    text-align:center;
+  }
+  .reservation-mode-popup .rm-icon{ font-size:40px; line-height:1; margin-bottom:8px; }
+  .reservation-mode-popup h3{
+    font-family:var(--font-cute); font-size:20px; margin:0 0 10px; font-weight:400;
+  }
+  .reservation-mode-popup p{
+    margin:0 0 8px; font-size:14.5px; line-height:1.65; color:var(--ocean-dark);
+  }
+  .reservation-mode-popup .rm-steps{
+    text-align:left; background:#FFF8E8; border:1.5px solid var(--ink);
+    border-radius:12px; padding:10px 12px; margin:12px 0 14px;
+    font-size:13.5px; line-height:1.7;
+  }
+  .reservation-mode-popup .rm-ok{
+    width:100%; border:2px solid var(--ink); border-radius:14px;
+    background:#06C755; color:#fff; font-weight:800; font-size:15.5px;
+    padding:12px; cursor:pointer; font-family:inherit;
+    box-shadow:0 2px 0 var(--ink);
+  }
+  .gate-reservation-banner{
+    display:none;
+    margin:12px 0 14px;
+    background:linear-gradient(180deg, #FFF8E8, #FFEFC8);
+    border:2px solid var(--ink);
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:0 2px 0 var(--ink);
+    font-size:14px; line-height:1.6;
+  }
+  .gate-reservation-banner.show{ display:block; }
+  .gate-reservation-banner strong{ font-family:var(--font-cute); }
+
   .progress-banner{
     display:none; align-items:center; gap:10px; background:var(--ocean); color:var(--paper);
     border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow);
@@ -2086,6 +2135,43 @@
 
 
   /* 預約時間列：避免 date/select 原生最小寬度撐破表單 */
+
+  /* 非營業／公休：預約模式 */
+  .schedule-field.reservation-required{
+    background:linear-gradient(180deg, #FFF8E8 0%, #FFF3D6 100%);
+    border:2px solid var(--ink);
+    border-radius:14px;
+    padding:14px 14px 12px;
+    box-shadow:0 2px 0 var(--ink);
+  }
+  .schedule-field .sched-mode-badge{
+    display:none;
+    font-size:12px; font-weight:800; font-family:var(--font-cute);
+    background:var(--gold); color:var(--ink);
+    border:1.5px solid var(--ink); border-radius:999px;
+    padding:3px 10px; margin-bottom:8px;
+  }
+  .schedule-field.reservation-required .sched-mode-badge{ display:inline-block; }
+  .schedule-field.reservation-required label{
+    color:var(--coral-dark);
+  }
+  .schedule-field #scheduleHint{
+    display:block !important;
+    margin-top:8px;
+    font-size:13px !important;
+    line-height:1.55;
+    color:var(--ocean-dark);
+  }
+  .status-banner .status-jump-sched{
+    display:inline-flex; align-items:center; justify-content:center;
+    margin-top:8px; width:100%;
+    border:2px solid var(--ink); border-radius:999px;
+    background:var(--gold); color:var(--ink);
+    font-weight:800; font-size:13.5px; font-family:inherit;
+    padding:10px 14px; cursor:pointer;
+    box-shadow:0 2px 0 var(--ink);
+  }
+
   .schedule-row{
     display:flex;
     flex-wrap:wrap;
@@ -2963,6 +3049,22 @@
 </header>
 
 <main>
+  <!-- 非營業時間：強制預約說明彈窗（第一頁） -->
+  <div class="reservation-mode-overlay" id="reservationModeOverlay" aria-hidden="true">
+    <div class="reservation-mode-popup" role="dialog" aria-labelledby="reservationModeTitle">
+      <div class="rm-icon">🌙</div>
+      <h3 id="reservationModeTitle">目前非營業時間</h3>
+      <p id="reservationModeMsg">現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在營業時段為您處理。</p>
+      <div class="rm-steps">
+        ① 先選品項／店家<br>
+        ② 再填地址與聯絡方式<br>
+        ③ 在聯絡步驟選擇<strong>預約時間</strong>（必填）<br>
+        ④ 確認後送出預約單
+      </div>
+      <button type="button" class="rm-ok" id="reservationModeOk">知道了，開始選品項</button>
+    </div>
+  </div>
+
   <div class="welcome-popup-overlay" id="welcomePopupOverlay" aria-hidden="true">
     <div class="welcome-popup" role="dialog" aria-labelledby="welcomePopupTitle">
       <button type="button" class="welcome-popup-close" id="welcomePopupClose" aria-label="關閉">×</button>
@@ -2982,6 +3084,10 @@
     <h1><span class="title-emoji">🍯</span> 成功小蜜丰 <span class="title-emoji">🐝</span></h1>
     <p>嗨～歡迎光臨！先看看公告和好康，勾選同意後就能逛菜單囉</p>
     <div class="welcome-chip">✨ 成功鎮在地代購外送</div>
+  </div>
+  <div class="gate-reservation-banner" id="gateReservationBanner" role="status">
+    <strong>📅 目前為預約接單模式</strong><br>
+    <span id="gateReservationBannerText">無法下即時單。請先選品項，之後在聯絡步驟填寫預約時間即可送出。</span>
   </div>
   <div class="announce-stack" id="announceStack">
   <div class="status-banner" id="statusBanner"></div>
@@ -3281,8 +3387,9 @@
         <label>暱稱（必填）</label>
         <input id="cContact" placeholder="群組暱稱" required>
       </div>
-      <div class="field">
-        <label>預約（選填）</label>
+      <div class="field schedule-field" id="scheduleFieldBlock">
+        <span class="sched-mode-badge" id="schedModeBadge">📅 目前僅接受預約單</span>
+        <label id="scheduleFieldLabel">預約時間（選填）</label>
         <div class="schedule-row">
           <input id="cScheduleDate" type="date">
           <select id="cScheduleTime">
@@ -3290,7 +3397,7 @@
           </select>
         </div>
         <input type="hidden" id="cSchedule">
-        <div id="scheduleHint" style="display:none;font-size:11.5px;color:var(--ocean-dark);opacity:.8;margin-top:5px;"></div>
+        <div id="scheduleHint" style="font-size:12.5px;color:var(--ocean-dark);opacity:.85;margin-top:6px;line-height:1.55;"></div>
       </div>
       <div class="field">
         <label>備註</label>
@@ -5323,32 +5430,50 @@ function renderSettings(settings){
       }
     }
 
-    // 強制公休：不可即時單，但可預約
+    // 強制公休／公休／非營業：預約模式（第一頁彈窗說明；步驟仍從品項開始）
+    function fillStatusOnly_(icon, msg){
+      const lineBtn = `<a class="status-line-btn" href="${escapeHtml(lineUrl)}" target="_blank" rel="noopener">💬 私訊小蜜丰</a>`;
+      banner.innerHTML = `<div class="status-banner-text">${icon} ${escapeHtml(msg)}</div>${lineBtn}`;
+      banner.style.display = 'flex';
+    }
     if(forcedClosed){
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
-      const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停即時外送，請改預約稍後時段').trim();
-      fillStatusBanner_('⏸️', msg + '（即時單暫停，可預約稍後時段）', true);
+      const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停即時外送').trim();
+      fillStatusOnly_('⏸️', msg + '　→ 僅接受預約單，請從選品項開始');
       sendBtn.classList.remove('disabled-btn');
+      if(typeof showReservationModePopup_ === 'function'){
+        showReservationModePopup_('⏸️', '目前暫停即時外送', msg + '。請先選品項，預約時間在後續步驟填寫。');
+      }
     } else if(onHoliday){
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
-      const msg = (settings['暫停服務公告'] || '目前公休，暫停即時外送，請改預約公休以外的時段').trim();
-      fillStatusBanner_('🏖️', msg, true);
+      const msg = (settings['暫停服務公告'] || '目前公休，暫停即時外送').trim();
+      fillStatusOnly_('🏖️', msg + '　→ 僅接受預約單，請從選品項開始');
       sendBtn.classList.remove('disabled-btn');
+      if(typeof showReservationModePopup_ === 'function'){
+        showReservationModePopup_('🏖️', '目前公休中', msg + '。請先選品項，並預約公休以外的時段。');
+      }
     } else if(isOpenFinal){
       orderingMode = 'open';
       orderingDisabled = false;
       banner.style.display = 'none';
       banner.innerHTML = '';
       sendBtn.classList.remove('disabled-btn');
+      hideReservationModePopup_();
+      const gateBan = document.getElementById('gateReservationBanner');
+      if(gateBan) gateBan.classList.remove('show');
     } else {
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
-      const msg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（${openTime}–${closeTime}）。若仍想下單，請私訊小蜜丰；也可先填預約單。`).trim();
-      fillStatusBanner_('🌙', msg, true);
+      const msg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（服務 ${openTime}–${closeTime}）`).trim();
+      fillStatusOnly_('🌙', msg + '　→ 僅接受預約單，請從選品項開始');
       sendBtn.classList.remove('disabled-btn');
+      if(typeof showReservationModePopup_ === 'function'){
+        showReservationModePopup_('🌙', '目前非營業時間', msg + '。無法下即時單，可先填預約訂單，營業時再為您處理。');
+      }
     }
+    if(typeof applyReservationModeUI_ === 'function') applyReservationModeUI_();
 
     const progress = (settings['目前處理進度'] || '').trim();
     const progressEl = document.getElementById('progressBanner');
@@ -6281,9 +6406,17 @@ function renderSettings(settings){
 
   function populateScheduleTimeOptions(){
     const sel = document.getElementById('cScheduleTime');
+    const dateEl = document.getElementById('cScheduleDate');
     const currentValue = sel.value;
+    const dateVal = dateEl ? dateEl.value : '';
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     sel.innerHTML = '<option value="">請選擇時段</option>';
     generateReservationSlots().forEach(t => {
+      // 選今天時，略過已過的時段
+      if(dateVal === todayStr && t <= nowHM) return;
       const opt = document.createElement('option');
       opt.value = t;
       opt.textContent = t;
@@ -6293,6 +6426,88 @@ function renderSettings(settings){
       sel.value = currentValue;
     }
   }
+
+  /** 非營業時：若尚未選預約，自動帶入下一個可預約時段（可再改） */
+  function suggestNextReservationSlot_(){
+    const dateEl = document.getElementById('cScheduleDate');
+    const timeEl = document.getElementById('cScheduleTime');
+    if(!dateEl || !timeEl) return;
+    if(document.getElementById('cSchedule').value) return; // 已有選擇不覆蓋
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    let d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    for(let dayOffset = 0; dayOffset < 14; dayOffset++){
+      const tryDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + dayOffset);
+      const dateStr = `${tryDate.getFullYear()}-${pad(tryDate.getMonth()+1)}-${pad(tryDate.getDate())}`;
+      dateEl.value = dateStr;
+      populateScheduleTimeOptions();
+      const opts = Array.from(timeEl.options).filter(o => o.value);
+      if(opts.length){
+        timeEl.value = opts[0].value;
+        syncScheduleValue();
+        return;
+      }
+    }
+  }
+
+  function applyReservationModeUI_(){
+    const block = document.getElementById('scheduleFieldBlock');
+    const label = document.getElementById('scheduleFieldLabel');
+    const hint = document.getElementById('scheduleHint');
+    const sendBtn = document.getElementById('sendLineBtn');
+    const gateBan = document.getElementById('gateReservationBanner');
+    const need = orderingMode === 'reservationOnly';
+    if(block) block.classList.toggle('reservation-required', need);
+    if(label) label.textContent = need ? '預約時間（必填）' : '預約時間（選填）';
+    if(hint){
+      const base = `可預約時段 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一檔`;
+      hint.textContent = need
+        ? `⚠️ 目前為預約模式：請在此選擇希望送達／取件的日期與時段（必填）。${base}`
+        : base;
+      hint.style.display = 'block';
+    }
+    if(sendBtn){
+      sendBtn.textContent = need ? '📅 確認預約並送出' : '✅ 確認訂單，送出訂單';
+    }
+    if(gateBan){
+      if(need) gateBan.classList.add('show');
+      else gateBan.classList.remove('show');
+    }
+    // 不在進站時自動跳步驟或強迫先選時間；等使用者走到「聯絡」步驟再帶入建議時段
+  }
+
+  let reservationPopupShown_ = false;
+  function showReservationModePopup_(icon, title, msg){
+    const overlay = document.getElementById('reservationModeOverlay');
+    if(!overlay) return;
+    const iconEl = overlay.querySelector('.rm-icon');
+    const titleEl = document.getElementById('reservationModeTitle');
+    const msgEl = document.getElementById('reservationModeMsg');
+    if(iconEl) iconEl.textContent = icon || '🌙';
+    if(titleEl) titleEl.textContent = title || '目前非營業時間';
+    if(msgEl) msgEl.innerHTML = msg || '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>。';
+    const banText = document.getElementById('gateReservationBannerText');
+    if(banText) banText.textContent = (msgEl ? msgEl.textContent : '') + ' 請從品項開始下單，預約時間在後續步驟填寫。';
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+    reservationPopupShown_ = true;
+  }
+  function hideReservationModePopup_(){
+    const overlay = document.getElementById('reservationModeOverlay');
+    if(!overlay) return;
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    const gateBan = document.getElementById('gateReservationBanner');
+    if(gateBan && orderingMode === 'reservationOnly') gateBan.classList.add('show');
+  }
+  (function bindReservationModePopup_(){
+    const ok = document.getElementById('reservationModeOk');
+    const overlay = document.getElementById('reservationModeOverlay');
+    if(ok) ok.addEventListener('click', hideReservationModePopup_);
+    if(overlay) overlay.addEventListener('click', (e)=>{
+      if(e.target === overlay) hideReservationModePopup_();
+    });
+  })();
 
   function syncScheduleValue(){
     const dateVal = document.getElementById('cScheduleDate').value;
@@ -6315,7 +6530,7 @@ function renderSettings(settings){
     document.getElementById('cSchedule').value = value || '';
   }
 
-  document.getElementById('cScheduleDate').addEventListener('change', syncScheduleValue);
+  document.getElementById('cScheduleDate').addEventListener('change', ()=>{ populateScheduleTimeOptions(); syncScheduleValue(); });
   document.getElementById('cScheduleTime').addEventListener('change', syncScheduleValue);
   populateScheduleTimeOptions();
 
@@ -6847,6 +7062,10 @@ ${stopsText}
     if(wizardCurrentStep === 5 && typeof updatePreview === 'function'){
       try{ updatePreview(); }catch(e){}
     }
+    // 走到聯絡步驟時，若是預約模式且尚未選時間，才建議下一個時段（不打斷品項流程）
+    if(wizardCurrentStep === 3 && orderingMode === 'reservationOnly' && typeof suggestNextReservationSlot_ === 'function'){
+      try{ suggestNextReservationSlot_(); }catch(e){}
+    }
     if(typeof updateCartFloatBar === 'function') updateCartFloatBar();
     const composerEl = document.querySelector('.composer');
     if(composerEl && wizardCurrentStep !== 5){
@@ -6913,6 +7132,13 @@ ${stopsText}
         return false;
       }
       const schedule = document.getElementById('cSchedule').value;
+      if(orderingMode === 'reservationOnly' && !schedule){
+        toast('目前僅接受預約，請選擇預約日期與時段');
+        const b = document.getElementById('scheduleFieldBlock');
+        if(b) b.scrollIntoView({ behavior:'smooth', block:'center' });
+        document.getElementById('cScheduleDate').focus();
+        return false;
+      }
       if(schedule && new Date(schedule).getTime() < Date.now()){
         toast('預約時間不能是過去的時間，請重新選擇');
         document.getElementById('cScheduleDate').focus();
@@ -7030,7 +7256,7 @@ ${stopsText}
       return false;
     }
     if(orderingMode === 'reservationOnly' && !data.schedule){
-      toast('目前暫停即時外送，請選擇預約時間後再送出（或私訊小蜜丰）');
+      toast('目前僅接受預約單，請先選擇預約日期與時段');
       showStep(3);
       document.getElementById('cScheduleDate').focus();
       return false;
