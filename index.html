@@ -154,11 +154,6 @@
     background:var(--ink); color:var(--gold); border-color:var(--ink);
   }
   .header-rules > summary:active{ transform:translateY(1px); }
-  .header-hours > summary{ padding:6px 9px; }
-  .header-hours > summary .hours-label{ font-size:12px; font-weight:700; }
-  @media (max-width:480px){
-    .header-hours > summary .hours-label{ font-size:11px; }
-  }
   .header-rules-panel{
     position:fixed; top:calc(100% + 10px); left:0; z-index:80;
     width:min(92vw, 360px); max-height:min(70vh, 420px); overflow:auto;
@@ -1477,11 +1472,61 @@
   }
 
 
-  .header-hours{ flex:0 0 auto; }
-  .header-hours > summary{
-    max-width: none; overflow: visible; text-overflow: clip;
-    font-variant-numeric: tabular-nums;
+
+  /* 營業時間：僅時鐘圖示（圓形按鈕，不顯示文字與 ▾） */
+  .header-hours{ flex:0 0 auto; position:relative; }
+  details.header-hours > summary,
+  header.top details.header-hours > summary{
+    list-style:none;
+    box-sizing:border-box;
+    width:36px !important;
+    height:36px !important;
+    min-width:36px !important;
+    min-height:36px !important;
+    max-width:36px !important;
+    padding:0 !important;
+    margin:0 !important;
+    gap:0 !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:999px !important;
+    font-size:0 !important;
+    line-height:0 !important;
+    overflow:hidden;
+    white-space:nowrap;
   }
+  details.header-hours > summary::-webkit-details-marker{ display:none !important; }
+  details.header-hours > summary::after,
+  details.header-hours > summary::before{
+    content:none !important;
+    display:none !important;
+  }
+  details.header-hours > summary .hours-ico{
+    font-size:18px !important;
+    line-height:1 !important;
+    display:block !important;
+    margin:0 !important;
+  }
+  details.header-hours > summary .hours-label{ display:none !important; }
+  .header-hours .hours-panel-title{
+    font-family:var(--font-cute); font-size:15px; font-weight:700;
+    margin:0 0 8px; letter-spacing:.03em;
+  }
+  @media (max-width:520px){
+    details.header-hours > summary,
+    header.top details.header-hours > summary{
+      width:34px !important;
+      height:34px !important;
+      min-width:34px !important;
+      min-height:34px !important;
+      max-width:34px !important;
+      padding:0 !important;
+      font-size:0 !important;
+    }
+    details.header-hours > summary .hours-ico{ font-size:17px !important; }
+  }
+
   .header-rules, .header-hours, .header-lookup-btn, .join-btn{ flex-shrink: 0; }
   .brand-text{ display:none; }
   @media (min-width:640px){
@@ -1491,9 +1536,6 @@
   .hero-fee-panel .fee-card{ padding: 12px; }
   .hero-fee-panel .range-map{ margin-top: 8px; box-shadow: none; }
   .hero-extra-panel{ max-height: min(70vh, 480px); }
-  @media (max-width:520px){
-    .header-hours > summary{ max-width: none; font-size: 11px; padding: 5px 8px; }
-  }
 
 
   /* ========== 整體介面優化 ========== */
@@ -2001,10 +2043,17 @@
       padding:6px 8px !important;
       font-size:11px !important;
     }
-    header.top .header-hours > summary{
-      padding:5px 7px !important;
-      font-size:10.5px !important;
+    header.top details.header-hours > summary{
+      width:34px !important;
+      height:34px !important;
+      min-width:34px !important;
+      min-height:34px !important;
+      max-width:34px !important;
+      padding:0 !important;
+      font-size:0 !important;
     }
+    header.top details.header-hours > summary::after{ content:none !important; display:none !important; }
+    header.top details.header-hours > summary .hours-ico{ font-size:17px !important; }
     header.top .header-lookup-btn,
     header.top .join-btn{
       padding:7px 8px !important;
@@ -2897,11 +2946,12 @@
         </div>
       </details>
     <details class="header-rules header-hours" id="headerHours">
-        <summary title="營業時間"><span class="hours-ico">🕒</span><span class="hours-label">營業時間</span></summary>
+        <summary title="營業時間" aria-label="營業時間"><span class="hours-ico">🕒</span></summary>
         <div class="header-rules-panel">
-          <div class="time" id="hoursTime" style="font-size:13px;font-weight:700;margin-bottom:6px;">營業時間：<span id="hoursTimeText">08:00–20:00</span></div>
-          <div class="note" style="font-size:12px;opacity:.8;line-height:1.6;">非營業時間可預約；急需請私訊小蜜丰</div>
-          <a id="headerHoursLineBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;align-items:center;gap:4px;background:#06C755;color:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;text-decoration:none;">💬 私訊小蜜丰</a>
+          <div class="hours-panel-title">🕒 營業時間</div>
+          <div class="time" id="hoursTime" style="font-size:14px;font-weight:700;margin-bottom:6px;"><span id="hoursTimeText">08:00–20:00</span></div>
+          <div class="note" id="hoursStatusNote" style="font-size:12.5px;opacity:.9;line-height:1.6;margin-bottom:6px;">非營業時間可預約；急需請私訊小蜜丰</div>
+          <a id="headerHoursLineBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;margin-top:6px;align-items:center;gap:4px;background:#06C755;color:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;text-decoration:none;">💬 私訊小蜜丰</a>
         </div>
       </details>
     <div class="header-spacer" aria-hidden="true"></div>
@@ -5198,6 +5248,8 @@ function renderSettings(settings){
     businessCloseTime = closeTime;
     const hoursEl = document.getElementById('hoursTimeText');
     if(hoursEl) hoursEl.textContent = `${openTime}–${closeTime}`;
+    // 點開時鐘後顯示的狀態說明（公休過後會自動回到預設時段）
+    const hoursNoteEl = document.getElementById('hoursStatusNote');
 
     reservationOpenTime = settings['預約開始時間'] || openTime;
     reservationCloseTime = settings['預約結束時間'] || closeTime;
@@ -5211,18 +5263,24 @@ function renderSettings(settings){
     const provRaw = settings['顯示暫定標籤'];
     const provStr = String(provRaw == null ? '' : provRaw).trim().toUpperCase();
     const showProvisional = provRaw === true || provStr === 'TRUE' || provStr === '1';
-    const hoursSummary = document.querySelector('#headerHours > summary');
-    if(hoursSummary){
-      // 清掉舊的暫定標籤（若有）
-      hoursSummary.querySelectorAll('.provisional, #provisionalBadge').forEach(n => n.remove());
+    // 「暫定」改顯示在時鐘面板內，避免頂部圖示被擠開
+    const hoursPanel = document.querySelector('#headerHours .header-rules-panel');
+    if(hoursPanel){
+      hoursPanel.querySelectorAll('.provisional, #provisionalBadge').forEach(n => n.remove());
       if(showProvisional){
         const badge = document.createElement('span');
         badge.id = 'provisionalBadge';
         badge.className = 'provisional';
         badge.textContent = '暫定';
-        badge.style.cssText = 'display:inline-block;margin-left:4px;font-size:11px;background:var(--gold);color:var(--ink);padding:2px 8px;border-radius:999px;font-weight:700;';
-        hoursSummary.appendChild(badge);
+        badge.style.cssText = 'display:inline-block;margin-left:6px;font-size:11px;background:var(--gold);color:var(--ink);padding:2px 8px;border-radius:999px;font-weight:700;vertical-align:middle;';
+        const title = hoursPanel.querySelector('.hours-panel-title');
+        if(title) title.appendChild(badge);
+        else hoursPanel.insertBefore(badge, hoursPanel.firstChild);
       }
+    }
+    const hoursSummary = document.querySelector('#headerHours > summary');
+    if(hoursSummary){
+      hoursSummary.querySelectorAll('.provisional, #provisionalBadge').forEach(n => n.remove());
     }
 
     // 布林 false 不能用 || 預設，否則會被當成營業中
@@ -5237,7 +5295,8 @@ function renderSettings(settings){
       return s === 'FALSE' || s === '0' || s === 'NO' || s === '否';
     }
     const forcedClosed = parseFlagTrue_(settings['強制公休']);
-    // 後端「是否營業」= 營業時段內且非強制公休
+    const onHoliday = parseFlagTrue_(settings['公休中']);
+    // 後端「是否營業」= 營業時段內、非強制公休、且非公休時段（公休結束後自動回復預設營業時間）
     const isOpenFinal = String(settings['是否營業'] || '').toLowerCase() === 'true';
 
     const banner = document.getElementById('statusBanner');
@@ -5252,12 +5311,30 @@ function renderSettings(settings){
       banner.style.display = 'flex';
     }
 
-    // 強制公休：不可即時單，但可預約「暫停結束後」的時段
+    if(hoursNoteEl){
+      if(forcedClosed){
+        hoursNoteEl.textContent = '目前暫停即時外送，可預約稍後時段。預設服務時段 ' + openTime + '–' + closeTime + '。';
+      } else if(onHoliday){
+        hoursNoteEl.textContent = (settings['暫停服務公告'] || '目前公休時段').trim() + '　公休結束後將自動回復 ' + openTime + '–' + closeTime + '。';
+      } else if(isOpenFinal){
+        hoursNoteEl.textContent = '目前營業中。非營業時間可預約；急需請私訊小蜜丰。';
+      } else {
+        hoursNoteEl.textContent = '目前非營業時間（' + openTime + '–' + closeTime + '）。可先填預約單，或私訊小蜜丰。';
+      }
+    }
+
+    // 強制公休：不可即時單，但可預約
     if(forcedClosed){
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
       const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停即時外送，請改預約稍後時段').trim();
       fillStatusBanner_('⏸️', msg + '（即時單暫停，可預約稍後時段）', true);
+      sendBtn.classList.remove('disabled-btn');
+    } else if(onHoliday){
+      orderingMode = 'reservationOnly';
+      orderingDisabled = false;
+      const msg = (settings['暫停服務公告'] || '目前公休，暫停即時外送，請改預約公休以外的時段').trim();
+      fillStatusBanner_('🏖️', msg, true);
       sendBtn.classList.remove('disabled-btn');
     } else if(isOpenFinal){
       orderingMode = 'open';
@@ -5266,7 +5343,6 @@ function renderSettings(settings){
       banner.innerHTML = '';
       sendBtn.classList.remove('disabled-btn');
     } else {
-      // 單純非營業時間：可預約，不可即時單
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
       const msg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（${openTime}–${closeTime}）。若仍想下單，請私訊小蜜丰；也可先填預約單。`).trim();
