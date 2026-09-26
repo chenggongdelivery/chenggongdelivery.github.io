@@ -3015,6 +3015,10 @@
       </div>
     </div>
     <a class="join-btn" href="https://line.me/ti/g2/AxGSDaW9MPa0N9j9tlOjv_aKHuXgHcmWsEJBXQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener" id="joinLineBtn" title="加入 LINE 社群">💬 LINE</a>
+    <button type="button" class="header-lookup-btn" id="headerLookupBtn" title="查詢／修改／取消訂單">🔍 訂單</button>
+    <!-- 修改／取消改在查詢結果內操作，避免頂部擁擠；保留 id 相容舊程式 -->
+    <button type="button" class="header-lookup-btn header-edit-btn" id="headerEditBtn" style="display:none;" aria-hidden="true">✏️ 修改</button>
+    <button type="button" class="header-lookup-btn header-cancel-btn" id="headerCancelBtn" style="display:none;" aria-hidden="true">🗑️ 取消</button>
     <details class="header-rules" id="headerRules">
         <summary title="社群守則" aria-label="社群守則"><span class="rules-ico">📋</span></summary>
         <div class="header-rules-panel">
@@ -3042,9 +3046,6 @@
         </div>
       </details>
     <div class="header-spacer" aria-hidden="true"></div>
-    <button type="button" class="header-lookup-btn" id="headerLookupBtn">🔍 訂單查詢</button>
-    <button type="button" class="header-lookup-btn header-edit-btn" id="headerEditBtn" title="僅待處理可修改">✏️ 修改</button>
-    <button type="button" class="header-lookup-btn header-cancel-btn" id="headerCancelBtn" title="僅待處理可取消">🗑️ 取消</button>
     
   </div>
 </header>
@@ -3536,8 +3537,8 @@
 <div class="lookup-overlay" id="lookupOverlay">
   <div class="lookup-box">
     <button class="close-btn" id="lookupClose" aria-label="關閉">✕</button>
-    <h3>🔍 查詢我的訂單</h3>
-    <div class="hint">請同時輸入下單時的「聯絡電話」與「社群暱稱」，兩者皆相符才能查詢。為保護個資，地址僅顯示部分內容。</div>
+    <h3>🔍 我的訂單</h3>
+    <div class="hint">輸入下單時的「聯絡電話」與「社群暱稱」即可查詢。查到「待處理」訂單時，可在下方<strong>修改</strong>或<strong>取消</strong>。為保護個資，地址僅顯示部分內容。</div>
     <div class="field">
       <label>聯絡電話</label>
       <input id="lookupPhone" type="tel" inputmode="numeric" placeholder="0912-345-678">
