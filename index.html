@@ -410,6 +410,29 @@
     padding:6px 14px;
     font-size:12.5px; letter-spacing:.08em;
   }
+  .boot-a2hs{
+    position:relative; z-index:5;
+    margin:12px 18px 0;
+    max-width:320px;
+    text-align:center;
+    background:rgba(255,255,255,.72);
+    border:1.5px solid var(--ink);
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:12.5px;
+    line-height:1.55;
+    color:var(--ocean-dark);
+    box-shadow:0 2px 0 rgba(34,48,46,.15);
+  }
+  .boot-a2hs strong{
+    display:block;
+    font-family:var(--font-cute);
+    font-size:13.5px;
+    color:var(--ink);
+    margin-bottom:4px;
+    letter-spacing:.04em;
+  }
+
   .boot-bar-wrap{
     flex:0 0 auto;
     padding:14px 20px calc(16px + env(safe-area-inset-bottom));
@@ -3282,6 +3305,10 @@
           <span class="bee-deco r">🐝</span>
         </div>
         <div class="boot-place-chip">🛵 外送資料載入中</div>
+        <div class="boot-a2hs" id="bootA2hsTip">
+          <strong>📱 加入主畫面，全螢幕更好用</strong>
+          <span id="bootA2hsText">用瀏覽器選單「加入主畫面／加到主螢幕」，之後點圖示開啟可全螢幕顯示、更像 App。</span>
+        </div>
       </div>
       <div class="boot-bar-wrap">
         <div class="boot-bar-meta">
@@ -6553,6 +6580,22 @@ function renderSettings(settings){
   });
 
 
+
+
+  (function setBootA2hsText_(){
+    const el = document.getElementById('bootA2hsText');
+    if(!el) return;
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
+    if(isIOS){
+      el.textContent = '在 Safari 點下方「分享」→「加入主畫面」。之後從桌面圖示開啟，可全螢幕使用。';
+    } else if(isAndroid){
+      el.textContent = '在 Chrome 點右上角「⋮」→「加入主畫面」或「安裝應用程式」。之後點圖示即可全螢幕開啟。';
+    } else {
+      el.textContent = '用瀏覽器選單「加入主畫面／加到主螢幕」，之後點圖示開啟可全螢幕顯示、更像 App。';
+    }
+  })();
 
   (function syncBootBeeHead_(){
     const head = document.getElementById('bootBeeHead');
