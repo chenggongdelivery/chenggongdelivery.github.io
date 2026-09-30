@@ -256,279 +256,197 @@
   .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
   .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
 
-  /* ---- Game Boy 經典加載畫面 ---- */
+  /* ---- 成功小蜜丰品牌加載畫面 ---- */
   .boot-loader{
     position:fixed; inset:0; z-index:99999;
     display:flex; flex-direction:column;
-    background:#1a1a1a;
-    color:#0f380f;
+    background:#1E5B67;
+    color:var(--ink);
     overflow:hidden;
-    transition:opacity .4s ease, visibility .4s ease;
-    font-family:'Courier New', Courier, ui-monospace, monospace;
+    transition:opacity .45s ease, visibility .45s ease;
+    font-family:var(--font-cute), system-ui, sans-serif;
   }
-  .boot-loader.hide{
-    opacity:0; visibility:hidden; pointer-events:none;
-  }
-  /* 外框像實體機身 */
+  .boot-loader.hide{ opacity:0; visibility:hidden; pointer-events:none; }
   .boot-gb-shell{
-    flex:1;
-    display:flex; flex-direction:column;
-    margin:0 auto;
-    width:100%; max-width:420px;
-    background:#c4c4c4;
-    box-shadow:inset 0 0 0 3px #8a8a8a;
-  }
-  @media (min-width:480px){
-    .boot-loader{ align-items:center; justify-content:center; padding:16px; }
-    .boot-gb-shell{
-      flex:0 1 auto;
-      width:min(360px, 92vw);
-      height:min(620px, 92vh);
-      border-radius:16px 16px 40px 40px;
-      border:4px solid #5a5a5a;
-      box-shadow:
-        0 8px 0 #3a3a3a,
-        0 16px 40px rgba(0,0,0,.45);
-      overflow:hidden;
-    }
-  }
-  .boot-gb-topbar{
-    flex:0 0 auto;
-    text-align:center;
-    padding:10px 12px 4px;
-    font-size:10px;
-    letter-spacing:.35em;
-    color:#3a3a3a;
-    font-weight:700;
+    flex:1; display:flex; flex-direction:column; min-height:0;
+    width:100%; height:100%; margin:0;
+    background:transparent; box-shadow:none; border:none; max-width:none;
   }
   .boot-scene{
-    flex:1 1 auto;
-    position:relative;
+    flex:1 1 auto; position:relative; min-height:0; overflow:hidden;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    margin:8px 14px;
-    min-height:0;
-    /* 經典 GB 綠屏 */
-    background:#9bbc0f;
-    border:4px solid #0f380f;
-    box-shadow:
-      inset 0 0 0 3px #8bac0f,
-      inset 0 0 40px rgba(15,56,15,.25);
-    overflow:hidden;
-    image-rendering:pixelated;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, #FFF6D6 0%, transparent 55%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255,255,255,.5) 0%, transparent 50%),
+      linear-gradient(180deg, #B8E0EC 0%, #DCEEF7 42%, #F5E6B8 78%, #E3A94B 100%);
   }
-  /* 微弱掃描線 */
+  /* 遠山剪影 */
   .boot-scene::before{
     content:'';
-    position:absolute; inset:0; pointer-events:none; z-index:5;
-    background:repeating-linear-gradient(
-      0deg,
-      transparent 0 2px,
-      rgba(15,56,15,.07) 2px 3px
-    );
+    position:absolute; left:-5%; right:-5%; bottom:18%;
+    height:26%;
+    background:linear-gradient(180deg, transparent, rgba(30,91,103,.25) 40%, #1E5B67 100%);
+    clip-path:polygon(0 65%, 12% 48%, 22% 58%, 35% 40%, 48% 55%, 62% 38%, 78% 52%, 90% 42%, 100% 50%, 100% 100%, 0 100%);
+    opacity:.55; pointer-events:none;
   }
-  .boot-scene::after{ display:none; }
-  .boot-sky-deco, .boot-cloud, .boot-wave, .boot-road-line,
-  .boot-place, .boot-deco-row, .boot-corner,
-  .boot-town-title .rpg-frame, .boot-town-title .rpg-sub,
-  .boot-town-title .rpg-tag{ display:none !important; }
-
-  .boot-town-title{
-    position:relative; z-index:2;
+  /* 蜂蜜底層 */
+  .boot-scene::after{
+    content:'';
+    position:absolute; left:0; right:0; bottom:0; height:16%;
+    background:linear-gradient(180deg, #E3A94B 0%, #C89030 100%);
+    border-top:3px solid var(--ink);
+    pointer-events:none;
+  }
+  .boot-honey-drops{
+    position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:1;
+  }
+  .boot-honey-drops span{
+    position:absolute; top:-20px;
+    width:10px; height:14px;
+    background:radial-gradient(circle at 50% 30%, #FFE08A, #E3A94B);
+    border:1.5px solid rgba(34,48,46,.35);
+    border-radius:50% 50% 50% 50% / 45% 45% 55% 55%;
+    opacity:.55;
+    animation:honeyFall 3.2s linear infinite;
+  }
+  .boot-honey-drops span:nth-child(1){ left:12%; animation-duration:3.6s; animation-delay:0s; }
+  .boot-honey-drops span:nth-child(2){ left:28%; width:8px; height:11px; animation-duration:2.8s; animation-delay:-.8s; }
+  .boot-honey-drops span:nth-child(3){ left:55%; animation-duration:3.4s; animation-delay:-1.4s; }
+  .boot-honey-drops span:nth-child(4){ left:72%; width:9px; height:12px; animation-duration:3s; animation-delay:-.4s; }
+  .boot-honey-drops span:nth-child(5){ left:88%; animation-duration:3.8s; animation-delay:-2s; }
+  @keyframes honeyFall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:0; }
+    10%{ opacity:.6; }
+    100%{ transform:translateY(110vh) rotate(40deg); opacity:0; }
+  }
+  .boot-hud{
+    position:relative; z-index:5;
     text-align:center;
-    margin:0 8px;
+    padding:0 20px;
+    margin-top:-4%;
+  }
+  .boot-kicker{
+    display:inline-block;
+    font-size:12px; letter-spacing:.2em;
+    color:var(--ocean-dark);
+    background:rgba(255,255,255,.55);
+    border:1.5px solid var(--ink);
+    border-radius:999px;
+    padding:4px 12px;
+    margin-bottom:10px;
   }
   .boot-town-title .rpg-name{
     display:block;
-    font-family:'Courier New', Courier, monospace;
-    font-size:clamp(36px, 12vw, 48px);
-    font-weight:900;
+    font-family:var(--font-cute);
+    font-size:clamp(36px, 11vw, 52px);
+    letter-spacing:.1em;
+    color:var(--ink);
+    text-shadow:2px 2px 0 rgba(255,255,255,.6);
     line-height:1.15;
-    letter-spacing:.2em;
-    color:#0f380f;
-    text-shadow:
-      2px 2px 0 #8bac0f,
-      -1px -1px 0 #9bbc0f;
-    animation:gbBlink 1.2s steps(1) infinite;
   }
-  @keyframes gbBlink{
-    0%, 49%{ opacity:1; }
-    50%, 100%{ opacity:1; }
-  }
-  /* Game Boy 蜜蜂：頭＝網站商標 */
-  .boot-bee{
-    position:relative; z-index:2;
-    width:88px; height:72px;
-    margin:14px auto 6px;
-    animation:gbMove 1.4s steps(4) infinite;
-  }
-  @keyframes gbMove{
-    0%,100%{ transform:translateX(-6px); }
-    50%{ transform:translateX(6px); }
-  }
-  .boot-bee .bee-wings{
-    position:absolute; top:8px; left:50%;
-    width:0; height:0; z-index:0;
-  }
-  .boot-bee .wing{
-    position:absolute; top:0;
-    width:28px; height:20px;
-    background:#c4e86a;
-    border:2px solid #0f380f;
-    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
-    opacity:.95;
-  }
-  .boot-bee .wing.left{
-    right:8px;
-    transform-origin:right center;
-    animation:beeWingL .28s steps(2) infinite;
-  }
-  .boot-bee .wing.right{
-    left:8px;
-    transform-origin:left center;
-    animation:beeWingR .28s steps(2) infinite;
-  }
-  @keyframes beeWingL{
-    0%,100%{ transform:rotate(-18deg); }
-    50%{ transform:rotate(-38deg); }
-  }
-  @keyframes beeWingR{
-    0%,100%{ transform:rotate(18deg); }
-    50%{ transform:rotate(38deg); }
-  }
-  .boot-bee .bee-body{
-    position:relative; z-index:1;
-    display:flex; flex-direction:column; align-items:center;
-  }
-  .boot-bee .bee-head{
-    width:40px; height:40px;
-    border-radius:50%;
-    border:2.5px solid #0f380f;
-    overflow:hidden;
-    background:#8bac0f;
-    box-shadow:2px 2px 0 #306230;
-    position:relative; z-index:2;
-  }
-  .boot-bee .bee-head img{
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-    /* 略壓成接近綠屏色調，仍可辨識商標 */
-    filter:saturate(.85) contrast(1.05);
-  }
-  .boot-bee .bee-abdomen{
-    width:36px; height:28px;
-    margin-top:-4px;
-    border:2.5px solid #0f380f;
-    border-radius:40% 40% 50% 50%;
-    background:
-      repeating-linear-gradient(
-        90deg,
-        #0f380f 0 5px,
-        #e8c84a 5px 10px
-      );
-    box-shadow:2px 2px 0 #306230;
-    position:relative; z-index:1;
-  }
-  .boot-bee .bee-stinger{
-    width:0; height:0;
-    border-left:5px solid transparent;
-    border-right:5px solid transparent;
-    border-top:8px solid #0f380f;
-    margin-top:-2px;
-  }
-
   .boot-brand{
-    position:relative; z-index:2;
-    margin-top:4px;
-    font-family:'Courier New', Courier, monospace;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:.12em;
-    color:#0f380f;
-    text-align:center;
+    margin-top:6px;
+    font-family:var(--font-cute);
+    font-size:clamp(18px, 4.5vw, 22px);
+    letter-spacing:.06em;
+    color:var(--ocean-dark);
   }
   .boot-tip{
-    position:relative; z-index:2;
-    margin-top:14px;
-    font-family:'Courier New', Courier, monospace;
-    font-size:12px;
-    font-weight:700;
-    letter-spacing:.08em;
-    color:#306230;
-    text-align:center;
+    margin-top:8px;
+    font-size:14px;
+    color:var(--ocean-dark);
+    opacity:.9;
   }
   .boot-dots::after{
     content:'';
-    animation:bootDots 1s steps(4,end) infinite;
+    animation:bootDots 1.1s steps(4,end) infinite;
   }
   @keyframes bootDots{
-    0%{ content:''; }
-    25%{ content:'.'; }
-    50%{ content:'..'; }
-    75%{ content:'...'; }
+    0%{ content:''; } 25%{ content:'.'; } 50%{ content:'..'; } 75%{ content:'...'; }
   }
-  .boot-gb-hint{
-    position:relative; z-index:2;
-    margin-top:18px;
-    font-size:10px;
-    letter-spacing:.2em;
-    color:#306230;
-    animation:gbPress 1.6s steps(1) infinite;
+  /* 商標角色 */
+  .boot-mascot{
+    position:relative; z-index:6;
+    margin:18px auto 0;
+    width:96px; height:96px;
+    animation:mascotBob 1.2s ease-in-out infinite;
   }
-  @keyframes gbPress{
-    0%, 49%{ opacity:1; }
-    50%, 100%{ opacity:0; }
+  @keyframes mascotBob{
+    0%,100%{ transform:translateY(0) rotate(-3deg); }
+    50%{ transform:translateY(-10px) rotate(3deg); }
+  }
+  .boot-mascot-ring{
+    position:absolute; inset:-6px;
+    border-radius:50%;
+    border:3px solid var(--ink);
+    background:linear-gradient(145deg, #FFF8E0, #F0C85A);
+    box-shadow:0 4px 0 var(--ink), 0 10px 24px rgba(34,48,46,.2);
+  }
+  .boot-mascot img{
+    position:relative; z-index:1;
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:50%;
+    border:2.5px solid var(--ink);
+    display:block;
+  }
+  .boot-mascot .bee-deco{
+    position:absolute; z-index:2;
+    font-size:22px;
+    filter:drop-shadow(0 2px 0 rgba(0,0,0,.15));
+  }
+  .boot-mascot .bee-deco.l{ left:-18px; top:8px; animation:beeOrbit 2s ease-in-out infinite; }
+  .boot-mascot .bee-deco.r{ right:-18px; bottom:12px; animation:beeOrbit 2.4s ease-in-out infinite reverse; }
+  @keyframes beeOrbit{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-8px); }
+  }
+  .boot-place-chip{
+    position:relative; z-index:5;
+    margin-top:14px;
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--ink); color:var(--gold);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:12.5px; letter-spacing:.08em;
   }
   .boot-bar-wrap{
     flex:0 0 auto;
-    padding:10px 18px 16px;
-    background:#c4c4c4;
+    padding:14px 20px calc(16px + env(safe-area-inset-bottom));
+    background:var(--ink);
+    border-top:3px solid var(--gold);
   }
   .boot-bar-meta{
     display:flex; justify-content:space-between; align-items:center;
-    margin-bottom:6px;
-    font-size:10px; font-weight:700; letter-spacing:.12em;
-    color:#2a2a2a;
-    font-family:'Courier New', Courier, monospace;
+    margin-bottom:8px;
+    font-size:13px; font-weight:700;
+    color:var(--gold); font-family:var(--font-cute);
   }
   .boot-bar-meta .pct{
-    font-size:11px; color:#0f380f;
+    font-size:14px; color:#fff;
+    font-family:ui-monospace, monospace;
   }
   .boot-bar-track{
-    height:12px;
-    border:2px solid #0f380f;
-    background:#9bbc0f;
-    overflow:hidden;
-    border-radius:0;
-    box-shadow:none;
+    height:14px; overflow:hidden;
+    border:2px solid var(--gold);
+    background:rgba(0,0,0,.35);
+    border-radius:999px;
   }
   .boot-bar-fill{
-    height:100%;
-    width:8%;
-    border-radius:0;
-    background:#0f380f;
-    box-shadow:none;
-    transition:width .2s steps(4);
-    position:relative;
+    height:100%; width:0%;
+    border-radius:999px;
+    background:linear-gradient(90deg, #E3A94B, #F0C85A 50%, #06C755);
+    box-shadow:0 0 10px rgba(227,169,75,.45);
+    transition:width .2s linear;
   }
-  .boot-bar-fill::after{ display:none; }
   .boot-loader.error .boot-bar-fill{
-    background:#306230;
+    background:linear-gradient(90deg, #E2532F, #E3A94B);
   }
-  .boot-gb-footer{
-    flex:0 0 auto;
-    text-align:center;
-    padding:0 12px 14px;
-    font-size:9px;
-    letter-spacing:.25em;
-    color:#4a4a4a;
-    font-weight:700;
-  }
-  body.boot-loading{
-    overflow:hidden !important;
-    background:#1a1a1a;
-  }
+  body.boot-loading{ overflow:hidden !important; }
   .loading-banner{ display:none !important; }
+  @media (prefers-reduced-motion:reduce){
+    .boot-loader *, .boot-loader *::before, .boot-loader *::after{ animation:none !important; }
+  }
 
   /* ---- 全站兩頁：同意頁 / 下單頁 ---- */
   .site-page{ display:none; }
@@ -3342,39 +3260,38 @@
       </div>
     </div>
   </div>
-  <!-- 全螢幕遊戲風加載 -->
+  <!-- 全螢幕成功小蜜丰品牌加載 -->
   <div class="boot-loader" id="loadingBanner" role="status" aria-live="polite" aria-busy="true">
     <div class="boot-gb-shell">
-      <div class="boot-gb-topbar">GAME BOY</div>
       <div class="boot-scene">
-        <div class="boot-town-title">
-          <span class="rpg-name">成功鎮</span>
+        <div class="boot-honey-drops" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
         </div>
-        <div class="boot-bee" aria-hidden="true">
-          <div class="bee-wings">
-            <span class="wing left"></span>
-            <span class="wing right"></span>
+        <div class="boot-hud">
+          <div class="boot-kicker">台東 · 成功鎮</div>
+          <div class="boot-town-title">
+            <span class="rpg-name">成功小蜜丰</span>
           </div>
-          <div class="bee-body">
-            <div class="bee-head"><img id="bootBeeHead" alt=""></div>
-            <div class="bee-abdomen"></div>
-            <div class="bee-stinger"></div>
-          </div>
+          <div class="boot-brand">🍯 在地代購外送</div>
+          <div class="boot-tip">正在準備菜單與公告<span class="boot-dots"></span></div>
         </div>
-        <div class="boot-brand">成功小蜜丰</div>
-        <div class="boot-tip">NOW LOADING<span class="boot-dots"></span></div>
-        <div class="boot-gb-hint">▼ PRESS START</div>
+        <div class="boot-mascot" aria-hidden="true">
+          <div class="boot-mascot-ring"></div>
+          <img id="bootBeeHead" alt="">
+          <span class="bee-deco l">🐝</span>
+          <span class="bee-deco r">🐝</span>
+        </div>
+        <div class="boot-place-chip">🛵 外送資料載入中</div>
       </div>
       <div class="boot-bar-wrap">
         <div class="boot-bar-meta">
-          <span id="bootLoadLabel">LOADING DATA</span>
+          <span id="bootLoadLabel">連線小蜜丰</span>
           <span class="pct" id="bootLoadPct">0%</span>
         </div>
         <div class="boot-bar-track">
           <div class="boot-bar-fill" id="bootLoadFill"></div>
         </div>
       </div>
-      <div class="boot-gb-footer">◎ 成功小蜜丰 ◎</div>
     </div>
   </div>
 
@@ -6636,7 +6553,7 @@ function renderSettings(settings){
   });
 
 
-  // 加載蜜蜂頭：使用網站商標圖
+
   (function syncBootBeeHead_(){
     const head = document.getElementById('bootBeeHead');
     const stamp = document.querySelector('.brand .stamp img, a.stamp img, .stamp img');
@@ -6654,76 +6571,83 @@ function renderSettings(settings){
     if(pctEl) pctEl.textContent = p + '%';
     if(lab && label) lab.textContent = label;
   }
+  function hideBootLoaderSmooth_(){
+    const loadingEl = document.getElementById('loadingBanner');
+    if(!loadingEl) return;
+    loadingEl.classList.add('hide');
+    loadingEl.setAttribute('aria-busy', 'false');
+    document.body.classList.remove('boot-loading');
+  }
   function finishBootLoader_(ok){
     const loadingEl = document.getElementById('loadingBanner');
     if(!loadingEl) return;
-    if(ok){
-      setBootProgress_(100, 'START!');
-      setTimeout(()=>{
-        loadingEl.classList.add('hide');
-        loadingEl.setAttribute('aria-busy', 'false');
-        document.body.classList.remove('boot-loading');
-        setTimeout(maybeShowWelcomePopup_, 280);
-      }, 420);
-    } else {
+    // 無論成功／失敗都自動跑到 100%，不需點擊
+    setBootProgress_(100, ok ? '準備完成' : '仍可繼續');
+    if(!ok){
       loadingEl.classList.add('error');
-      setBootProgress_(100, 'ERROR');
       const tip = loadingEl.querySelector('.boot-tip');
-      if(tip) tip.textContent = '部分資料載入失敗，顯示可能不是最新內容';
-      const lab = document.getElementById('bootLoadLabel');
-      if(lab) lab.textContent = '請稍後重新整理再試';
-      // 仍可點擊畫面關閉加載層
-      loadingEl.style.cursor = 'pointer';
-      loadingEl.addEventListener('click', ()=>{
-        loadingEl.classList.add('hide');
-        document.body.classList.remove('boot-loading');
-      }, { once:true });
+      if(tip) tip.textContent = '部分資料未更新，仍可繼續使用';
     }
+    setTimeout(()=>{
+      hideBootLoaderSmooth_();
+      if(ok) setTimeout(maybeShowWelcomePopup_, 280);
+    }, 480);
   }
   function loadContent(){
-    const loadingEl = document.getElementById('loadingBanner');
     document.body.classList.add('boot-loading');
-    setBootProgress_(6, 'CONNECTING...');
-    let fake = 6;
+    setBootProgress_(4, '連線小蜜丰');
+    let fake = 4;
+    let dataDone = false;
+    let dataPayload = null;
+    let dataError = false;
+
+    const labels = ['連線小蜜丰', '讀取商家菜單', '整理公告', '確認外送範圍', '快好了'];
     const tick = setInterval(()=>{
-      // 假進度慢慢爬到 88%，等真實資料到再補滿
-      if(fake < 88){
-        fake += Math.random() * 7 + 2;
-        if(fake > 88) fake = 88;
-        const labels = [
-          '連線伺服器中',
-          'LOAD SHOPS...',
-          'LOAD NOTICE...',
-          'LOAD MAP...',
-          'ALMOST...'
-        ];
+      if(dataDone) return;
+      if(fake < 92){
+        fake += 3.5 + Math.random() * 4;
+        if(fake > 92) fake = 92;
         const li = Math.min(labels.length - 1, Math.floor(fake / 20));
         setBootProgress_(fake, labels[li]);
       }
-    }, 280);
+    }, 200);
+
+    // 最短展示時間，避免閃一下就結束
+    const minShow = new Promise(r => setTimeout(r, 1200));
 
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
-    fetch(freshUrl, { cache: 'no-store' })
+    const fetchP = fetch(freshUrl, { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
-        setBootProgress_(90, 'SAVE DATA...');
-        renderRules(data.rules);
-        renderSettings(data.settings);
-        renderMerchantAds(data.merchantAds);
-        renderServices(data.services);
-        renderMerchants(data.merchants);
-        renderMenus(data.menus);
-        renderAddressZones(data.addressZones);
-        renderDeliverableTownships(data.deliverableTownships);
-        renderDeliverableRoads(data.deliverableRoads);
-        renderPaymentAccounts(data.paymentAccounts);
-        clearInterval(tick);
-        finishBootLoader_(true);
+        dataPayload = data;
+        dataDone = true;
+        setBootProgress_(Math.max(fake, 95), '套用資料中');
       })
       .catch(()=>{
-        clearInterval(tick);
-        finishBootLoader_(false);
+        dataError = true;
+        dataDone = true;
       });
+
+    Promise.all([fetchP, minShow]).then(()=>{
+      clearInterval(tick);
+      if(dataPayload){
+        try{
+          renderRules(dataPayload.rules);
+          renderSettings(dataPayload.settings);
+          renderMerchantAds(dataPayload.merchantAds);
+          renderServices(dataPayload.services);
+          renderMerchants(dataPayload.merchants);
+          renderMenus(dataPayload.menus);
+          renderAddressZones(dataPayload.addressZones);
+          renderDeliverableTownships(dataPayload.deliverableTownships);
+          renderDeliverableRoads(dataPayload.deliverableRoads);
+          renderPaymentAccounts(dataPayload.paymentAccounts);
+        }catch(e){}
+        finishBootLoader_(true);
+      } else {
+        finishBootLoader_(false);
+      }
+    });
   }
   loadContent();
 
