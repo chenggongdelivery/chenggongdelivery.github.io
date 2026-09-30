@@ -256,15 +256,279 @@
   .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
   .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
 
-  .loading-banner{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    background:var(--card); color:var(--ocean-dark); border:2px dashed var(--ocean); border-radius:var(--radius);
-    padding:10px 16px; margin:16px 0; font-size:12.5px; font-weight:700;
-    transition:opacity .3s ease, transform .3s ease;
+  /* ---- Game Boy 經典加載畫面 ---- */
+  .boot-loader{
+    position:fixed; inset:0; z-index:99999;
+    display:flex; flex-direction:column;
+    background:#1a1a1a;
+    color:#0f380f;
+    overflow:hidden;
+    transition:opacity .4s ease, visibility .4s ease;
+    font-family:'Courier New', Courier, ui-monospace, monospace;
   }
-  .loading-banner.hide{opacity:0; transform:translateY(-6px); pointer-events:none; height:0; margin:0; padding:0; border:none; overflow:hidden;}
+  .boot-loader.hide{
+    opacity:0; visibility:hidden; pointer-events:none;
+  }
+  /* 外框像實體機身 */
+  .boot-gb-shell{
+    flex:1;
+    display:flex; flex-direction:column;
+    margin:0 auto;
+    width:100%; max-width:420px;
+    background:#c4c4c4;
+    box-shadow:inset 0 0 0 3px #8a8a8a;
+  }
+  @media (min-width:480px){
+    .boot-loader{ align-items:center; justify-content:center; padding:16px; }
+    .boot-gb-shell{
+      flex:0 1 auto;
+      width:min(360px, 92vw);
+      height:min(620px, 92vh);
+      border-radius:16px 16px 40px 40px;
+      border:4px solid #5a5a5a;
+      box-shadow:
+        0 8px 0 #3a3a3a,
+        0 16px 40px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+  }
+  .boot-gb-topbar{
+    flex:0 0 auto;
+    text-align:center;
+    padding:10px 12px 4px;
+    font-size:10px;
+    letter-spacing:.35em;
+    color:#3a3a3a;
+    font-weight:700;
+  }
+  .boot-scene{
+    flex:1 1 auto;
+    position:relative;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    margin:8px 14px;
+    min-height:0;
+    /* 經典 GB 綠屏 */
+    background:#9bbc0f;
+    border:4px solid #0f380f;
+    box-shadow:
+      inset 0 0 0 3px #8bac0f,
+      inset 0 0 40px rgba(15,56,15,.25);
+    overflow:hidden;
+    image-rendering:pixelated;
+  }
+  /* 微弱掃描線 */
+  .boot-scene::before{
+    content:'';
+    position:absolute; inset:0; pointer-events:none; z-index:5;
+    background:repeating-linear-gradient(
+      0deg,
+      transparent 0 2px,
+      rgba(15,56,15,.07) 2px 3px
+    );
+  }
+  .boot-scene::after{ display:none; }
+  .boot-sky-deco, .boot-cloud, .boot-wave, .boot-road-line,
+  .boot-place, .boot-deco-row, .boot-corner,
+  .boot-town-title .rpg-frame, .boot-town-title .rpg-sub,
+  .boot-town-title .rpg-tag{ display:none !important; }
 
-  
+  .boot-town-title{
+    position:relative; z-index:2;
+    text-align:center;
+    margin:0 8px;
+  }
+  .boot-town-title .rpg-name{
+    display:block;
+    font-family:'Courier New', Courier, monospace;
+    font-size:clamp(36px, 12vw, 48px);
+    font-weight:900;
+    line-height:1.15;
+    letter-spacing:.2em;
+    color:#0f380f;
+    text-shadow:
+      2px 2px 0 #8bac0f,
+      -1px -1px 0 #9bbc0f;
+    animation:gbBlink 1.2s steps(1) infinite;
+  }
+  @keyframes gbBlink{
+    0%, 49%{ opacity:1; }
+    50%, 100%{ opacity:1; }
+  }
+  /* Game Boy 蜜蜂：頭＝網站商標 */
+  .boot-bee{
+    position:relative; z-index:2;
+    width:88px; height:72px;
+    margin:14px auto 6px;
+    animation:gbMove 1.4s steps(4) infinite;
+  }
+  @keyframes gbMove{
+    0%,100%{ transform:translateX(-6px); }
+    50%{ transform:translateX(6px); }
+  }
+  .boot-bee .bee-wings{
+    position:absolute; top:8px; left:50%;
+    width:0; height:0; z-index:0;
+  }
+  .boot-bee .wing{
+    position:absolute; top:0;
+    width:28px; height:20px;
+    background:#c4e86a;
+    border:2px solid #0f380f;
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+    opacity:.95;
+  }
+  .boot-bee .wing.left{
+    right:8px;
+    transform-origin:right center;
+    animation:beeWingL .28s steps(2) infinite;
+  }
+  .boot-bee .wing.right{
+    left:8px;
+    transform-origin:left center;
+    animation:beeWingR .28s steps(2) infinite;
+  }
+  @keyframes beeWingL{
+    0%,100%{ transform:rotate(-18deg); }
+    50%{ transform:rotate(-38deg); }
+  }
+  @keyframes beeWingR{
+    0%,100%{ transform:rotate(18deg); }
+    50%{ transform:rotate(38deg); }
+  }
+  .boot-bee .bee-body{
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .boot-bee .bee-head{
+    width:40px; height:40px;
+    border-radius:50%;
+    border:2.5px solid #0f380f;
+    overflow:hidden;
+    background:#8bac0f;
+    box-shadow:2px 2px 0 #306230;
+    position:relative; z-index:2;
+  }
+  .boot-bee .bee-head img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+    /* 略壓成接近綠屏色調，仍可辨識商標 */
+    filter:saturate(.85) contrast(1.05);
+  }
+  .boot-bee .bee-abdomen{
+    width:36px; height:28px;
+    margin-top:-4px;
+    border:2.5px solid #0f380f;
+    border-radius:40% 40% 50% 50%;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        #0f380f 0 5px,
+        #e8c84a 5px 10px
+      );
+    box-shadow:2px 2px 0 #306230;
+    position:relative; z-index:1;
+  }
+  .boot-bee .bee-stinger{
+    width:0; height:0;
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-top:8px solid #0f380f;
+    margin-top:-2px;
+  }
+
+  .boot-brand{
+    position:relative; z-index:2;
+    margin-top:4px;
+    font-family:'Courier New', Courier, monospace;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:#0f380f;
+    text-align:center;
+  }
+  .boot-tip{
+    position:relative; z-index:2;
+    margin-top:14px;
+    font-family:'Courier New', Courier, monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+    color:#306230;
+    text-align:center;
+  }
+  .boot-dots::after{
+    content:'';
+    animation:bootDots 1s steps(4,end) infinite;
+  }
+  @keyframes bootDots{
+    0%{ content:''; }
+    25%{ content:'.'; }
+    50%{ content:'..'; }
+    75%{ content:'...'; }
+  }
+  .boot-gb-hint{
+    position:relative; z-index:2;
+    margin-top:18px;
+    font-size:10px;
+    letter-spacing:.2em;
+    color:#306230;
+    animation:gbPress 1.6s steps(1) infinite;
+  }
+  @keyframes gbPress{
+    0%, 49%{ opacity:1; }
+    50%, 100%{ opacity:0; }
+  }
+  .boot-bar-wrap{
+    flex:0 0 auto;
+    padding:10px 18px 16px;
+    background:#c4c4c4;
+  }
+  .boot-bar-meta{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:6px;
+    font-size:10px; font-weight:700; letter-spacing:.12em;
+    color:#2a2a2a;
+    font-family:'Courier New', Courier, monospace;
+  }
+  .boot-bar-meta .pct{
+    font-size:11px; color:#0f380f;
+  }
+  .boot-bar-track{
+    height:12px;
+    border:2px solid #0f380f;
+    background:#9bbc0f;
+    overflow:hidden;
+    border-radius:0;
+    box-shadow:none;
+  }
+  .boot-bar-fill{
+    height:100%;
+    width:8%;
+    border-radius:0;
+    background:#0f380f;
+    box-shadow:none;
+    transition:width .2s steps(4);
+    position:relative;
+  }
+  .boot-bar-fill::after{ display:none; }
+  .boot-loader.error .boot-bar-fill{
+    background:#306230;
+  }
+  .boot-gb-footer{
+    flex:0 0 auto;
+    text-align:center;
+    padding:0 12px 14px;
+    font-size:9px;
+    letter-spacing:.25em;
+    color:#4a4a4a;
+    font-weight:700;
+  }
+  body.boot-loading{
+    overflow:hidden !important;
+    background:#1a1a1a;
+  }
+  .loading-banner{ display:none !important; }
 
   /* ---- 全站兩頁：同意頁 / 下單頁 ---- */
   .site-page{ display:none; }
@@ -3003,7 +3267,7 @@
 </style>
 
 </head>
-<body>
+<body class="boot-loading">
 
 <header class="top">
   <div class="top-inner">
@@ -3078,7 +3342,41 @@
       </div>
     </div>
   </div>
-  <div class="loading-banner" id="loadingBanner">⏳ 載入最新資料中，請稍候...</div>
+  <!-- 全螢幕遊戲風加載 -->
+  <div class="boot-loader" id="loadingBanner" role="status" aria-live="polite" aria-busy="true">
+    <div class="boot-gb-shell">
+      <div class="boot-gb-topbar">GAME BOY</div>
+      <div class="boot-scene">
+        <div class="boot-town-title">
+          <span class="rpg-name">成功鎮</span>
+        </div>
+        <div class="boot-bee" aria-hidden="true">
+          <div class="bee-wings">
+            <span class="wing left"></span>
+            <span class="wing right"></span>
+          </div>
+          <div class="bee-body">
+            <div class="bee-head"><img id="bootBeeHead" alt=""></div>
+            <div class="bee-abdomen"></div>
+            <div class="bee-stinger"></div>
+          </div>
+        </div>
+        <div class="boot-brand">成功小蜜丰</div>
+        <div class="boot-tip">NOW LOADING<span class="boot-dots"></span></div>
+        <div class="boot-gb-hint">▼ PRESS START</div>
+      </div>
+      <div class="boot-bar-wrap">
+        <div class="boot-bar-meta">
+          <span id="bootLoadLabel">LOADING DATA</span>
+          <span class="pct" id="bootLoadPct">0%</span>
+        </div>
+        <div class="boot-bar-track">
+          <div class="boot-bar-fill" id="bootLoadFill"></div>
+        </div>
+      </div>
+      <div class="boot-gb-footer">◎ 成功小蜜丰 ◎</div>
+    </div>
+  </div>
 
   <!-- ===== 第一頁：公告／廣告／法規同意 ===== -->
   <div class="site-page active" id="sitePageGate">
@@ -6337,13 +6635,78 @@ function renderSettings(settings){
     }
   });
 
+
+  // 加載蜜蜂頭：使用網站商標圖
+  (function syncBootBeeHead_(){
+    const head = document.getElementById('bootBeeHead');
+    const stamp = document.querySelector('.brand .stamp img, a.stamp img, .stamp img');
+    if(head && stamp && stamp.getAttribute('src')){
+      head.src = stamp.getAttribute('src');
+    }
+  })();
+
+  function setBootProgress_(pct, label){
+    const fill = document.getElementById('bootLoadFill');
+    const pctEl = document.getElementById('bootLoadPct');
+    const lab = document.getElementById('bootLoadLabel');
+    const p = Math.max(0, Math.min(100, Math.round(pct)));
+    if(fill) fill.style.width = p + '%';
+    if(pctEl) pctEl.textContent = p + '%';
+    if(lab && label) lab.textContent = label;
+  }
+  function finishBootLoader_(ok){
+    const loadingEl = document.getElementById('loadingBanner');
+    if(!loadingEl) return;
+    if(ok){
+      setBootProgress_(100, 'START!');
+      setTimeout(()=>{
+        loadingEl.classList.add('hide');
+        loadingEl.setAttribute('aria-busy', 'false');
+        document.body.classList.remove('boot-loading');
+        setTimeout(maybeShowWelcomePopup_, 280);
+      }, 420);
+    } else {
+      loadingEl.classList.add('error');
+      setBootProgress_(100, 'ERROR');
+      const tip = loadingEl.querySelector('.boot-tip');
+      if(tip) tip.textContent = '部分資料載入失敗，顯示可能不是最新內容';
+      const lab = document.getElementById('bootLoadLabel');
+      if(lab) lab.textContent = '請稍後重新整理再試';
+      // 仍可點擊畫面關閉加載層
+      loadingEl.style.cursor = 'pointer';
+      loadingEl.addEventListener('click', ()=>{
+        loadingEl.classList.add('hide');
+        document.body.classList.remove('boot-loading');
+      }, { once:true });
+    }
+  }
   function loadContent(){
     const loadingEl = document.getElementById('loadingBanner');
-    // 加上時間戳記 + no-store，避免瀏覽器快取舊版本的守則／服務／營業狀態設定
+    document.body.classList.add('boot-loading');
+    setBootProgress_(6, 'CONNECTING...');
+    let fake = 6;
+    const tick = setInterval(()=>{
+      // 假進度慢慢爬到 88%，等真實資料到再補滿
+      if(fake < 88){
+        fake += Math.random() * 7 + 2;
+        if(fake > 88) fake = 88;
+        const labels = [
+          '連線伺服器中',
+          'LOAD SHOPS...',
+          'LOAD NOTICE...',
+          'LOAD MAP...',
+          'ALMOST...'
+        ];
+        const li = Math.min(labels.length - 1, Math.floor(fake / 20));
+        setBootProgress_(fake, labels[li]);
+      }
+    }, 280);
+
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
     fetch(freshUrl, { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
+        setBootProgress_(90, 'SAVE DATA...');
         renderRules(data.rules);
         renderSettings(data.settings);
         renderMerchantAds(data.merchantAds);
@@ -6354,15 +6717,12 @@ function renderSettings(settings){
         renderDeliverableTownships(data.deliverableTownships);
         renderDeliverableRoads(data.deliverableRoads);
         renderPaymentAccounts(data.paymentAccounts);
-        loadingEl.classList.add('hide');
-        // 資料載入完成後再顯示開站彈窗（公告／廣告）
-        setTimeout(maybeShowWelcomePopup_, 350);
+        clearInterval(tick);
+        finishBootLoader_(true);
       })
       .catch(()=>{
-        // 讀取失敗就維持頁面上原本寫死的預設內容，並提示載入失敗
-        loadingEl.textContent = '⚠️ 部分資料載入失敗，顯示的可能不是最新內容，請稍後重新整理';
-        loadingEl.style.borderColor = 'var(--coral-dark)';
-        loadingEl.style.color = 'var(--coral-dark)';
+        clearInterval(tick);
+        finishBootLoader_(false);
       });
   }
   loadContent();
@@ -6479,20 +6839,46 @@ function renderSettings(settings){
   }
 
   let reservationPopupShown_ = false;
+  let lastReservationPopup_ = { icon: '🌙', title: '目前非營業時間', msg: '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在營業時段為您處理。' };
+  let pendingOrderStepAfterRemind_ = null;
   function showReservationModePopup_(icon, title, msg){
     const overlay = document.getElementById('reservationModeOverlay');
     if(!overlay) return;
     const iconEl = overlay.querySelector('.rm-icon');
     const titleEl = document.getElementById('reservationModeTitle');
     const msgEl = document.getElementById('reservationModeMsg');
-    if(iconEl) iconEl.textContent = icon || '🌙';
-    if(titleEl) titleEl.textContent = title || '目前非營業時間';
-    if(msgEl) msgEl.innerHTML = msg || '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>。';
+    lastReservationPopup_ = {
+      icon: icon || '🌙',
+      title: title || '目前非營業時間',
+      msg: msg || '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在營業時段為您處理。'
+    };
+    if(iconEl) iconEl.textContent = lastReservationPopup_.icon;
+    if(titleEl) titleEl.textContent = lastReservationPopup_.title;
+    if(msgEl) msgEl.innerHTML = lastReservationPopup_.msg;
     const banText = document.getElementById('gateReservationBannerText');
     if(banText) banText.textContent = (msgEl ? msgEl.textContent : '') + ' 請從品項開始下單，預約時間在後續步驟填寫。';
     overlay.classList.add('show');
     overlay.setAttribute('aria-hidden', 'false');
     reservationPopupShown_ = true;
+  }
+  function remindReservationModeIfNeeded_(){
+    if(orderingMode !== 'reservationOnly') return false;
+    const p = lastReservationPopup_ || {};
+    showReservationModePopup_(
+      p.icon || '🌙',
+      p.title || '目前非營業時間',
+      (p.msg || '目前無法下即時單，請改填預約訂單。') + '<br><br><strong>接下來請先選品項</strong>，預約時間在「聯絡方式」步驟再填。'
+    );
+    const okBtn = document.getElementById('reservationModeOk');
+    if(okBtn) okBtn.textContent = '知道了，開始填單';
+    return true;
+  }
+  function proceedToOrderAfterRemind_(){
+    const step = pendingOrderStepAfterRemind_ != null ? pendingOrderStepAfterRemind_ : 1;
+    pendingOrderStepAfterRemind_ = null;
+    showSitePage('order');
+    if(typeof showStep === 'function') showStep(step);
+    if(typeof updateCartFloatBar === 'function') updateCartFloatBar();
   }
   function hideReservationModePopup_(){
     const overlay = document.getElementById('reservationModeOverlay');
@@ -6501,6 +6887,9 @@ function renderSettings(settings){
     overlay.setAttribute('aria-hidden', 'true');
     const gateBan = document.getElementById('gateReservationBanner');
     if(gateBan && orderingMode === 'reservationOnly') gateBan.classList.add('show');
+    if(pendingOrderStepAfterRemind_ != null){
+      proceedToOrderAfterRemind_();
+    }
   }
   (function bindReservationModePopup_(){
     const ok = document.getElementById('reservationModeOk');
@@ -6954,8 +7343,20 @@ ${stopsText}
   function goToOrderPage(startStep){
     if(!requireConsentOrGate()) return false;
     try{ sessionStorage.setItem(GATE_CONSENT_KEY, '1'); }catch(e){}
-    showSitePage('order');
     const step = Math.min(Math.max(Number(startStep) || 1, 1), 5);
+    if(orderingMode === 'reservationOnly'){
+      pendingOrderStepAfterRemind_ = step;
+      if(typeof remindReservationModeIfNeeded_ === 'function') remindReservationModeIfNeeded_();
+      else {
+        pendingOrderStepAfterRemind_ = null;
+        showSitePage('order');
+        if(typeof showStep === 'function') showStep(step);
+        if(typeof updateCartFloatBar === 'function') updateCartFloatBar();
+      }
+      return true;
+    }
+    pendingOrderStepAfterRemind_ = null;
+    showSitePage('order');
     if(typeof showStep === 'function') showStep(step);
     if(typeof updateCartFloatBar === 'function') updateCartFloatBar();
     return true;
