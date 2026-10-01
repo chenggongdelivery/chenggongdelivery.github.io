@@ -5919,7 +5919,7 @@ function renderSettings(settings){
     reservationIntervalMin = isNaN(intervalVal) || intervalVal <= 0 ? 30 : intervalVal;
     populateScheduleTimeOptions();
     const scheduleHintEl = document.getElementById('scheduleHint');
-    if(scheduleHintEl) scheduleHintEl.textContent = `預約時段開放 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一個時段`;
+    if(scheduleHintEl) scheduleHintEl.textContent = `僅可預約今天 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一個時段`;
 
     // 只有明確 TRUE 才在「營業時間」旁加上「暫定」；FALSE 完全不出現
     const provRaw = settings['顯示暫定標籤'];
@@ -6004,10 +6004,18 @@ function renderSettings(settings){
       orderingMode = 'reservationOnly';
       orderingDisabled = false;
       const msg = (settings['暫停服務公告'] || '目前公休，暫停即時外送').trim();
-      fillStatusOnly_('🏖️', msg + '　→ 僅接受預約單，請從選品項開始');
+      // 僅「當日某時段」公休才提示可預約其他時段；跨日／全天公休不提示（預約也只能選今天）
+      const partialToday = String(settings['公休僅今日時段'] || '').toLowerCase() === 'true';
+      const statusExtra = partialToday
+        ? '　→ 僅接受預約單，可約今日公休以外時段'
+        : '　→ 公休期間暫停即時單，請先選品項或稍後再試';
+      fillStatusOnly_('🏖️', msg + statusExtra);
       sendBtn.classList.remove('disabled-btn');
       if(typeof showReservationModePopup_ === 'function'){
-        showReservationModePopup_('🏖️', '目前公休中', msg + '。請先選品項，並預約公休以外的時段。');
+        const popExtra = partialToday
+          ? '。請先選品項，並預約「今天」公休以外的時段。'
+          : '。請先選品項；跨日／全天公休期間無法預約其他日期（預約僅限當天）。';
+        showReservationModePopup_('🏖️', '目前公休中', msg + popExtra);
       }
     } else if(isOpenFinal){
       orderingMode = 'open';
@@ -7016,12 +7024,24 @@ function renderSettings(settings){
     });
   })();
 
-  // 預約日期欄位不能選過去的日期
-  (function setScheduleDateMin(){
-    const el = document.getElementById('cScheduleDate');
+  // 預約僅限「當天」：日期固定為今天（min=max）
+  function todayStrLocal_(){
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
-    el.min = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  }
+  function lockScheduleDateToToday_(){
+    const el = document.getElementById('cScheduleDate');
+    if(!el) return todayStrLocal_();
+    const t = todayStrLocal_();
+    el.min = t;
+    el.max = t;
+    if(el.value && el.value !== t) el.value = t;
+    if(!el.value) el.value = t;
+    return t;
+  }
+  (function setScheduleDateMin(){
+    lockScheduleDateToToday_();
   })();
 
   // ---------- 預約時段：固定時段下拉選單，跟後台設定的預約開始/結束/間隔連動 ----------
@@ -7048,14 +7068,14 @@ function renderSettings(settings){
     const sel = document.getElementById('cScheduleTime');
     const dateEl = document.getElementById('cScheduleDate');
     const currentValue = sel.value;
-    const dateVal = dateEl ? dateEl.value : '';
+    const todayStr = (typeof lockScheduleDateToToday_ === 'function') ? lockScheduleDateToToday_() : todayStrLocal_();
+    const dateVal = dateEl ? dateEl.value : todayStr;
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
-    const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
     const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     sel.innerHTML = '<option value="">請選擇時段</option>';
     generateReservationSlots().forEach(t => {
-      // 選今天時，略過已過的時段
+      // 僅當天可預約：略過已過的時段
       if(dateVal === todayStr && t <= nowHM) return;
       const opt = document.createElement('option');
       opt.value = t;
@@ -7073,20 +7093,12 @@ function renderSettings(settings){
     const timeEl = document.getElementById('cScheduleTime');
     if(!dateEl || !timeEl) return;
     if(document.getElementById('cSchedule').value) return; // 已有選擇不覆蓋
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    let d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    for(let dayOffset = 0; dayOffset < 14; dayOffset++){
-      const tryDate = new Date(d.getFullYear(), d.getMonth(), d.getDate() + dayOffset);
-      const dateStr = `${tryDate.getFullYear()}-${pad(tryDate.getMonth()+1)}-${pad(tryDate.getDate())}`;
-      dateEl.value = dateStr;
-      populateScheduleTimeOptions();
-      const opts = Array.from(timeEl.options).filter(o => o.value);
-      if(opts.length){
-        timeEl.value = opts[0].value;
-        syncScheduleValue();
-        return;
-      }
+    lockScheduleDateToToday_();
+    populateScheduleTimeOptions();
+    const opts = Array.from(timeEl.options).filter(o => o.value);
+    if(opts.length){
+      timeEl.value = opts[0].value;
+      syncScheduleValue();
     }
   }
 
@@ -7100,9 +7112,9 @@ function renderSettings(settings){
     if(block) block.classList.toggle('reservation-required', need);
     if(label) label.textContent = need ? '預約時間（必填）' : '預約時間（選填）';
     if(hint){
-      const base = `可預約時段 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一檔`;
+      const base = `僅可預約「今天」的時段 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一檔（已過時段不可選）`;
       hint.textContent = need
-        ? `⚠️ 目前為預約模式：請在此選擇希望送達／取件的日期與時段（必填）。${base}`
+        ? `⚠️ 目前為預約模式：請選擇今天希望的時段（必填）。${base}`
         : base;
       hint.style.display = 'block';
     }
@@ -7825,6 +7837,16 @@ ${stopsText}
         document.getElementById('cScheduleDate').focus();
         return false;
       }
+      if(schedule){
+        const datePart = String(schedule).split('T')[0];
+        const today = typeof todayStrLocal_ === 'function' ? todayStrLocal_() : '';
+        if(today && datePart !== today){
+          toast('目前只能預約「今天」的時段，請重新選擇');
+          if(typeof lockScheduleDateToToday_ === 'function') lockScheduleDateToToday_();
+          document.getElementById('cScheduleDate').focus();
+          return false;
+        }
+      }
       return true;
     }
     if(step === 4){
@@ -7965,6 +7987,17 @@ ${stopsText}
       showStep(3);
       document.getElementById('cScheduleDate').focus();
       return false;
+    }
+    if(data.schedule){
+      const datePart = String(data.schedule).split('T')[0];
+      const today = typeof todayStrLocal_ === 'function' ? todayStrLocal_() : '';
+      if(today && datePart !== today){
+        toast('目前只能預約「今天」的時段，請重新選擇');
+        showStep(3);
+        if(typeof lockScheduleDateToToday_ === 'function'){ lockScheduleDateToToday_(); populateScheduleTimeOptions(); }
+        document.getElementById('cScheduleDate').focus();
+        return false;
+      }
     }
     if(data.schedule){
       const d = new Date(data.schedule);
