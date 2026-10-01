@@ -256,131 +256,157 @@
   .hero h1{font-size:clamp(28px,4.5vw,42px); line-height:1.2; margin:0 0 12px;}
   .hero p{font-size:15px; color:var(--ocean-dark); max-width:520px; margin:0 0 22px; line-height:1.7;}
 
-  /* ---- 成功小蜜丰品牌加載畫面 ---- */
+  /* ---- 成功小蜜丰品牌加載（高質感首屏） ---- */
   .boot-loader{
     position:fixed; inset:0; z-index:99999;
     display:flex; flex-direction:column;
-    background:#1E5B67;
+    background:#153F48;
     color:var(--ink);
     overflow:hidden;
-    transition:opacity .45s ease, visibility .45s ease;
+    transition: opacity .55s cubic-bezier(.22,1,.36,1), visibility .55s linear, transform .55s cubic-bezier(.22,1,.36,1);
     font-family:var(--font-cute), system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
   }
-  .boot-loader.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+  .boot-loader.hide{
+    opacity:0; visibility:hidden; pointer-events:none;
+    transform:scale(1.02);
+  }
   .boot-gb-shell{
     flex:1; display:flex; flex-direction:column; min-height:0;
     width:100%; height:100%; margin:0;
-    background:transparent; box-shadow:none; border:none; max-width:none;
   }
   .boot-scene{
     flex:1 1 auto; position:relative; min-height:0; overflow:hidden;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:clamp(16px, 4vh, 32px) 20px calc(12px + env(safe-area-inset-bottom));
     background:
-      radial-gradient(ellipse 80% 50% at 50% 0%, #FFF6D6 0%, transparent 55%),
-      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255,255,255,.5) 0%, transparent 50%),
-      linear-gradient(180deg, #B8E0EC 0%, #DCEEF7 42%, #F5E6B8 78%, #E3A94B 100%);
+      radial-gradient(ellipse 90% 55% at 50% -5%, rgba(255,248,220,.95) 0%, transparent 58%),
+      radial-gradient(ellipse 50% 35% at 85% 15%, rgba(255,255,255,.45) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 30% at 10% 40%, rgba(127,173,169,.25) 0%, transparent 60%),
+      linear-gradient(165deg, #A8D5E4 0%, #D4EBF4 28%, #EEF6FA 52%, #F7E8C0 82%, #E8B84A 100%);
   }
-  /* 遠山剪影 */
+  /* 柔和地平線 */
   .boot-scene::before{
     content:'';
-    position:absolute; left:-5%; right:-5%; bottom:18%;
-    height:26%;
-    background:linear-gradient(180deg, transparent, rgba(30,91,103,.25) 40%, #1E5B67 100%);
-    clip-path:polygon(0 65%, 12% 48%, 22% 58%, 35% 40%, 48% 55%, 62% 38%, 78% 52%, 90% 42%, 100% 50%, 100% 100%, 0 100%);
-    opacity:.55; pointer-events:none;
+    position:absolute; left:-8%; right:-8%; bottom:14%;
+    height:32%;
+    background:linear-gradient(180deg, transparent 0%, rgba(30,91,103,.12) 45%, rgba(21,63,72,.35) 100%);
+    clip-path:polygon(0 70%, 10% 52%, 22% 62%, 34% 45%, 48% 58%, 60% 42%, 74% 55%, 88% 48%, 100% 56%, 100% 100%, 0 100%);
+    opacity:.7; pointer-events:none;
   }
-  /* 蜂蜜底層 */
   .boot-scene::after{
     content:'';
-    position:absolute; left:0; right:0; bottom:0; height:16%;
-    background:linear-gradient(180deg, #E3A94B 0%, #C89030 100%);
-    border-top:3px solid var(--ink);
+    position:absolute; left:0; right:0; bottom:0; height:12%;
+    background:linear-gradient(180deg, rgba(227,169,75,.0) 0%, rgba(227,169,75,.55) 40%, #C89028 100%);
     pointer-events:none;
   }
   .boot-honey-drops{
     position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:1;
   }
   .boot-honey-drops span{
-    position:absolute; top:-20px;
-    width:10px; height:14px;
-    background:radial-gradient(circle at 50% 30%, #FFE08A, #E3A94B);
-    border:1.5px solid rgba(34,48,46,.35);
-    border-radius:50% 50% 50% 50% / 45% 45% 55% 55%;
-    opacity:.55;
-    animation:honeyFall 3.2s linear infinite;
+    position:absolute; top:-24px;
+    width:9px; height:12px;
+    background:radial-gradient(circle at 40% 30%, #FFF3C4, #E3A94B 70%);
+    border:1px solid rgba(34,48,46,.22);
+    border-radius:50% 50% 48% 48% / 42% 42% 58% 58%;
+    opacity:0;
+    animation:honeyFall 4s cubic-bezier(.25,.1,.25,1) infinite;
   }
-  .boot-honey-drops span:nth-child(1){ left:12%; animation-duration:3.6s; animation-delay:0s; }
-  .boot-honey-drops span:nth-child(2){ left:28%; width:8px; height:11px; animation-duration:2.8s; animation-delay:-.8s; }
-  .boot-honey-drops span:nth-child(3){ left:55%; animation-duration:3.4s; animation-delay:-1.4s; }
-  .boot-honey-drops span:nth-child(4){ left:72%; width:9px; height:12px; animation-duration:3s; animation-delay:-.4s; }
-  .boot-honey-drops span:nth-child(5){ left:88%; animation-duration:3.8s; animation-delay:-2s; }
+  .boot-honey-drops span:nth-child(1){ left:14%; animation-duration:4.2s; animation-delay:0s; }
+  .boot-honey-drops span:nth-child(2){ left:32%; width:7px; height:10px; animation-duration:3.5s; animation-delay:-1.1s; }
+  .boot-honey-drops span:nth-child(3){ left:58%; animation-duration:4.6s; animation-delay:-2s; }
+  .boot-honey-drops span:nth-child(4){ left:74%; width:8px; height:11px; animation-duration:3.8s; animation-delay:-.6s; }
+  .boot-honey-drops span:nth-child(5){ left:90%; animation-duration:5s; animation-delay:-2.8s; }
   @keyframes honeyFall{
-    0%{ transform:translateY(0) rotate(0deg); opacity:0; }
-    10%{ opacity:.6; }
-    100%{ transform:translateY(110vh) rotate(40deg); opacity:0; }
+    0%{ transform:translateY(0) scale(.8); opacity:0; }
+    12%{ opacity:.5; }
+    100%{ transform:translateY(105vh) scale(1); opacity:0; }
   }
+
+  /* 進場編排 */
+  .boot-hud, .boot-mascot, .boot-place-chip, .boot-a2hs{
+    animation:bootRise .85s cubic-bezier(.22,1,.36,1) both;
+  }
+  .boot-hud{ animation-delay:.05s; }
+  .boot-mascot{ animation-delay:.18s; }
+  .boot-place-chip{ animation-delay:.32s; }
+  .boot-a2hs{ animation-delay:.42s; }
+  @keyframes bootRise{
+    from{ opacity:0; transform:translateY(18px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
   .boot-hud{
     position:relative; z-index:5;
     text-align:center;
-    padding:0 20px;
-    margin-top:-4%;
+    max-width:28rem;
   }
   .boot-kicker{
     display:inline-block;
-    font-size:12px; letter-spacing:.2em;
+    font-size:11.5px; letter-spacing:.22em;
+    text-transform:none;
     color:var(--ocean-dark);
     background:rgba(255,255,255,.55);
-    border:1.5px solid var(--ink);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(34,48,46,.18);
     border-radius:999px;
-    padding:4px 12px;
-    margin-bottom:10px;
+    padding:5px 14px 4px;
+    margin-bottom:12px;
   }
   .boot-town-title .rpg-name{
     display:block;
     font-family:var(--font-cute);
-    font-size:clamp(36px, 11vw, 52px);
-    letter-spacing:.1em;
+    font-size:clamp(34px, 10.5vw, 48px);
+    letter-spacing:.08em;
     color:var(--ink);
-    text-shadow:2px 2px 0 rgba(255,255,255,.6);
-    line-height:1.15;
+    line-height:1.12;
+    text-shadow:0 1px 0 rgba(255,255,255,.7);
   }
   .boot-brand{
-    margin-top:6px;
+    margin-top:8px;
     font-family:var(--font-cute);
-    font-size:clamp(18px, 4.5vw, 22px);
+    font-size:clamp(15px, 3.8vw, 18px);
     letter-spacing:.06em;
     color:var(--ocean-dark);
+    opacity:.92;
   }
   .boot-tip{
-    margin-top:8px;
-    font-size:14px;
+    margin-top:10px;
+    font-size:13.5px;
     color:var(--ocean-dark);
-    opacity:.9;
+    opacity:.78;
+    letter-spacing:.04em;
   }
   .boot-dots::after{
     content:'';
-    animation:bootDots 1.1s steps(4,end) infinite;
+    animation:bootDots 1.2s steps(4,end) infinite;
   }
   @keyframes bootDots{
     0%{ content:''; } 25%{ content:'.'; } 50%{ content:'..'; } 75%{ content:'...'; }
   }
-  /* 商標角色 */
+
   .boot-mascot{
     position:relative; z-index:6;
-    margin:18px auto 0;
-    width:96px; height:96px;
-    animation:mascotBob 1.2s ease-in-out infinite;
-  }
-  @keyframes mascotBob{
-    0%,100%{ transform:translateY(0) rotate(-3deg); }
-    50%{ transform:translateY(-10px) rotate(3deg); }
+    margin:22px auto 0;
+    width:clamp(88px, 22vw, 108px);
+    height:clamp(88px, 22vw, 108px);
   }
   .boot-mascot-ring{
-    position:absolute; inset:-6px;
+    position:absolute; inset:-7px;
     border-radius:50%;
-    border:3px solid var(--ink);
-    background:linear-gradient(145deg, #FFF8E0, #F0C85A);
-    box-shadow:0 4px 0 var(--ink), 0 10px 24px rgba(34,48,46,.2);
+    background:conic-gradient(from 200deg, #F0C85A, #FFF8E0, #7FADA9, #E3A94B, #F0C85A);
+    box-shadow:
+      0 8px 28px rgba(34,48,46,.18),
+      0 2px 0 rgba(34,48,46,.25);
+    animation:ringSpin 12s linear infinite;
+  }
+  @keyframes ringSpin{ to{ transform:rotate(360deg); } }
+  .boot-mascot-ring::after{
+    content:'';
+    position:absolute; inset:4px;
+    border-radius:50%;
+    background:linear-gradient(160deg, #FFFCF0, #F5E6B8);
   }
   .boot-mascot img{
     position:relative; z-index:1;
@@ -389,86 +415,338 @@
     border-radius:50%;
     border:2.5px solid var(--ink);
     display:block;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);
   }
   .boot-mascot .bee-deco{
     position:absolute; z-index:2;
-    font-size:22px;
-    filter:drop-shadow(0 2px 0 rgba(0,0,0,.15));
+    font-size:20px;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.12));
   }
-  .boot-mascot .bee-deco.l{ left:-18px; top:8px; animation:beeOrbit 2s ease-in-out infinite; }
-  .boot-mascot .bee-deco.r{ right:-18px; bottom:12px; animation:beeOrbit 2.4s ease-in-out infinite reverse; }
+  .boot-mascot .bee-deco.l{ left:-20px; top:10px; animation:beeOrbit 2.4s ease-in-out infinite; }
+  .boot-mascot .bee-deco.r{ right:-20px; bottom:14px; animation:beeOrbit 2.8s ease-in-out infinite reverse; }
   @keyframes beeOrbit{
-    0%,100%{ transform:translateY(0); }
-    50%{ transform:translateY(-8px); }
+    0%,100%{ transform:translate3d(0,0,0); }
+    50%{ transform:translate3d(0,-7px,0); }
   }
+
   .boot-place-chip{
     position:relative; z-index:5;
-    margin-top:14px;
-    display:inline-flex; align-items:center; gap:6px;
-    background:var(--ink); color:var(--gold);
+    margin-top:18px;
+    display:inline-flex; align-items:center; gap:7px;
+    background:rgba(34,48,46,.92);
+    color:var(--gold);
     border-radius:999px;
-    padding:6px 14px;
-    font-size:12.5px; letter-spacing:.08em;
+    padding:7px 16px;
+    font-size:12.5px; letter-spacing:.06em;
+    box-shadow:0 4px 14px rgba(34,48,46,.2);
   }
+
   .boot-a2hs{
     position:relative; z-index:5;
-    margin:12px 18px 0;
-    max-width:320px;
-    text-align:center;
-    background:rgba(255,255,255,.72);
-    border:1.5px solid var(--ink);
-    border-radius:12px;
-    padding:10px 12px;
+    margin:14px 16px 0;
+    max-width:min(340px, 92vw);
+    text-align:left;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(12px) saturate(140%);
+    -webkit-backdrop-filter:blur(12px) saturate(140%);
+    border:1px solid rgba(34,48,46,.14);
+    border-radius:14px;
+    padding:12px 14px;
     font-size:12.5px;
-    line-height:1.55;
+    line-height:1.6;
     color:var(--ocean-dark);
-    box-shadow:0 2px 0 rgba(34,48,46,.15);
+    box-shadow:0 6px 20px rgba(34,48,46,.08);
   }
   .boot-a2hs strong{
-    display:block;
+    display:flex; align-items:center; gap:6px;
     font-family:var(--font-cute);
     font-size:13.5px;
+    font-weight:400;
     color:var(--ink);
-    margin-bottom:4px;
-    letter-spacing:.04em;
+    margin-bottom:5px;
+    letter-spacing:.03em;
   }
 
   .boot-bar-wrap{
     flex:0 0 auto;
-    padding:14px 20px calc(16px + env(safe-area-inset-bottom));
-    background:var(--ink);
-    border-top:3px solid var(--gold);
+    padding:16px 22px calc(18px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, #1a4a52 0%, #0f2e34 100%);
+    border-top:1px solid rgba(227,169,75,.45);
+    box-shadow:0 -8px 32px rgba(0,0,0,.18);
   }
   .boot-bar-meta{
-    display:flex; justify-content:space-between; align-items:center;
-    margin-bottom:8px;
-    font-size:13px; font-weight:700;
-    color:var(--gold); font-family:var(--font-cute);
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:10px;
+    font-size:13px;
+    color:rgba(243,233,210,.92);
+    font-family:var(--font-cute);
+    letter-spacing:.04em;
   }
   .boot-bar-meta .pct{
-    font-size:14px; color:#fff;
-    font-family:ui-monospace, monospace;
+    font-size:15px; color:#fff;
+    font-family:ui-monospace, 'SF Mono', Menlo, monospace;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.02em;
   }
   .boot-bar-track{
-    height:14px; overflow:hidden;
-    border:2px solid var(--gold);
+    height:8px; overflow:hidden;
     background:rgba(0,0,0,.35);
     border-radius:999px;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.35);
   }
   .boot-bar-fill{
     height:100%; width:0%;
     border-radius:999px;
-    background:linear-gradient(90deg, #E3A94B, #F0C85A 50%, #06C755);
-    box-shadow:0 0 10px rgba(227,169,75,.45);
-    transition:width .2s linear;
+    background:linear-gradient(90deg, #E3A94B 0%, #F0C85A 45%, #7FADA9 100%);
+    box-shadow:0 0 12px rgba(240,200,90,.4);
+    transition:width .22s cubic-bezier(.22,1,.36,1);
+    position:relative;
+  }
+  .boot-bar-fill::after{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+    animation:bootShine 1.6s ease-in-out infinite;
+  }
+  @keyframes bootShine{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(100%); }
   }
   .boot-loader.error .boot-bar-fill{
     background:linear-gradient(90deg, #E2532F, #E3A94B);
   }
   body.boot-loading{ overflow:hidden !important; }
   .loading-banner{ display:none !important; }
+
   @media (prefers-reduced-motion:reduce){
-    .boot-loader *, .boot-loader *::before, .boot-loader *::after{ animation:none !important; }
+    .boot-loader *, .boot-loader *::before, .boot-loader *::after{
+      animation:none !important;
+      transition:opacity .3s ease !important;
+    }
+    .boot-hud, .boot-mascot, .boot-place-chip, .boot-a2hs{ opacity:1; transform:none; }
+  }
+  @media (max-height:520px){
+    .boot-a2hs{ display:none; }
+    .boot-mascot{ width:72px; height:72px; margin-top:12px; }
+    .boot-place-chip{ margin-top:10px; }
+  }
+
+  /* ---- 品質打磨：同意頁 / 菜單 / 步驟 ---- */
+  @keyframes pageIn{
+    from{ opacity:0; transform:translateY(12px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes stepIn{
+    from{ opacity:0; transform:translateX(14px); }
+    to{ opacity:1; transform:translateX(0); }
+  }
+  @keyframes cardLift{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .site-page.active{
+    animation:pageIn .4s cubic-bezier(.22,1,.36,1) both;
+  }
+
+  /* 1) 同意頁 */
+  .gate-intro{
+    margin:18px 0 14px !important;
+    text-align:center;
+    padding:8px 8px 4px !important;
+  }
+  .gate-intro h1{
+    font-size:clamp(24px, 5.5vw, 30px) !important;
+    margin:0 0 8px !important;
+    letter-spacing:.06em;
+  }
+  .gate-intro p{
+    max-width:340px !important;
+    margin:0 auto !important;
+    font-size:14.5px !important;
+    line-height:1.7 !important;
+    color:var(--ocean-dark) !important;
+    opacity:.9;
+  }
+  .gate-intro .welcome-chip{
+    margin-top:12px !important;
+    padding:5px 14px !important;
+    font-size:12.5px !important;
+    background:rgba(127,173,169,.35) !important;
+    border:1.5px solid var(--ink) !important;
+    box-shadow:0 2px 0 rgba(34,48,46,.12);
+  }
+  .gate-consent{
+    background:rgba(242,249,252,.92) !important;
+    border:2px solid var(--ink) !important;
+    border-radius:18px !important;
+    box-shadow:0 3px 0 var(--ink), 0 12px 28px -12px rgba(34,48,46,.28) !important;
+    padding:20px 18px 18px !important;
+    margin:20px 0 28px !important;
+  }
+  .gate-consent .gate-consent-title{
+    font-size:17px !important;
+    margin:0 0 14px !important;
+    letter-spacing:.04em;
+  }
+  .gate-consent .consent-box{
+    margin:14px 0 !important;
+    padding:12px 12px !important;
+    background:rgba(255,255,255,.55);
+    border:1.5px solid rgba(34,48,46,.12);
+    border-radius:12px;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .gate-consent .consent-box:has(input:checked){
+    border-color:rgba(6,199,85,.55);
+    background:rgba(6,199,85,.08);
+  }
+  .gate-consent .consent-box label{
+    font-size:14px !important;
+    line-height:1.65 !important;
+  }
+  .gate-continue-btn{
+    margin-top:16px !important;
+    padding:15px 18px !important;
+    font-size:16px !important;
+    border-radius:14px !important;
+    letter-spacing:.06em;
+    transition:transform .15s ease, filter .15s ease, box-shadow .15s ease !important;
+  }
+  .gate-continue-btn:not(:disabled):hover{
+    filter:brightness(1.05);
+  }
+  .gate-continue-btn:not(:disabled):active{
+    transform:translateY(2px) !important;
+  }
+  .announce-wrap{ margin:16px 0 0 !important; }
+  .announce-fold{
+    border-radius:16px !important;
+    box-shadow:0 3px 0 var(--ink), 0 10px 24px -14px rgba(34,48,46,.35) !important;
+    overflow:hidden;
+  }
+  .announce-fold > summary{
+    padding:14px 16px !important;
+    transition:background .2s ease;
+  }
+  .announce-fold .announce-body{
+    padding:0 16px 16px !important;
+    font-size:14.5px !important;
+    line-height:1.75 !important;
+  }
+
+  /* 2) 菜單卡片 */
+  .menu-merchant-card{
+    transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .18s ease, border-color .18s ease, background .18s ease !important;
+  }
+  .menu-merchant-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 0 var(--ink), 0 10px 20px -12px rgba(34,48,46,.3);
+  }
+  .menu-merchant-card.selected{
+    border-color:#06C755 !important;
+    background:linear-gradient(180deg, #F4FFF8 0%, #EAF8F0 100%) !important;
+    box-shadow:0 3px 0 #06C755, 0 8px 18px -10px rgba(6,199,85,.35) !important;
+  }
+  .menu-category-body .thumb{
+    transition: transform .2s cubic-bezier(.22,1,.36,1), outline .15s ease, box-shadow .2s ease;
+    box-shadow:0 2px 0 rgba(34,48,46,.15);
+  }
+  .menu-category-body .thumb:hover{
+    transform:translateY(-3px) scale(1.02);
+    box-shadow:0 6px 14px -8px rgba(34,48,46,.35);
+  }
+  .menu-category-body .thumb.selected{
+    outline:3px solid #06C755 !important;
+    outline-offset:1px !important;
+  }
+  .menu-category-body .thumb .thumb-cap{
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+    font-size:10px !important;
+    padding:4px 5px !important;
+  }
+  .menu-update-hint, .gate-hint{
+    background:rgba(255,255,255,.45);
+    border:1.5px dashed rgba(30,91,103,.35);
+    border-radius:12px;
+    padding:11px 14px !important;
+  }
+
+  /* 3) 下單步驟 */
+  .wizard-step.active{
+    display:block !important;
+    animation:stepIn .38s cubic-bezier(.22,1,.36,1) both !important;
+  }
+  .wizard-pills{
+    gap:6px !important;
+    padding:4px !important;
+    background:rgba(255,255,255,.4);
+    border-radius:14px;
+    border:1.5px solid rgba(34,48,46,.1);
+  }
+  .wizard-pill{
+    border-radius:10px !important;
+    transition: background .2s ease, color .2s ease, transform .15s ease, box-shadow .2s ease !important;
+  }
+  .wizard-pill.active{
+    transform:translateY(-1px);
+    box-shadow:0 2px 0 var(--ink);
+  }
+  .wizard-step-title{
+    margin-bottom:16px !important;
+    letter-spacing:.04em;
+  }
+  .wizard-step-title .wizard-step-badge{
+    box-shadow:0 2px 0 rgba(34,48,46,.2);
+  }
+  .composer{
+    border-radius:18px !important;
+    box-shadow:0 3px 0 var(--ink), 0 14px 32px -16px rgba(34,48,46,.28) !important;
+    padding:24px 20px !important;
+  }
+  .composer .field{
+    margin-bottom:16px !important;
+  }
+  .composer input, .composer select, .composer textarea,
+  .field input, .field select, .field textarea{
+    border-radius:12px !important;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease !important;
+  }
+  .composer input:focus, .composer select:focus, .composer textarea:focus,
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none;
+    border-color:var(--ocean) !important;
+    box-shadow:0 0 0 3px rgba(30,91,103,.18) !important;
+    background:#fff !important;
+  }
+  .wizard-nav{
+    margin-top:8px !important;
+    gap:10px !important;
+  }
+  .wizard-nav .copy-btn, .wizard-nav .utility-btn{
+    border-radius:12px !important;
+    transition: transform .15s ease, filter .15s ease, box-shadow .15s ease !important;
+  }
+  .wizard-nav .copy-btn:hover, .wizard-nav .utility-btn:hover{
+    filter:brightness(1.04);
+  }
+  .bill-preview{
+    border-radius:18px !important;
+    box-shadow:0 3px 0 var(--ink), 0 12px 28px -14px rgba(34,48,46,.28) !important;
+    animation:cardLift .4s cubic-bezier(.22,1,.36,1) both;
+  }
+  .bill-preview .bill-total{
+    border-radius:12px !important;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .site-page.active, .wizard-step.active, .bill-preview{
+      animation:none !important;
+    }
+    .menu-merchant-card:hover, .menu-category-body .thumb:hover{
+      transform:none;
+    }
   }
 
   /* ---- 全站兩頁：同意頁 / 下單頁 ---- */
@@ -3173,7 +3451,7 @@
   }
   .wizard-progress-bar, .wizard-progress-fill, .wizard-progress-text, .wizard-progress-steps{ display:none !important; }
   .wizard-step{ display:none; }
-  .wizard-step.active{ display:block; animation:wizardFadeIn .18s ease; }
+  .wizard-step.active{ display:block; animation:stepIn .38s cubic-bezier(.22,1,.36,1) both; }
   @keyframes wizardFadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
   .wizard-step-title{
     font-family:var(--font-cute); font-size:16px; font-weight:400; color:var(--ink);
@@ -3295,7 +3573,7 @@
           <div class="boot-town-title">
             <span class="rpg-name">成功小蜜丰</span>
           </div>
-          <div class="boot-brand">🍯 在地代購外送</div>
+          <div class="boot-brand">在地代購 · 送到你家</div>
           <div class="boot-tip">正在準備菜單與公告<span class="boot-dots"></span></div>
         </div>
         <div class="boot-mascot" aria-hidden="true">
@@ -3306,8 +3584,8 @@
         </div>
         <div class="boot-place-chip">🛵 外送資料載入中</div>
         <div class="boot-a2hs" id="bootA2hsTip">
-          <strong>📱 加入主畫面，全螢幕更好用</strong>
-          <span id="bootA2hsText">用瀏覽器選單「加入主畫面／加到主螢幕」，之後點圖示開啟可全螢幕顯示、更像 App。</span>
+          <strong>📱 建議加入主畫面</strong>
+          <span id="bootA2hsText">用瀏覽器選單「加入主畫面」，之後從桌面開啟可全螢幕使用，更接近 App 體驗。</span>
         </div>
       </div>
       <div class="boot-bar-wrap">
@@ -5387,27 +5665,66 @@
     overlay.classList.remove('show');
     overlay.setAttribute('aria-hidden', 'true');
   }
+  /** 公告／公休用純文字；異常值一律清空 */
+  function cleanAnnounceText_(v){
+    if(v == null || v === true || v === false) return '';
+    if(typeof v === 'object') return '';
+    if(typeof v === 'number' && !isFinite(v)) return '';
+    let s = String(v).replace(/\u3000/g, ' ').trim();
+    if(!s) return '';
+    const up = s.toUpperCase();
+    if(up === 'TRUE' || up === 'FALSE' || up === 'NULL' || up === 'UNDEFINED' || up === 'NAN') return '';
+    // 過濾 [object Object]／[object Array] 等
+    if(/\[object\s+[^\]]+\]/i.test(s)) return '';
+    if(s === '[object Object]' || s.indexOf('[object Object]') !== -1) return '';
+    return s;
+  }
+  function isValidMerchantName_(name){
+    const n = cleanAnnounceText_(name);
+    if(!n || n.length < 1) return false;
+    // 至少要有中文或英數字，排除純符號／異常字
+    if(!/[\u4e00-\u9fffA-Za-z0-9]/.test(n)) return false;
+    if(/\[object/i.test(n)) return false;
+    return true;
+  }
+
   /** 解析商家公休文案：店名橢圓 + 右側公休時間 */
   function parseClosedMerchants_(text){
-    const raw = String(text || '').trim();
+    const raw = cleanAnnounceText_(text);
     if(!raw) return [];
-    const parts = raw.split(/[、,，]/).map(s => s.trim()).filter(Boolean);
+    const parts = raw.split(/[、,，\n;；|/]+/).map(s => s.trim()).filter(Boolean);
     return parts.map(p => {
       let t = p.replace(/\s*公休\s*$/u, '').trim() || p;
-      // 店名(27日) / 店名（8/28）
+      t = cleanAnnounceText_(t);
+      if(!t) return null;
       let m = t.match(/^(.+?)\s*[（(]([^）)]+)[）)]\s*$/);
-      if(m) return { name: m[1].trim(), time: m[2].trim() };
-      // 店名 今日公休 已去掉公休 → 店名 今日
+      if(m) return { name: m[1].trim(), time: cleanAnnounceText_(m[2]) || '公休' };
       m = t.match(/^(.+?)\s+(今日|明天|全天|整天|\d{1,2}\/\d{1,2}(?:日)?|\d{1,2}日|\d{1,2}月\d{1,2}日)$/);
       if(m) return { name: m[1].trim(), time: m[2].trim() };
       return { name: t, time: '公休' };
-    });
+    }).filter(it => it && isValidMerchantName_(it.name));
   }
 
   function maybeShowWelcomePopup_(){
-    const announce = (latestWelcomeAnnounce_ || '').trim();
-    const ads = latestMerchantAds_ || [];
-    if(!announce && !ads.length) return;
+    const ads = (latestMerchantAds_ || []).filter(a => {
+      if(!a) return false;
+      const m = cleanAnnounceText_(a.merchant);
+      const d = cleanAnnounceText_(a.desc);
+      const img = cleanAnnounceText_(a.image);
+      return !!(m || d || img);
+    });
+    const closedOnly = cleanAnnounceText_(window.__closedAnnounceText);
+    let otherAnnounce = cleanAnnounceText_(latestWelcomeAnnounce_);
+    if(closedOnly && otherAnnounce && otherAnnounce.indexOf(closedOnly) === 0){
+      otherAnnounce = cleanAnnounceText_(otherAnnounce.slice(closedOnly.length).replace(/^\n+/, ''));
+    }
+    const closedItems = closedOnly ? parseClosedMerchants_(closedOnly) : [];
+    // 沒有任何有效內容 → 絕對不彈
+    if(!otherAnnounce && !closedItems.length && !ads.length){
+      const overlay0 = document.getElementById('welcomePopupOverlay');
+      if(overlay0){ overlay0.classList.remove('show'); overlay0.setAttribute('aria-hidden','true'); }
+      return;
+    }
     if(!shouldShowWelcomePopup_()) return;
 
     const body = document.getElementById('welcomePopupBody');
@@ -5415,18 +5732,11 @@
     if(!body) return;
 
     let html = '';
-    const closedOnly = (window.__closedAnnounceText || '').trim();
-    // 公告在上（暖色），商家公休在下（冷色）
-    let otherAnnounce = announce;
-    if(closedOnly && otherAnnounce.indexOf(closedOnly) === 0){
-      otherAnnounce = otherAnnounce.slice(closedOnly.length).replace(/^\n+/, '').trim();
-    }
     if(otherAnnounce){
       html += `<div class="wp-announce wp-main-announce" style="background:#FFF6E8;border:1.5px solid rgba(227,169,75,.55);padding:12px 14px;border-radius:12px;margin-bottom:12px;white-space:pre-wrap;font-weight:700;font-size:14.5px;line-height:1.65;"><div style="font-weight:900;font-size:14px;margin-bottom:6px;color:#8A5A12;">📢 公告</div>${escapeHtml(otherAnnounce)}</div>`;
     }
-    if(closedOnly){
-      const items = parseClosedMerchants_(closedOnly);
-      const rows = items.map(it =>
+    if(closedItems.length){
+      const rows = closedItems.map(it =>
         `<div class="mc-item"><span class="mc-name">${escapeHtml(it.name)}</span><span class="mc-time">${it.time && it.time !== "公休" ? `<span class="mc-time-date">${escapeHtml(it.time)}</span>` : ""}<span class="mc-time-tag">公休</span></span></div>`
       ).join('');
       html += `<div class="wp-announce wp-closed" style="background:linear-gradient(180deg,#D8EEF4,#B5DCE6);border:2px solid #0A3036;padding:14px;border-radius:14px;margin-bottom:12px;"><div style="font-weight:900;font-size:16px;letter-spacing:.04em;margin-bottom:10px;color:#0E3A42;">⚠️ 公休商家 ⚠️</div><div class="wp-closed-list">${rows}</div></div>`;
@@ -5447,9 +5757,10 @@
         if(ad) setTimeout(()=> jumpToMerchantMenu_(ad.merchant || ''), 120);
       });
     });
+    if(!html.trim() && !ads.length) return;
     if(title){
-      if(announce && ads.length) title.textContent = '📢 公告與優惠';
-      else if(announce) title.textContent = '📢 公告';
+      if((otherAnnounce || closedItems.length) && ads.length) title.textContent = '📢 公告與優惠';
+      else if(otherAnnounce || closedItems.length) title.textContent = '📢 公告';
       else title.textContent = '📣 好康報報';
     }
     const overlay = document.getElementById('welcomePopupOverlay');
@@ -5461,38 +5772,37 @@
 
 function renderSettings(settings){
     if(!settings) return;
+    // 進入時先清空，避免沿用上一輪的異常公告
+    window.__closedAnnounceText = '';
+    latestWelcomeAnnounce_ = '';
+    // 把設定裡可能的異常字串清掉（例如誤存的 [object Object]）
+    try{
+      Object.keys(settings).forEach(k => {
+        if(/公告|公休|提醒/.test(k) && typeof settings[k] === 'string' && /\[object\s+/i.test(settings[k])){
+          settings[k] = '';
+        }
+        if(/公告|公休|提醒/.test(k) && typeof settings[k] === 'object'){
+          settings[k] = '';
+        }
+      });
+    }catch(e){}
     inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
     const lineHref = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
 
-    // 彈性找出商家公休文案（相容欄位名稱略有不同；過濾誤傳的 true/false）
+    // 商家公休／公告：只取純文字，避免 [object Object]
     (function(){
-      function cleanText_(v){
-        const s = (v == null ? '' : String(v)).replace(/\u3000/g, ' ').trim();
-        if(!s) return '';
-        const up = s.toUpperCase();
-        if(up === 'TRUE' || up === 'FALSE') return '';
-        return s;
-      }
       let closed = '';
-      const prefer = ['商家公休公告','商家公休','公休公告'];
+      const prefer = ['商家公休公告', '商家公休'];
       for(const k of prefer){
-        const v = cleanText_(settings[k]);
+        const v = cleanAnnounceText_(settings[k]);
         if(v){ closed = v; break; }
       }
-      if(!closed){
-        for(const k of Object.keys(settings || {})){
-          if(/公休/.test(k)){
-            const v = cleanText_(settings[k]);
-            if(v){ closed = v; break; }
-          }
-        }
-      }
       window.__closedAnnounceText = closed;
-      const mainAnnounce = cleanText_(settings['公告內容']);
-      const hoursAnnounce = cleanText_(settings['營業時間調整公告']);
-      latestWelcomeAnnounce_ = [closed, mainAnnounce, hoursAnnounce].filter(Boolean).join('\n\n');
+      const mainAnnounce = cleanAnnounceText_(settings['公告內容']);
+      const hoursAnnounce = cleanAnnounceText_(settings['營業時間調整公告']);
+      latestWelcomeAnnounce_ = [mainAnnounce, hoursAnnounce].filter(Boolean).join('\n\n');
     })();
 
     // 三段外送費：讀取試算表「基本設定」的鎮內運費／鎮外運費／超出範圍運費（可在 Excel 直接改）
@@ -5546,39 +5856,40 @@ function renderSettings(settings){
     }
     applyFoldableAnnouncement_(
       'cg_hours_announcement_v1',
-      (settings['營業時間調整公告'] || '').trim(),
+      cleanAnnounceText_(settings['營業時間調整公告']),
       'hoursAnnouncementWrap', 'hoursAnnouncementDetails', 'hoursAnnouncementBanner', 'hoursAnnouncementNewBadge'
     );
     applyFoldableAnnouncement_(
       'cg_announcement_v1',
-      (settings['公告內容'] || '').trim(),
+      cleanAnnounceText_(settings['公告內容']),
       'announcementWrap', 'announcementDetails', 'announcementBanner', 'announcementNewBadge'
     );
     applyFoldableAnnouncement_(
       'cg_delay_warning_v1',
-      (settings['配送延遲提醒'] || '').trim(),
+      cleanAnnounceText_(settings['配送延遲提醒']),
       'delayWarningWrap', 'delayWarningDetails', 'delayWarningBanner', 'delayWarningNewBadge'
     );
 
-    // 商家公休公告：店名橢圓 + 公休時間框
+    // 商家公休公告：僅在有「有效店名」時顯示
     (function(){
-      const t = (window.__closedAnnounceText || '').trim();
+      const t = cleanAnnounceText_(window.__closedAnnounceText);
       const box = document.getElementById('merchantClosedBannerBox');
       const textEl = document.getElementById('merchantClosedBannerText');
       if(!box || !textEl) return;
-      if(t){
-        const items = parseClosedMerchants_(t);
+      const items = t ? parseClosedMerchants_(t) : [];
+      if(items.length){
         textEl.innerHTML = items.map(it =>
           `<div class="mc-item"><span class="mc-name">${escapeHtml(it.name)}</span><span class="mc-time">${it.time && it.time !== "公休" ? `<span class="mc-time-date">${escapeHtml(it.time)}</span>` : ""}<span class="mc-time-tag">公休</span></span></div>`
         ).join('');
         box.style.display = 'block';
         box.classList.add('is-show');
-        box.open = false; // 網頁預設摺疊；彈窗仍會顯示
+        box.open = false;
       } else {
         textEl.innerHTML = '';
         box.style.display = 'none';
         box.classList.remove('is-show');
         box.open = false;
+        window.__closedAnnounceText = '';
       }
     })();
 
@@ -6633,8 +6944,8 @@ function renderSettings(settings){
     }
     setTimeout(()=>{
       hideBootLoaderSmooth_();
-      if(ok) setTimeout(maybeShowWelcomePopup_, 280);
-    }, 480);
+      if(ok) setTimeout(maybeShowWelcomePopup_, 420);
+    }, 560);
   }
   function loadContent(){
     document.body.classList.add('boot-loading');
@@ -6656,7 +6967,7 @@ function renderSettings(settings){
     }, 200);
 
     // 最短展示時間，避免閃一下就結束
-    const minShow = new Promise(r => setTimeout(r, 1200));
+    const minShow = new Promise(r => setTimeout(r, 1600));
 
     const freshUrl = SCRIPT_URL + '?t=' + Date.now();
     const fetchP = fetch(freshUrl, { cache: 'no-store' })
