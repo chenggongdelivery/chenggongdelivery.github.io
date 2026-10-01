@@ -5977,7 +5977,7 @@ function renderSettings(settings){
       if(forcedClosed){
         hoursNoteEl.textContent = '目前暫停即時外送，可預約稍後時段。預設服務時段 ' + openTime + '–' + closeTime + '。';
       } else if(onHoliday){
-        hoursNoteEl.textContent = (settings['暫停服務公告'] || '目前公休時段').trim() + '　公休結束後將自動回復 ' + openTime + '–' + closeTime + '。';
+        hoursNoteEl.textContent = (settings['暫停服務公告'] || '目前公休中').trim() + (String(settings['公休僅今日時段']||'').toLowerCase()==='true' ? '　可預約今日其他時段。' : '　暫停接單。') + '公休結束後將自動回復 ' + openTime + '–' + closeTime + '。';
       } else if(isOpenFinal){
         hoursNoteEl.textContent = '目前營業中。非營業時間可預約；急需請私訊小蜜丰。';
       } else {
@@ -6001,21 +6001,26 @@ function renderSettings(settings){
         showReservationModePopup_('⏸️', '目前暫停即時外送', msg + '。請先選品項，預約時間在後續步驟填寫。');
       }
     } else if(onHoliday){
-      orderingMode = 'reservationOnly';
-      orderingDisabled = false;
-      const msg = (settings['暫停服務公告'] || '目前公休，暫停即時外送').trim();
-      // 僅「當日某時段」公休才提示可預約其他時段；跨日／全天公休不提示（預約也只能選今天）
+      const msg = (settings['暫停服務公告'] || '目前公休中').trim();
       const partialToday = String(settings['公休僅今日時段'] || '').toLowerCase() === 'true';
-      const statusExtra = partialToday
-        ? '　→ 僅接受預約單，可約今日公休以外時段'
-        : '　→ 公休期間暫停即時單，請先選品項或稍後再試';
-      fillStatusOnly_('🏖️', msg + statusExtra);
-      sendBtn.classList.remove('disabled-btn');
-      if(typeof showReservationModePopup_ === 'function'){
-        const popExtra = partialToday
-          ? '。請先選品項，並預約「今天」公休以外的時段。'
-          : '。請先選品項；跨日／全天公休期間無法預約其他日期（預約僅限當天）。';
-        showReservationModePopup_('🏖️', '目前公休中', msg + popExtra);
+      if(partialToday){
+        // 僅當天某時段公休：仍可預約今日其他時段
+        orderingMode = 'reservationOnly';
+        orderingDisabled = false;
+        fillStatusOnly_('🏖️', msg + '　→ 僅接受預約單，可約今日公休以外時段');
+        sendBtn.classList.remove('disabled-btn');
+        if(typeof showReservationModePopup_ === 'function'){
+          showReservationModePopup_('🏖️', '目前公休中', msg + '。請先選品項，並預約「今天」公休以外的時段。');
+        }
+      } else {
+        // 跨日／全天公休：完全禁止下單
+        orderingMode = 'closed';
+        orderingDisabled = true;
+        fillStatusOnly_('🏖️', msg || '目前公休中');
+        sendBtn.classList.add('disabled-btn');
+        hideReservationModePopup_();
+        const gateBan = document.getElementById('gateReservationBanner');
+        if(gateBan) gateBan.classList.remove('show');
       }
     } else if(isOpenFinal){
       orderingMode = 'open';
@@ -7632,6 +7637,10 @@ ${stopsText}
   }
   function goToOrderPage(startStep){
     if(!requireConsentOrGate()) return false;
+    if(orderingDisabled || orderingMode === 'closed'){
+      toast('目前公休中，暫停接單');
+      return false;
+    }
     try{ sessionStorage.setItem(GATE_CONSENT_KEY, '1'); }catch(e){}
     const step = Math.min(Math.max(Number(startStep) || 1, 1), 5);
     if(orderingMode === 'reservationOnly'){
