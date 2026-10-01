@@ -5949,8 +5949,16 @@ function renderSettings(settings){
     updateTransferHint();
     updatePreview();
 
-    const openTime = settings['營業開始時間'] || '08:00';
-    const closeTime = settings['營業結束時間'] || '20:00';
+    function normalizeHm_(v, fallback){
+      const s = String(v == null ? '' : v).trim();
+      const m = s.match(/(\d{1,2}):(\d{2})/);
+      if(!m) return fallback;
+      const hh = Math.min(23, Math.max(0, parseInt(m[1], 10)));
+      const mm = Math.min(59, Math.max(0, parseInt(m[2], 10)));
+      return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+    }
+    const openTime = normalizeHm_(settings['營業開始時間'], '08:00');
+    const closeTime = normalizeHm_(settings['營業結束時間'], '20:00');
     businessOpenTime = openTime;
     businessCloseTime = closeTime;
     const hoursEl = document.getElementById('hoursTimeText');
@@ -5958,8 +5966,8 @@ function renderSettings(settings){
     // 點開時鐘後顯示的狀態說明（公休過後會自動回到預設時段）
     const hoursNoteEl = document.getElementById('hoursStatusNote');
 
-    reservationOpenTime = settings['預約開始時間'] || openTime;
-    reservationCloseTime = settings['預約結束時間'] || closeTime;
+    reservationOpenTime = normalizeHm_(settings['預約開始時間'], openTime);
+    reservationCloseTime = normalizeHm_(settings['預約結束時間'], closeTime);
     const intervalVal = Number(settings['預約時段間隔']);
     reservationIntervalMin = isNaN(intervalVal) || intervalVal <= 0 ? 30 : intervalVal;
     populateScheduleTimeOptions();
