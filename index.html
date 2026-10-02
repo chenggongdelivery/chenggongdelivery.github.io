@@ -3641,7 +3641,7 @@
       <h1>目前公休中</h1>
       <div class="closed-msg" id="closedPageMsg">目前公休中，暫停接單。</div>
       <p class="closed-sub">公休結束後將恢復正常服務。訂單查詢仍可使用右上角按鈕。</p>
-      <a class="closed-line" id="closedPageLineBtn" href="#" target="_blank" rel="noopener">💬 私訊小蜜丰</a>
+      <a class="closed-line" id="closedPageLineBtn" href="#" target="_blank" rel="noopener">💬 加入 LINE 社群</a>
     </div>
   </div>
 
@@ -5970,6 +5970,13 @@ function renderSettings(settings){
     reservationCloseTime = normalizeHm_(settings['預約結束時間'], closeTime);
     const intervalVal = Number(settings['預約時段間隔']);
     reservationIntervalMin = isNaN(intervalVal) || intervalVal <= 0 ? 30 : intervalVal;
+    // 當日部分時段公休的起迄（後端有給才過濾時段）
+    window._partialHolidayStart_ = '';
+    window._partialHolidayEnd_ = '';
+    if(String(settings['公休僅今日時段'] || '').toLowerCase() === 'true'){
+      window._partialHolidayStart_ = normalizeHm_(settings['公休時段開始'], '') || '';
+      window._partialHolidayEnd_ = normalizeHm_(settings['公休時段結束'], '') || '';
+    }
     populateScheduleTimeOptions();
     const scheduleHintEl = document.getElementById('scheduleHint');
     if(scheduleHintEl) scheduleHintEl.textContent = `僅可預約今天 ${reservationOpenTime}–${reservationCloseTime}，每 ${reservationIntervalMin} 分鐘一個時段`;
@@ -6026,15 +6033,23 @@ function renderSettings(settings){
       banner.style.display = 'flex';
     }
 
+    const canReserveNow = (typeof hasRemainingReservationSlotsToday_ === 'function') && hasRemainingReservationSlotsToday_();
     if(hoursNoteEl){
       if(forcedClosed){
-        hoursNoteEl.textContent = '目前暫停即時外送，可預約稍後時段。預設服務時段 ' + openTime + '–' + closeTime + '。';
+        hoursNoteEl.textContent = canReserveNow
+          ? ('目前暫停即時外送，可預約今日稍後時段。服務時段 ' + openTime + '–' + closeTime + '。')
+          : ('目前暫停接單。服務時段 ' + openTime + '–' + closeTime + '（今日已無可預約時段）。');
       } else if(onHoliday){
-        hoursNoteEl.textContent = (settings['暫停服務公告'] || '目前公休中').trim() + (String(settings['公休僅今日時段']||'').toLowerCase()==='true' ? '　可預約今日其他時段。' : '　暫停接單。') + '公休結束後將自動回復 ' + openTime + '–' + closeTime + '。';
+        const partial = String(settings['公休僅今日時段']||'').toLowerCase()==='true';
+        hoursNoteEl.textContent = (settings['暫停服務公告'] || '目前公休中').trim()
+          + (partial && canReserveNow ? '　可預約今日公休以外時段。' : '　暫停接單。')
+          + '公休結束後將自動回復 ' + openTime + '–' + closeTime + '。';
       } else if(isOpenFinal){
-        hoursNoteEl.textContent = '目前營業中。非營業時間可預約；急需請私訊小蜜丰。';
+        hoursNoteEl.textContent = '目前營業中（' + openTime + '–' + closeTime + '）。';
+      } else if(canReserveNow){
+        hoursNoteEl.textContent = '目前非營業時間（' + openTime + '–' + closeTime + '）。可預約今日稍後時段，或私訊小蜜丰。';
       } else {
-        hoursNoteEl.textContent = '目前非營業時間（' + openTime + '–' + closeTime + '）。可先填預約單，或私訊小蜜丰。';
+        hoursNoteEl.textContent = '今日服務時段已結束（' + openTime + '–' + closeTime + '），無法下單或預約。';
       }
     }
 
@@ -6045,26 +6060,47 @@ function renderSettings(settings){
       banner.style.display = 'flex';
     }
     if(forcedClosed){
-      orderingMode = 'reservationOnly';
-      orderingDisabled = false;
       const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停即時外送').trim();
-      fillStatusOnly_('⏸️', msg + '　→ 僅接受預約單，請從選品項開始');
-      sendBtn.classList.remove('disabled-btn');
-      if(typeof showReservationModePopup_ === 'function'){
-        showReservationModePopup_('⏸️', '目前暫停即時外送', msg + '。請先選品項，預約時間在後續步驟填寫。');
+      const canReserve = (typeof hasRemainingReservationSlotsToday_ === 'function') && hasRemainingReservationSlotsToday_();
+      if(canReserve){
+        orderingMode = 'reservationOnly';
+        orderingDisabled = false;
+        fillStatusOnly_('⏸️', msg + '　→ 可預約今日尚未結束的時段');
+        sendBtn.classList.remove('disabled-btn');
+        if(typeof showReservationModePopup_ === 'function'){
+          showReservationModePopup_('⏸️', '目前暫停即時外送', msg + '。請先選品項，並預約「今天」尚未結束的時段。');
+        }
+      } else {
+        orderingMode = 'closed';
+        orderingDisabled = true;
+        fillStatusOnly_('⏸️', msg + '　→ 今日已無可預約時段');
+        sendBtn.classList.add('disabled-btn');
+        hideReservationModePopup_();
+        const gateBan = document.getElementById('gateReservationBanner');
+        if(gateBan) gateBan.classList.remove('show');
       }
     } else if(onHoliday){
       const msg = (settings['暫停服務公告'] || '目前公休中').trim();
       const partialToday = String(settings['公休僅今日時段'] || '').toLowerCase() === 'true';
-      if(partialToday){
-        // 僅當天某時段公休：仍可預約今日其他時段
+      const canReserve = typeof hasRemainingReservationSlotsToday_ === 'function' && hasRemainingReservationSlotsToday_();
+      if(partialToday && canReserve){
+        // 僅當天某時段公休，且今天還有公休以外時段可約
         orderingMode = 'reservationOnly';
         orderingDisabled = false;
-        fillStatusOnly_('🏖️', msg + '　→ 僅接受預約單，可約今日公休以外時段');
+        fillStatusOnly_('🏖️', msg + '　→ 可預約今日其他時段（' + reservationOpenTime + '–' + reservationCloseTime + '）');
         sendBtn.classList.remove('disabled-btn');
         if(typeof showReservationModePopup_ === 'function'){
-          showReservationModePopup_('🏖️', '目前公休中', msg + '。請先選品項，並預約「今天」公休以外的時段。');
+          showReservationModePopup_('🏖️', '目前公休中', msg + '。請先選品項，並預約「今天」公休以外、且尚未結束的時段。');
         }
+      } else if(partialToday && !canReserve){
+        // 當日部分公休，但今天已無可預約時段
+        orderingMode = 'closed';
+        orderingDisabled = true;
+        fillStatusOnly_('🏖️', msg + '　→ 今日已無可預約時段');
+        sendBtn.classList.add('disabled-btn');
+        hideReservationModePopup_();
+        const gateBan = document.getElementById('gateReservationBanner');
+        if(gateBan) gateBan.classList.remove('show');
       } else {
         // 跨日／全天公休：只顯示公休頁，無後續流程
         orderingMode = 'closed';
@@ -6077,7 +6113,11 @@ function renderSettings(settings){
         const closedMsg = document.getElementById('closedPageMsg');
         if(closedMsg) closedMsg.textContent = msg || '目前公休中，暫停接單。';
         const closedLine = document.getElementById('closedPageLineBtn');
-        if(closedLine) closedLine.href = lineUrl || closedLine.href || '#';
+        if(closedLine){
+          const joinHref = (document.getElementById('joinLineBtn') && document.getElementById('joinLineBtn').href) || '';
+          closedLine.href = joinHref || lineUrl || closedLine.href || '#';
+          closedLine.textContent = '💬 加入 LINE 社群';
+        }
         if(typeof showSitePage === 'function') showSitePage('closed');
         else {
           const c = document.getElementById('sitePageClosed');
@@ -6097,13 +6137,30 @@ function renderSettings(settings){
       const closedPg = document.getElementById('sitePageClosed');
       if(closedPg) closedPg.classList.remove('active');
     } else {
-      orderingMode = 'reservationOnly';
-      orderingDisabled = false;
-      const msg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（服務 ${openTime}–${closeTime}）`).trim();
-      fillStatusOnly_('🌙', msg + '　→ 僅接受預約單，請從選品項開始');
-      sendBtn.classList.remove('disabled-btn');
-      if(typeof showReservationModePopup_ === 'function'){
-        showReservationModePopup_('🌙', '目前非營業時間', msg + '。無法下即時單，可先填預約訂單，營業時再為您處理。');
+      // 非營業時間：只有「今天還有可預約時段」才開預約模式，否則今日已結束
+      const canReserve = typeof hasRemainingReservationSlotsToday_ === 'function' && hasRemainingReservationSlotsToday_();
+      const baseMsg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（服務時段 ${openTime}–${closeTime}）`).trim();
+      if(canReserve){
+        orderingMode = 'reservationOnly';
+        orderingDisabled = false;
+        fillStatusOnly_('🌙', baseMsg + '　→ 可預約今日 ' + reservationOpenTime + '–' + reservationCloseTime + ' 尚未結束的時段');
+        sendBtn.classList.remove('disabled-btn');
+        if(typeof showReservationModePopup_ === 'function'){
+          showReservationModePopup_('🌙', '目前非營業時間', baseMsg + '。無法下即時單，可先填「今天」尚未結束的預約時段。');
+        }
+      } else {
+        orderingMode = 'closed';
+        orderingDisabled = true;
+        const endMsg = `今日服務時段已結束（${openTime}–${closeTime}），目前無法下單或預約。請於下次營業時間再來，或私訊小蜜丰。`;
+        fillStatusOnly_('🌙', endMsg);
+        sendBtn.classList.add('disabled-btn');
+        hideReservationModePopup_();
+        const gateBan = document.getElementById('gateReservationBanner');
+        if(gateBan) gateBan.classList.remove('show');
+        // 不進公休專頁，仍可看公告；僅禁止下單
+        if(typeof showReservationModePopup_ === 'function'){
+          showReservationModePopup_('🌙', '今日已結束接單', endMsg);
+        }
       }
     }
     if(typeof applyReservationModeUI_ === 'function') applyReservationModeUI_();
@@ -7119,10 +7176,21 @@ function renderSettings(settings){
   let reservationCloseTime = '20:00';
   let reservationIntervalMin = 30;
 
+  function hmToMins_(hm){
+    const m = String(hm || '').match(/(\d{1,2}):(\d{2})/);
+    if(!m) return null;
+    return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  }
   function generateReservationSlots(){
     const slots = [];
-    const [openH, openM] = reservationOpenTime.split(':').map(Number);
-    const [closeH, closeM] = reservationCloseTime.split(':').map(Number);
+    // 預約視窗不得超出營業結束時間
+    const openHm = reservationOpenTime || businessOpenTime || '08:00';
+    let closeHm = reservationCloseTime || businessCloseTime || '20:00';
+    const r = hmToMins_(reservationCloseTime);
+    const b = hmToMins_(businessCloseTime);
+    if(r != null && b != null && r > b) closeHm = businessCloseTime;
+    const [openH, openM] = String(openHm).split(':').map(Number);
+    const [closeH, closeM] = String(closeHm).split(':').map(Number);
     let mins = openH * 60 + openM;
     const endMins = closeH * 60 + closeM;
     while(mins < endMins){
@@ -7132,6 +7200,26 @@ function renderSettings(settings){
       mins += reservationIntervalMin;
     }
     return slots;
+  }
+  /** 今天還有沒有可預約時段：未過期、未落在當日部分公休、且未超過營業結束 */
+  function hasRemainingReservationSlotsToday_(){
+    try{
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const bizClose = businessCloseTime || reservationCloseTime || '20:00';
+      if(nowHM >= bizClose) return false;
+      const resClose = reservationCloseTime || bizClose;
+      if(nowHM >= resClose) return false;
+      const holidayStart = String(window._partialHolidayStart_ || '').trim();
+      const holidayEnd = String(window._partialHolidayEnd_ || '').trim();
+      return generateReservationSlots().some(t => {
+        if(t <= nowHM) return false;
+        if(t >= bizClose) return false;
+        if(holidayStart && holidayEnd && t >= holidayStart && t < holidayEnd) return false;
+        return true;
+      });
+    }catch(e){ return false; }
   }
 
   function populateScheduleTimeOptions(){
@@ -7144,9 +7232,16 @@ function renderSettings(settings){
     const pad = n => String(n).padStart(2, '0');
     const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     sel.innerHTML = '<option value="">請選擇時段</option>';
+    const holidayStart = String(window._partialHolidayStart_ || '').trim();
+    const holidayEnd = String(window._partialHolidayEnd_ || '').trim();
+    const bizCloseCap = businessCloseTime || reservationCloseTime || '20:00';
     generateReservationSlots().forEach(t => {
       // 僅當天可預約：略過已過的時段
       if(dateVal === todayStr && t <= nowHM) return;
+      // 不可超過營業結束
+      if(t >= bizCloseCap) return;
+      // 當日部分公休時段不可選
+      if(holidayStart && holidayEnd && t >= holidayStart && t < holidayEnd) return;
       const opt = document.createElement('option');
       opt.value = t;
       opt.textContent = t;
