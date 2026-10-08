@@ -3574,12 +3574,12 @@
         </div>
       </details>
     <details class="header-rules header-hours" id="headerHours">
-        <summary title="營業時間" aria-label="營業時間"><span class="hours-ico">🕒</span></summary>
+        <summary title="接單時段" aria-label="接單時段"><span class="hours-ico">🕒</span></summary>
         <div class="header-rules-panel">
-          <div class="hours-panel-title">🕒 營業時間</div>
+          <div class="hours-panel-title">🕒 接單時段</div>
           <div class="time" id="hoursTime" style="font-size:14px;font-weight:700;margin-bottom:6px;"><span id="hoursTimeText">08:00–20:00</span></div>
-          <div class="note" id="hoursStatusNote" style="font-size:12.5px;opacity:.9;line-height:1.6;margin-bottom:6px;">非營業時間可預約；急需請私訊小蜜丰</div>
-          <a id="headerHoursLineBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;margin-top:6px;align-items:center;gap:4px;background:#06C755;color:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;text-decoration:none;">💬 私訊小蜜丰</a>
+          <div class="note" id="hoursStatusNote" style="font-size:12.5px;opacity:.9;line-height:1.6;margin-bottom:6px;">接單時段外可預約；有空的外送員會接單。急需請至 LINE 社群詢問</div>
+          <a id="headerHoursLineBtn" href="#" target="_blank" rel="noopener" style="display:inline-flex;margin-top:6px;align-items:center;gap:4px;background:#06C755;color:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:800;text-decoration:none;">💬 LINE社群詢問</a>
         </div>
       </details>
     <div class="header-spacer" aria-hidden="true"></div>
@@ -3588,12 +3588,12 @@
 </header>
 
 <main>
-  <!-- 非營業時間：強制預約說明彈窗（第一頁） -->
+  <!-- 非接單時段：強制預約說明彈窗（第一頁） -->
   <div class="reservation-mode-overlay" id="reservationModeOverlay" aria-hidden="true">
     <div class="reservation-mode-popup" role="dialog" aria-labelledby="reservationModeTitle">
       <div class="rm-icon">🌙</div>
-      <h3 id="reservationModeTitle">目前非營業時間</h3>
-      <p id="reservationModeMsg">現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在營業時段為您處理。</p>
+      <h3 id="reservationModeTitle">目前非接單時段</h3>
+      <p id="reservationModeMsg">現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在接單時段為您處理。</p>
       <div class="rm-steps">
         ① 先選品項／店家<br>
         ② 再填地址與聯絡方式<br>
@@ -3697,7 +3697,7 @@
   <div class="announce-wrap" id="hoursAnnouncementWrap" style="display:none;">
     <details class="announce-fold hours" id="hoursAnnouncementDetails">
       <summary>
-        <span>🕒 營業時間調整公告</span>
+        <span>🕒 接單時段調整公告</span>
         <span class="announce-new-badge" id="hoursAnnouncementNewBadge" style="display:none;">新</span>
         <span class="fold-arrow">▸</span>
       </summary>
@@ -3742,7 +3742,7 @@
         <b>蒐集項目：</b>聯絡電話、送達地址、社群暱稱、訂單內容（商家／品項）、加購服務、備註、預約時間；若選擇匯款則另含匯款戶名與帳號末五碼；外送進行中可能暫時處理外送員回報之位置座標以便客戶查詢進度；若您上傳照片則含該影像。<br>
         <b>利用期間、地區、對象及方式：</b>僅於台灣地區、由本服務及受指派之外送人員，以電子與人工方式處理，不作與執行本服務無關之利用，不會轉售。<br>
         <b>保存期限：</b>訂單完成（狀態為「已送達」）後原則保存 <b>180 天</b>，其後將刪除或去識別化敏感個資；對帳所需之非識別統計資料得依營運需要保留較久。<br>
-        <b>當事人權利：</b>您得依個資法請求查詢、閱覽、製給複製本、補充更正、請求停止蒐集／處理／利用或刪除。請透過「加入 LINE 社群」或私訊小蜜丰提出，我們將於合理期間內處理。<br>
+        <b>當事人權利：</b>您得依個資法請求查詢、閱覽、製給複製本、補充更正、請求停止蒐集／處理／利用或刪除。請透過「加入 LINE 社群」或至 LINE 社群詢問提出，我們將於合理期間內處理。<br>
         本站僅使用瀏覽器「本地儲存（localStorage）」供必要功能（例如已讀公告、常用地址），<strong>不使用第三方廣告或追蹤 Cookie</strong>。
       </div>
     </details>
@@ -3801,7 +3801,7 @@
       <details class="info-block" id="heroExtraFold">
         <summary>➕ 額外服務</summary>
         <div class="info-block-body">
-          <a class="ask-btn" id="askInlineBtn" href="#" target="_blank" rel="noopener">💬 私訊小蜜丰</a>
+          <a class="ask-btn" id="askInlineBtn" href="#" target="_blank" rel="noopener">💬 LINE社群詢問</a>
           <div class="extra-services" id="extraServices">
             <div class="empty">目前無額外服務。</div>
           </div>
@@ -3824,7 +3824,7 @@
         <div class="fee-card">
           <span class="zone">超出範圍</span>
           <div class="price" id="feePriceOutside" style="font-size:20px;">分級計算</div>
-          <div class="range">超出鎮外服務範圍之地址，請私訊小蜜丰詢問確認</div>
+          <div class="range">超出鎮外服務範圍之地址，請至 LINE 社群詢問確認</div>
         </div>
       </div>
       <div class="range-map">
@@ -3959,7 +3959,7 @@
         <div class="zone-toggle">
           <button type="button" class="zone-btn active" data-zone="inner" data-fee="50">鎮內（$50）</button>
           <button type="button" class="zone-btn" data-zone="outer" data-fee="100">鎮外（$100）</button>
-          <button type="button" class="zone-btn" data-zone="outside" data-fee="120">超出範圍（分級計算，請私訊小蜜丰詢問）</button>
+          <button type="button" class="zone-btn" data-zone="outside" data-fee="120">超出範圍（分級計算，請至 LINE 社群詢問）</button>
         </div>
         <div id="zoneOutsideHint" style="display:none;"></div>
       </div>
@@ -4084,7 +4084,7 @@
   成功小蜜丰 · 本頁僅供社群公告與下單參考使用
   <div class="privacy-footer">
     <strong style="color:var(--ink);">個人資料保護</strong><br>
-    本服務蒐集之電話、地址、暱稱、訂單及（若適用）匯款與位置資料，僅供代購外送與聯繫使用，不作無關目的利用。訂單完成後個資原則保存 180 天，其後刪除或去識別化。本站僅使用必要之本地儲存，不使用第三方廣告追蹤。若需行使個資權利或有疑問，請私訊小蜜丰。
+    本服務蒐集之電話、地址、暱稱、訂單及（若適用）匯款與位置資料，僅供代購外送與聯繫使用，不作無關目的利用。訂單完成後個資原則保存 180 天，其後刪除或去識別化。本站僅使用必要之本地儲存，不使用第三方廣告追蹤。若需行使個資權利或有疑問，請至 LINE 社群詢問。
   </div>
 </footer>
 
@@ -4241,7 +4241,7 @@
       if(btn){
         btn.dataset.fee = price;
         btn.textContent = key === 'outside'
-          ? `${labelMap[key]}（分級計算，請私訊小蜜丰詢問）`
+          ? `${labelMap[key]}（分級計算，請至 LINE 社群詢問）`
           : `${labelMap[key]}（$${price}）`;
       }
     });
@@ -4511,7 +4511,7 @@
     const hintEl = row.querySelector('.stop-hours-hint');
     const hours = merchantHoursMap[val];
     if(val && val !== '其他' && hours){
-      hintEl.textContent = `🕒 營業時間：${hours}`;
+      hintEl.textContent = `🕒 接單時段：${hours}`;
       hintEl.style.display = 'block';
     } else {
       hintEl.style.display = 'none';
@@ -5857,7 +5857,7 @@ function renderSettings(settings){
         }
       });
     }catch(e){}
-    inquiryLinkUrl = (settings['請私訊小蜜丰連結'] || '').trim();
+    inquiryLinkUrl = (settings['請至 LINE 社群詢問連結'] || '').trim();
     const lineHref = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
     const headerHoursLineBtn = document.getElementById('headerHoursLineBtn');
     if(headerHoursLineBtn) headerHoursLineBtn.href = lineHref;
@@ -5894,8 +5894,8 @@ function renderSettings(settings){
     function linkifyMifengText_(text){
       const url = inquiryLinkUrl || (document.getElementById('joinLineBtn') && document.getElementById('joinLineBtn').href) || '#';
       const escaped = escapeHtml(text || '');
-      const link = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:inherit;font-weight:900;text-decoration:underline;text-underline-offset:2px;">請私訊小蜜丰</a>`;
-      return escaped.replace(/請私訊小蜜丰/g, link);
+      const link = `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:inherit;font-weight:900;text-decoration:underline;text-underline-offset:2px;">請至 LINE 社群詢問</a>`;
+      return escaped.replace(/請至 LINE 社群詢問/g, link);
     }
     function applyFoldableAnnouncement_(key, text, wrapId, detailsId, bodyId, badgeId){
       const wrap = document.getElementById(wrapId);
@@ -5910,7 +5910,7 @@ function renderSettings(settings){
         return;
       }
       wrap.style.display = 'block';
-      // 將「請私訊小蜜丰」做成可點的 LINE 連結
+      // 將「請至 LINE 社群詢問」做成可點的 LINE 連結
       body.innerHTML = linkifyMifengText_(content);
       let seen = '';
       try{ seen = localStorage.getItem(key) || ''; }catch(e){}
@@ -6044,7 +6044,7 @@ function renderSettings(settings){
     }
     const forcedClosed = parseFlagTrue_(settings['強制公休']);
     const onHoliday = parseFlagTrue_(settings['公休中']);
-    // 後端「是否營業」= 營業時段內、非強制公休、且非公休時段（公休結束後自動回復預設營業時間）
+    // 後端「是否營業」= 接單時段內、非強制公休、且非公休時段（公休結束後自動回復預設營業時間）
     const isOpenFinal = String(settings['是否營業'] || '').toLowerCase() === 'true';
 
     const banner = document.getElementById('statusBanner');
@@ -6053,7 +6053,7 @@ function renderSettings(settings){
     const lineUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
     function fillStatusBanner_(icon, msg, showLineBtn){
       const btnHtml = showLineBtn
-        ? `<a class="status-line-btn" href="${escapeHtml(lineUrl)}" target="_blank" rel="noopener">💬 私訊小蜜丰</a>`
+        ? `<a class="status-line-btn" href="${escapeHtml(lineUrl)}" target="_blank" rel="noopener">💬 LINE社群詢問</a>`
         : '';
       banner.innerHTML = `<div class="status-banner-text">${icon} ${escapeHtml(msg)}</div>${btnHtml}`;
       banner.style.display = 'flex';
@@ -6071,22 +6071,22 @@ function renderSettings(settings){
           + (partial && canReserveNow ? '　可預約今日公休以外時段。' : '　暫停接單。')
           + '公休結束後將自動回復 ' + openTime + '–' + closeTime + '。';
       } else if(isOpenFinal){
-        hoursNoteEl.textContent = '目前營業中（' + openTime + '–' + closeTime + '）。';
+        hoursNoteEl.textContent = '目前接單中（' + openTime + '–' + closeTime + '）。外送員有空才會接單配送。';
       } else if(canReserveNow){
-        hoursNoteEl.textContent = '目前非營業時間（' + openTime + '–' + closeTime + '）。可預約今日稍後時段，或私訊小蜜丰。';
+        hoursNoteEl.textContent = '目前非接單時段（' + openTime + '–' + closeTime + '）。可預約今日稍後時段，或至 LINE 社群詢問。';
       } else {
-        hoursNoteEl.textContent = '今日服務時段已結束（' + openTime + '–' + closeTime + '），無法下單或預約。';
+        hoursNoteEl.textContent = '今日接單時段已結束（' + openTime + '–' + closeTime + '），無法下單或預約。';
       }
     }
 
     // 強制公休／公休／非營業：預約模式（第一頁彈窗說明；步驟仍從品項開始）
     function fillStatusOnly_(icon, msg){
-      const lineBtn = `<a class="status-line-btn" href="${escapeHtml(lineUrl)}" target="_blank" rel="noopener">💬 私訊小蜜丰</a>`;
+      const lineBtn = `<a class="status-line-btn" href="${escapeHtml(lineUrl)}" target="_blank" rel="noopener">💬 LINE社群詢問</a>`;
       banner.innerHTML = `<div class="status-banner-text">${icon} ${escapeHtml(msg)}</div>${lineBtn}`;
       banner.style.display = 'flex';
     }
     if(forcedClosed){
-      const msg = (settings['暫停服務公告'] || settings['非營業時間公告'] || '目前暫停即時外送').trim();
+      const msg = (settings['暫停服務公告'] || settings['非接單時段公告'] || '目前暫停即時外送').trim();
       const canReserve = (typeof hasRemainingReservationSlotsToday_ === 'function') && hasRemainingReservationSlotsToday_();
       if(canReserve){
         orderingMode = 'reservationOnly';
@@ -6163,21 +6163,21 @@ function renderSettings(settings){
       const closedPg = document.getElementById('sitePageClosed');
       if(closedPg) closedPg.classList.remove('active');
     } else {
-      // 非營業時間：只有「今天還有可預約時段」才開預約模式，否則今日已結束
+      // 非接單時段：只有「今天還有可預約時段」才開預約模式，否則今日已結束
       const canReserve = typeof hasRemainingReservationSlotsToday_ === 'function' && hasRemainingReservationSlotsToday_();
-      const baseMsg = (settings['非營業時間公告'] || settings['暫停服務公告'] || `目前非營業時間（服務時段 ${openTime}–${closeTime}）`).trim();
+      const baseMsg = (settings['非接單時段公告'] || settings['暫停服務公告'] || `目前非接單時段（服務時段 ${openTime}–${closeTime}）`).trim();
       if(canReserve){
         orderingMode = 'reservationOnly';
         orderingDisabled = false;
         fillStatusOnly_('🌙', baseMsg + '　→ 可預約今日 ' + reservationOpenTime + '–' + reservationCloseTime + ' 尚未結束的時段');
         sendBtn.classList.remove('disabled-btn');
         if(typeof showReservationModePopup_ === 'function'){
-          showReservationModePopup_('🌙', '目前非營業時間', baseMsg + '。無法下即時單，可先填「今天」尚未結束的預約時段。');
+          showReservationModePopup_('🌙', '目前非接單時段', baseMsg + '。無法下即時單，可先填「今天」尚未結束的預約時段。');
         }
       } else {
         orderingMode = 'closed';
         orderingDisabled = true;
-        const endMsg = `今日服務時段已結束（${openTime}–${closeTime}），目前無法下單或預約。請於下次營業時間再來，或私訊小蜜丰。`;
+        const endMsg = `今日接單時段已結束（${openTime}–${closeTime}），目前無法下單或預約。請於下次接單時段再來，或至 LINE 社群詢問。`;
         fillStatusOnly_('🌙', endMsg);
         sendBtn.classList.add('disabled-btn');
         hideReservationModePopup_();
@@ -7351,7 +7351,7 @@ function renderSettings(settings){
   }
 
   let reservationPopupShown_ = false;
-  let lastReservationPopup_ = { icon: '🌙', title: '目前非營業時間', msg: '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在營業時段為您處理。' };
+  let lastReservationPopup_ = { icon: '🌙', title: '目前非接單時段', msg: '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在接單時段為您處理。' };
   let pendingOrderStepAfterRemind_ = null;
   function showReservationModePopup_(icon, title, msg){
     const overlay = document.getElementById('reservationModeOverlay');
@@ -7361,8 +7361,8 @@ function renderSettings(settings){
     const msgEl = document.getElementById('reservationModeMsg');
     lastReservationPopup_ = {
       icon: icon || '🌙',
-      title: title || '目前非營業時間',
-      msg: msg || '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在營業時段為您處理。'
+      title: title || '目前非接單時段',
+      msg: msg || '現在無法下「即時單」，但可以先填<strong>預約訂單</strong>，我們會在接單時段為您處理。'
     };
     if(iconEl) iconEl.textContent = lastReservationPopup_.icon;
     if(titleEl) titleEl.textContent = lastReservationPopup_.title;
@@ -7378,7 +7378,7 @@ function renderSettings(settings){
     const p = lastReservationPopup_ || {};
     showReservationModePopup_(
       p.icon || '🌙',
-      p.title || '目前非營業時間',
+      p.title || '目前非接單時段',
       (p.msg || '目前無法下即時單，請改填預約訂單。') + '<br><br><strong>接下來請先選品項</strong>，預約時間在「聯絡方式」步驟再填。'
     );
     const okBtn = document.getElementById('reservationModeOk');
@@ -7470,7 +7470,7 @@ function renderSettings(settings){
     if(!zoneOutsideHintEl) return;
     if(zoneKey === 'outside'){
       const askUrl = inquiryLinkUrl || document.getElementById('joinLineBtn').href;
-      zoneOutsideHintEl.innerHTML = `<div class="zone-hint-text">⚠️ 超出範圍地址請先私訊小蜜丰，確認可配送與實際費用後再送出委託。</div><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 私訊小蜜丰詢問</a>`;
+      zoneOutsideHintEl.innerHTML = `<div class="zone-hint-text">⚠️ 超出範圍地址請先至 LINE 社群詢問，確認可配送與實際費用後再送出委託。</div><a href="${escapeHtml(askUrl)}" target="_blank" rel="noopener" class="zone-line-btn">💬 LINE社群詢問</a>`;
       zoneOutsideHintEl.style.display = 'block';
     } else {
       zoneOutsideHintEl.style.display = 'none';
