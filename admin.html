@@ -641,7 +641,7 @@
     <div id="settingsView" style="display:none;">
       <div class="settings-subtabs" id="settingsSubtabs">
         <button type="button" class="active" data-panel="holiday">🏖️ 公休</button>
-        <button type="button" data-panel="hours">🕐 營業時間</button>
+        <button type="button" data-panel="hours">🕐 接單時段</button>
         <button type="button" data-panel="announce">📢 公告</button>
         <button type="button" data-panel="ads">🛍️ 廣告</button>
       </div>
@@ -696,19 +696,19 @@
 
       <div class="settings-panel" id="settingsPanelHours">
       <div class="settings-card">
-      <h3>🕐 營業時間</h3>
+      <h3>🕐 接單時段</h3>
       <div class="holiday-form">
         <div class="holiday-time-row">
           <div>
-            <label for="hoursOpen">營業開始</label>
+            <label for="hoursOpen">接單開始</label>
             <input type="time" id="hoursOpen" value="08:00">
           </div>
           <div>
-            <label for="hoursClose">營業結束</label>
+            <label for="hoursClose">接單結束</label>
             <input type="time" id="hoursClose" value="20:00">
           </div>
         </div>
-        <div class="field-hint">前台時鐘與是否「營業中」依此判斷（到達結束時間起算為非營業）。</div>
+        <div class="field-hint">此為「接單時段」：時段內客戶可下即時單；時段外僅能預約今天稍後（若還有時段）。外送改為有空才接單，可隨時在此調整時段。</div>
 
         <div class="section-heading" style="margin-top:18px;">📅 預約時段（可與營業時間不同）</div>
         <div class="holiday-time-row">
@@ -724,7 +724,7 @@
         <label for="resInterval">預約間隔（分鐘）</label>
         <input type="number" id="resInterval" min="5" max="180" step="5" value="30" style="width:100%;padding:11px 13px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);font-family:'JetBrains Mono',monospace;font-size:14px;box-sizing:border-box;">
         <div class="field-hint">例如 30：客戶可選 10:00、10:30、11:00…</div>
-        <button type="button" id="saveHoursBtn">💾 儲存營業／預約時間</button>
+        <button type="button" id="saveHoursBtn">💾 儲存接單／預約時間</button>
       </div>
       </div>
       </div><!-- /settingsPanelHours -->
@@ -1414,7 +1414,7 @@
     const reservationOpenTime = document.getElementById('resOpen').value;
     const reservationCloseTime = document.getElementById('resClose').value;
     const reservationInterval = document.getElementById('resInterval').value;
-    if(!openTime || !closeTime){ toast('請填寫營業開始與結束時間'); return; }
+    if(!openTime || !closeTime){ toast('請填寫接單開始與結束時間'); return; }
     btn.disabled = true;
     fetch(SCRIPT_URL, {
       method: 'POST',
@@ -1428,7 +1428,7 @@
       .then(data => {
         btn.disabled = false;
         if(data.result === 'success'){
-          toast('✅ 營業／預約時間已儲存');
+          toast('✅ 接單／預約時間已儲存');
           if(data.openTime) document.getElementById('hoursOpen').value = data.openTime;
           if(data.closeTime) document.getElementById('hoursClose').value = data.closeTime;
           if(data.reservationOpenTime) document.getElementById('resOpen').value = data.reservationOpenTime;
